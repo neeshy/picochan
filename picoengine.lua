@@ -16,10 +16,11 @@ local pico = {};
       pico.log = {};
       pico.captcha = {};
 
-local db, errcode, errmsg = sqlite3.open("picochan.db");
+local db, errcode, errmsg = sqlite3.open("picochan.db", sqlite3.OPEN_READWRITE);
 assert(db, errmsg);
-db:busy_timeout(10000);
-db:exec("PRAGMA optimize");
+db:exec("PRAGMA busy_timeout = 10000");
+db:exec("PRAGMA foreign_keys = ON");
+db:exec("PRAGMA recursive_triggers = ON");
 
 local bcrypt_rounds = 14;           -- reduce if logins are too slow
 local max_filesize = 16777216;      -- 16 MiB
@@ -108,7 +109,7 @@ function string.base64(s)
   local pad = 2 - ((#s-1) % 3);
   s = (s..rep('\0', pad)):gsub("...", function(cs)
       local a, b, c = byte(cs, 1, 3);
-      return bs[a>>2] .. bs[(a&3)<<4|b>>4] .. bs[(b&15)<<2|c>>6] .. bs[c&63];
+      return bs[a>>2] .. bs[(a&3)<<4|(b>>4)] .. bs[(b&15)<<2|(c>>6)] .. bs[c&63];
   end);
   return s:sub(1, #s-pad) .. rep('=', pad);
 end
@@ -136,8 +137,12 @@ local function sha256(data)
 end
 
 local function checkcaptcha(id, text)
-  dbq("DELETE FROM Captchas WHERE ExpireDate < STRFTIME('%s', 'now') OR Id = ?", id);
-  return dbb("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?)", id, text);
+  if dbb("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
+    dbq("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id);
+    return true;
+  else
+    return false;
+  end
 end
 
 -- Use nil for the board parameter if the action applies to all boards.
@@ -428,7 +433,7 @@ function pico.board.overboard()
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
              "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
-             "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 1000");
+             "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");
 end
 
 -- for this and the following stats functions, set board to nil (where applicable)
@@ -601,6 +606,8 @@ function pico.file.delete(hash, reason)
 
   dbq("DELETE FROM Files WHERE Name = ?", hash);  
   os.remove("media/" .. hash);
+  os.remove("media/icon/" .. hash);
+  os.remove("media/thumb/" .. hash);
 
   log(false, nil, "Deleted file %s from all boards for reason: %s", hash, reason);
   return true, "File deleted successfully";
@@ -608,10 +615,6 @@ end
 
 -- list info of files belonging to a particular post
 function pico.file.list(board, number)
-  if not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?", board, number) then
-    return nil, "Post does not exist";
-  end
-
   local file_tbl = dbq("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC", board, number);
   for i = 1, #file_tbl do
     file_tbl[i] = db1("SELECT * FROM Files WHERE Name = ?", file_tbl[i]["File"]);
@@ -640,11 +643,6 @@ function pico.post.refs(board, number)
 end
 
 function pico.post.threadreplycount(board, number)
-  if not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
-             board, number) then
-    return nil, "Post is not a thread or does not exist";
-  end
-
   return db1("SELECT COUNT(*) AS ReplyCount FROM Posts WHERE Board = ? AND Parent = ?",
              board, number)["ReplyCount"];
 end
@@ -656,10 +654,10 @@ function pico.post.thread(board, number)
     return nil, "Post is not a thread or does not exist";
   end
 
-  local thread_tbl = dbq("SELECT Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
+  local thread_tbl = dbq("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
                          "WHERE Board = ? AND Parent = ? ORDER BY Number",
                          board, number);
-  thread_tbl[0] = db1("SELECT Number, Date, LastBumpDate, Name, Email, Subject, " ..
+  thread_tbl[0] = db1("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
                       "Comment, Sticky, Lock, Autosage, Cycle FROM Posts " ..
                       "WHERE Board = ? AND Number = ?", board, number);
   return thread_tbl;
@@ -701,9 +699,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     return nil, "Thread text too short";
   elseif #comment > board_tbl["PostMaxLength"] then
     return nil, "Post text too long";
-  elseif select(2, string.gsub(comment, "\n", "")) > board_tbl["PostMaxNewlines"] then
+  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
     return nil, "Post contained too many newlines";
-  elseif select(2, string.gsub(comment, "\n\n", "")) > board_tbl["PostMaxDblNewlines"] then
+  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
     return nil, "Post contained too many double newlines";
   elseif #name > 64 then
     return nil, "Name too long";
@@ -818,7 +816,7 @@ end
 function pico.log.retrieve(page, pagesize)
   page = page or 1;
   pagesize = pagesize or 128;
-  return dbq("SELECT * FROM Logs ORDER BY Date DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
+  return dbq("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
 end
 
 --

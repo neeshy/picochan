@@ -272,7 +272,6 @@ div.post {
     margin-top: 1.3ch;
     border: 1px solid #000;
     display: table;
-    max-width: 100%;
 }
 
 div.post:target {
@@ -299,8 +298,7 @@ div.post-header span.post-number a:hover {
 }
 
 div.post-header a.referrer {
-    font-size: 8pt;
-    margin-right: 1ch;
+    font-size: 7.5pt;
 }
 
 div.post-header span {

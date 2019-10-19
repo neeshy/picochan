@@ -2,7 +2,6 @@
 <% -- Picochan CGI/HTML Frontend
 
 local pico = require("picoengine");
-local brotli = require("brotli");
 local zlib = require("zlib");
 local openbsd = require("openbsd");
 
@@ -40,8 +39,8 @@ io.output(cgi.outputbuf);
 pico.account.register_login(COOKIE["session_key"]);
 
 cgi.headers = {};
-cgi.pathinfo = os.getenv("PATH_INFO") and string.tokenize(os.getenv("PATH_INFO"):gsub("^/", ""), "/") or {};
-cgi.encodings = os.getenv("HTTP_ACCEPT_ENCODING") and httpencodinglist(os.getenv("HTTP_ACCEPT_ENCODING")) or {};
+cgi.pathinfo = ENV["PATH_INFO"] and string.tokenize(ENV["PATH_INFO"]:gsub("^/", ""), "/") or {};
+cgi.encodings = ENV["HTTP_ACCEPT_ENCODING"] and httpencodinglist(ENV["HTTP_ACCEPT_ENCODING"]) or {};
 
 --
 -- CGI FUNCTIONS
@@ -60,11 +59,7 @@ end
 function cgi.finalize()
   cgi.outputbuf:seek("set");
 
-  if cgi.encodings["br"] then
-    cgi.headers["Content-Encoding"] = "br";
-    cgi.write_headers();
-    io.stdout:write(brotli.compress(cgi.outputbuf:read("*a"), {mode=brotli.MODE_TEXT, quality=5}));
-  elseif cgi.encodings["gzip"] then
+  if cgi.encodings["gzip"] then
     cgi.headers["Content-Encoding"] = "gzip";
     cgi.write_headers();
     io.stdout:write(zlib.deflate(9, 31)(cgi.outputbuf:read("*a"), "finish"));
@@ -281,13 +276,13 @@ function html.unstriphtml(s)
   return ret;
 end
 
-function html.picofmt(board_tbl, post_tbl)
+function html.picofmt(post_tbl)
   if post_tbl["Email"] and post_tbl["Email"]:match("nofo") then
     return html.striphtml(post_tbl["Comment"]);
   end
 
   local function handle_refs(number)
-    local ref_post_tbl = pico.post.tbl(board_tbl["Name"], number);
+    local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number);
 
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
@@ -331,7 +326,7 @@ function html.picofmt(board_tbl, post_tbl)
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
   s = s:gsub("__([^\r\n]-)__", "<u>%1</u>");
-  s = s:gsub("==([^\r\n]-)==", "<span class='redtext'>%1</span>");
+  s = s:gsub("==([^%s][^\r\n]-[^%s])==", "<span class='redtext'>%1</span>");
   s = s:gsub("%*%*([^\r\n]-)%*%*", "<span class='spoiler'>%1</span>");
   s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
@@ -439,8 +434,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
 
       if class == "image" or extension == "pdf" then
         printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/media/thumb/%s'] + div.post-file-fullsize::after " ..
-               "{content: url('/media/%s');}</style>",
-               filename, filename, file["Width"], file["Height"]);
+               "{content: url('/media/%s');}</style>", filename, filename, file["Width"], file["Height"]);
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
@@ -487,12 +481,12 @@ function html.renderpost(board_tbl, post_tbl)
 
   local reflist = pico.post.refs(board_tbl["Name"], post_tbl["Number"]);
   for i = 1, #reflist do
-    printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a>", reflist[i], reflist[i]);
+    printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a> ", reflist[i], reflist[i]);
   end
 
   printf("</div>");
   html.renderpostfiles(board_tbl, post_tbl);
-  printf("<div class='post-comment'>%s</div>", html.picofmt(board_tbl, post_tbl));
+  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
   printf("</div>");
 end
 
@@ -526,7 +520,7 @@ function html.rendercatalog(board_tbl, post_tbl)
 
   printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
   printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
-  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(board_tbl, post_tbl));
+  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
 
   printf("</div>");
 end

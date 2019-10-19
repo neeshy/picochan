@@ -1,19 +1,14 @@
--- This table stores board information and board settings.
 CREATE TABLE Boards (
-  Name			TEXT		NOT NULL	UNIQUE	PRIMARY KEY			CHECK(LENGTH(Name) > 0 AND LENGTH(Name) <= 8),
-  Title			TEXT		NOT NULL	UNIQUE					CHECK(LENGTH(Title) <= 32 AND LENGTH(Title) > 0),
+  Name			TEXT		NOT NULL	UNIQUE	PRIMARY KEY			CHECK(LENGTH(Name) BETWEEN 1 AND 8),
+  Title			TEXT		NOT NULL	UNIQUE					CHECK(LENGTH(Title) BETWEEN 1 AND 32),
   Subtitle		TEXT		NOT NULL						CHECK(LENGTH(Subtitle) <= 64),
   MaxPostNumber		INTEGER		NOT NULL				DEFAULT 0	CHECK(MaxPostNumber >= 0),
   Lock			BOOLEAN		NOT NULL				DEFAULT FALSE,
   DisplayOverboard	BOOLEAN		NOT NULL				DEFAULT TRUE,
-
-  -- Notes:
-  -- Setting an integer value to -1 disables the setting. For example, setting
-  -- "TPHLimit" to -1 means that no limit on TPH is enforced.
-  PostMaxImages		INTEGER		NOT NULL				DEFAULT 5	CHECK(PostMaxImages <= 5 AND PostMaxImages >= 0),
+  PostMaxImages		INTEGER		NOT NULL				DEFAULT 5	CHECK(PostMaxImages BETWEEN 0 AND 5),
   ThreadMinLength	INTEGER		NOT NULL				DEFAULT 1,
   PostMaxLength		INTEGER		NOT NULL				DEFAULT 32768,
-  PostMaxNewlines	INTEGER		NOT NULL				DEFAULT 64,
+  PostMaxNewlines	INTEGER		NOT NULL				DEFAULT 1024,
   PostMaxDblNewlines	INTEGER		NOT NULL				DEFAULT 16,
   TPHLimit		INTEGER		NOT NULL				DEFAULT -1,
   PPHLimit		INTEGER		NOT NULL				DEFAULT -1,
@@ -21,9 +16,9 @@ CREATE TABLE Boards (
   PostCaptcha		BOOLEAN		NOT NULL				DEFAULT FALSE,
   CaptchaTriggerTPH	INTEGER		NOT NULL				DEFAULT -1,
   CaptchaTriggerPPH	INTEGER		NOT NULL				DEFAULT -1,
-  BumpLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(BumpLimit <= 1000 AND BumpLimit >= 0),
-  PostLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(PostLimit <= 1000 AND PostLimit >= 0),
-  ThreadLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(ThreadLimit <= 1000 AND ThreadLimit > 0)
+  BumpLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(BumpLimit BETWEEN 0 AND 1000),
+  PostLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(PostLimit BETWEEN 0 AND 1000),
+  ThreadLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(ThreadLimit BETWEEN 1 AND 1000)
 ) WITHOUT ROWID;
 
 CREATE TABLE Posts (
@@ -70,7 +65,7 @@ CREATE TABLE FileRefs (
 
 CREATE TABLE Files (
   Name			TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) > 0),
-  Size			INTEGER		NOT NULL						CHECK(Size > 0 AND Size <= 16777216),
+  Size			INTEGER		NOT NULL						CHECK(Size BETWEEN 1 AND 16777216),
   Width                 INTEGER                                                 DEFAULT NULL,
   Height                INTEGER                                                 DEFAULT NULL,
 
@@ -79,11 +74,11 @@ CREATE TABLE Files (
 
 CREATE TABLE GlobalConfig (
   Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
-  Value                 NUMERIC
+  Value                 NUMERIC         NOT NULL
 ) WITHOUT ROWID;
 
 CREATE TABLE Accounts (
-  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) > 0 AND LENGTH(Name) <= 16),
+  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 1 AND 16),
   Type                  TEXT            NOT NULL,
   Board                 TEXT,
   PwHash                TEXT            NOT NULL,
@@ -127,7 +122,7 @@ END;
 
 CREATE TRIGGER user_autosage AFTER INSERT ON Posts WHEN NEW.Parent IS NULL AND NEW.Email LIKE '%sage%'
 BEGIN
-  UPDATE Posts SET Autosage = TRUE WHERE rowid = NEW.rowid;
+  UPDATE Posts SET Autosage = TRUE WHERE ROWID = NEW.ROWID;
 END;
 
 CREATE TRIGGER cleanup_deleted_board BEFORE DELETE ON Boards
@@ -138,13 +133,13 @@ END;
 
 CREATE TRIGGER increment_post_number AFTER INSERT ON Posts
 BEGIN
-  UPDATE Posts SET Number = (SELECT MaxPostNumber + 1 FROM Boards WHERE Name = NEW.Board) WHERE rowid = NEW.rowid;
+  UPDATE Posts SET Number = (SELECT MaxPostNumber + 1 FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
 END;
 
 CREATE TRIGGER set_post_date AFTER INSERT ON Posts
 BEGIN
-  UPDATE Posts SET Date = STRFTIME('%s', 'now'), LastBumpDate = STRFTIME('%s', 'now') WHERE rowid = NEW.rowid;
+  UPDATE Posts SET Date = STRFTIME('%s', 'now'), LastBumpDate = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
 END;
 
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
@@ -215,7 +210,7 @@ END;
 
 CREATE TRIGGER set_log_date AFTER INSERT ON Logs
 BEGIN
-  UPDATE Logs SET Date = STRFTIME('%s', 'now') WHERE rowid = NEW.rowid;
+  UPDATE Logs SET Date = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
 END;
 
 CREATE TRIGGER set_captcha_expiry AFTER INSERT ON Captchas
@@ -223,8 +218,7 @@ BEGIN
   UPDATE Captchas SET ExpireDate = STRFTIME('%s', 'now') + 1800 WHERE Id = NEW.Id;
 END;
 
-CREATE INDEX posts_parent ON Posts (Parent);
-CREATE INDEX logs_date ON Logs (Date DESC);
+CREATE INDEX posts_parent_number ON Posts (Parent, Number);
 
 -- This is a default account. You should use this only for setup purposes.
 -- The setup account should be DELETED after use.
