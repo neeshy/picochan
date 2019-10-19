@@ -96,26 +96,13 @@ function html.begin(...)
   printf(      "<li class='system'><a href='/pico/System/mod' accesskey='1'>mod</a></li>");
   printf(      "<li class='system'><a href='/pico/System/log' accesskey='2'>log</a></li>");
   printf(      "<li class='system'><a href='/pico/System/stats' accesskey='3'>stats</a></li>");
-  printf(      "<li class='system'><a href='/pico/Overboard' accesskey='4'>overboard</a></li>");
+  printf(      "<li class='system'><a href='/pico/Recent' accesskey='4'>recent</a></li>");
+  printf(      "<li class='system'><a href='/pico/Overboard' accesskey='5'>overboard</a></li>");
 
   local boards = pico.board.list();
   for i = 1, #boards do
-    local accesskey;
-
-    if i < 6 then
-      accesskey = tostring(i + 4);
-    elseif i == 6 then
-      accesskey = "0";
-    elseif i == 7 then
-      accesskey = "-";
-    elseif i == 8 then
-      accesskey = "=";
-    else
-      accesskey = "";
-    end
-
-    printf(    "<li class='board'><a href='/pico/%s' title='%s' accesskey='%s'>/%s/</a></li>",
-               boards[i]["Name"], boards[i]["Title"], accesskey, boards[i]["Name"]);
+    printf("<li class='board'><a href='/pico/%s' title='%s'>/%s/</a></li>",
+           boards[i]["Name"], boards[i]["Title"], boards[i]["Name"]);
   end
 
   if pico.account.current then
@@ -474,8 +461,9 @@ function html.renderpost(board_tbl, post_tbl)
 
   printf("</span>");
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
-  printf("<span class='post-number'><a href='#%d'>No.</a><a href='/pico/%s/%d#postform'>%d</a></span>",
-         post_tbl["Number"], board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
+  printf("<span class='post-number'><a href='/pico/%s/%d#%d'>No.</a><a href='/pico/%s/%d#postform'>%d</a></span>",
+         board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
+         board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
   html.modlinks(board_tbl, post_tbl);
@@ -710,6 +698,8 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/global/defaultpostname'>Change default post name</a>");
       html.list.entry("<a href='/pico/System/mod/global/indexpagesize'>Change index page size</a>");
       html.list.entry("<a href='/pico/System/mod/global/indexwindowsize'>Change index window size</a>");
+      html.list.entry("<a href='/pico/System/mod/global/recentpagesize'>Change recent posts page size</a>");
+      html.list.entry("<a href='/pico/System/mod/global/logpagesize'>Change mod log page size</a>");
       html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");
@@ -1050,6 +1040,32 @@ elseif cgi.pathinfo[1] == "Overboard" then
     html.rendercatalog(board_tbl, overboard_tbl[i]);
   end
 
+  printf("</div>");
+  html.finish();
+elseif cgi.pathinfo[1] == "Recent" then
+  html.begin("recent posts");
+  html.redheader("Recent Posts");
+  html.announce();
+  printf("<a href=''>[Update]</a><hr />");
+
+  local page = tonumber(cgi.pathinfo[2]) or 1;
+  local recent_tbl = pico.post.recent(page);
+  local board_tbls = {};
+
+  for i = 1, #recent_tbl do
+    if not board_tbls[recent_tbl[i]["Board"]] then
+      board_tbls[recent_tbl[i]["Board"]] = pico.board.tbl(recent_tbl[i]["Board"]);
+    end
+
+    html.renderpost(board_tbls[recent_tbl[i]["Board"]], recent_tbl[i]);
+    printf("<hr />");
+  end
+
+  printf("<hr />");
+  printf("<div class='page-switcher'>");
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+  printf("<a class='page-switcher-prev' href='/pico/Recent/%d'>[Prev]</a>", page - 1);
+  printf("<a class='page-switcher-next' href='/pico/Recent/%d'>[Next]</a>", page + 1);
   printf("</div>");
   html.finish();
 else

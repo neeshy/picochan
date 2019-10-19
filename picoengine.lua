@@ -660,6 +660,12 @@ end
 -- POST ACCESS, CREATION AND DELETION FUNCTIONS
 --
 
+function pico.post.recent(page)
+  page = tonumber(page) or 1;
+  local pagesize = pico.global.get("recentpagesize");
+  return dbq("SELECT * FROM Posts ORDER BY Date DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
+end
+
 function pico.post.tbl(board, number)
   return db1("SELECT * FROM Posts WHERE Board = ? AND Number = ?", board, number);
 end
@@ -846,9 +852,9 @@ end
 -- LOG ACCESS FUNCTIONS
 --
 
-function pico.log.retrieve(page, pagesize)
-  page = page or 1;
-  pagesize = pagesize or 128;
+function pico.log.retrieve(page)
+  page = tonumber(page) or 1;
+  pagesize = pico.global.get("logpagesize");
   return dbq("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
 end
 

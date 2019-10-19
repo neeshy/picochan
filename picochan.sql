@@ -229,3 +229,5 @@ INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
 INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
+INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
+INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
