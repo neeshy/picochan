@@ -280,8 +280,8 @@ div.post {
     display: table;
 }
 
-div.index-thread div.post:first-of-type {
-    background: none;
+div.thread {
+    background: none !important;
     border: none;
     display: block;
     padding-top: 0;
@@ -345,7 +345,7 @@ img.post-file-thumbnail, video.post-video, div.post-file-fullsize {
     margin-right: 1.3ch;
 }
 
-div.index-thread div.post:first-of-type img.post-file-thumbnail {
+div.thread img.post-file-thumbnail, div.thread div.post-file-fullsize::after {
     margin-bottom: 1.3ch;
 }
 

@@ -35,6 +35,7 @@ CREATE TABLE Posts (
   Lock			BOOLEAN		NOT NULL				DEFAULT FALSE,
   Autosage		BOOLEAN		NOT NULL				DEFAULT FALSE,
   Cycle			BOOLEAN		NOT NULL				DEFAULT FALSE,
+  ReplyCount            INTEGER							DEFAULT NULL	CHECK(ReplyCount IS NULL OR ReplyCount >= 0),
 
   PRIMARY KEY (Board, Number),
   FOREIGN KEY (Board) REFERENCES Boards(Name),
@@ -64,7 +65,7 @@ CREATE TABLE FileRefs (
 ) WITHOUT ROWID;
 
 CREATE TABLE Files (
-  Name			TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) > 0),
+  Name			TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 130 AND 133),
   Size			INTEGER		NOT NULL						CHECK(Size BETWEEN 1 AND 16777216),
   Width                 INTEGER                                                 DEFAULT NULL,
   Height                INTEGER                                                 DEFAULT NULL,
@@ -115,7 +116,8 @@ END;
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL AND NEW.Email NOT LIKE '%sage%'
-   AND (SELECT COUNT(*) FROM Posts WHERE Parent = NEW.Parent) <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board)
+   AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
+       <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent AND Autosage = FALSE;
 END;
@@ -135,11 +137,18 @@ CREATE TRIGGER increment_post_number AFTER INSERT ON Posts
 BEGIN
   UPDATE Posts SET Number = (SELECT MaxPostNumber + 1 FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
+  UPDATE Posts SET ReplyCount = ReplyCount + 1 WHERE NEW.Parent IS NOT NULL AND Board = NEW.Board AND Number = NEW.Parent;
 END;
 
 CREATE TRIGGER set_post_date AFTER INSERT ON Posts
 BEGIN
   UPDATE Posts SET Date = STRFTIME('%s', 'now'), LastBumpDate = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
+END;
+
+CREATE TRIGGER set_post_replycount AFTER INSERT ON Posts
+  WHEN NEW.Parent IS NULL
+BEGIN
+  UPDATE Posts SET ReplyCount = 0 WHERE ROWID = NEW.ROWID;
 END;
 
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
@@ -167,7 +176,7 @@ END;
 
 CREATE TRIGGER delete_cyclical BEFORE INSERT ON Posts
   WHEN (SELECT Cycle FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent) = TRUE
-   AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent = NEW.Parent)
+   AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
        >= (SELECT PostLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   DELETE FROM Posts WHERE Board = NEW.Board AND Number = (SELECT MIN(Number) FROM Posts WHERE Parent = NEW.Parent);
@@ -176,6 +185,7 @@ END;
 CREATE TRIGGER slide_thread BEFORE INSERT ON Posts
   WHEN (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL)
        >= (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board)
+   AND NEW.Parent IS NULL
 BEGIN
   DELETE FROM Posts
   WHERE Board = NEW.Board AND Parent IS NULL AND Sticky = FALSE
@@ -186,6 +196,12 @@ CREATE TRIGGER remove_old_refs BEFORE DELETE ON Posts
 BEGIN
   DELETE FROM Refs WHERE Board = OLD.Board AND (Referee = OLD.Number OR Referrer = OLD.Number);
   DELETE FROM FileRefs WHERE Board = OLD.Board AND Number = OLD.Number;
+END;
+
+CREATE TRIGGER decrement_replycount BEFORE DELETE ON Posts
+  WHEN OLD.Parent IS NOT NULL
+BEGIN
+  UPDATE Posts SET ReplyCount = ReplyCount - 1 WHERE Board = OLD.Board AND Number = OLD.Parent;
 END;
 
 CREATE TRIGGER remove_file_refs BEFORE DELETE ON Files
@@ -219,6 +235,9 @@ BEGIN
 END;
 
 CREATE INDEX posts_parent_number ON Posts (Parent, Number);
+CREATE INDEX posts_date ON Posts (Date DESC);
+CREATE INDEX captchas_expiredate ON Captchas (ExpireDate);
+CREATE INDEX boards_displayoverboard ON Boards (DisplayOverboard);
 
 -- This is a default account. You should use this only for setup purposes.
 -- The setup account should be DELETED after use.

@@ -196,7 +196,8 @@ end
 
 function html.date(timestamp, reldisplay)
   local difftime = os.time() - timestamp;
-  local unit, multiple, decimal;
+  local unit, multiple;
+  local decimal = false;
   local reltime;
 
   if difftime >= (60 * 60 * 24 * 365) then
@@ -210,23 +211,18 @@ function html.date(timestamp, reldisplay)
   elseif difftime >= (60 * 60 * 24 * 7) then
     unit = "week";
     multiple = difftime / (60 * 60 * 24 * 7);
-    decimal = false;
   elseif difftime >= (60 * 60 * 24) then
     unit = "day";
     multiple = difftime / (60 * 60 * 24);
-    decimal = false;
   elseif difftime >= (60 * 60) then
     unit = "hour";
     multiple = difftime / (60 * 60);
-    decimal = false;
   elseif difftime >= (60) then
     unit = "minute";
     multiple = difftime / (60);
-    decimal = false;
   else
     unit = "second";
     multiple = difftime;
-    decimal = false;
   end
 
   if decimal then
@@ -348,6 +344,7 @@ function html.modlinks(board_tbl, post_tbl)
   printf("<a href='/pico/System/mod/post/delete/%s/%d'>[D]</a>", board, number);
 
   if not post_tbl["Parent"] then
+    printf("<a href='/pico/System/mod/post/move/%s/%d'>[M]</a>", board, number);
     printf("<a href='/pico/System/mod/post/sticky/%s/%d'>[S]</a>", board, number);
     printf("<a href='/pico/System/mod/post/lock/%s/%d'>[L]</a>", board, number);
     printf("<a href='/pico/System/mod/post/autosage/%s/%d'>[A]</a>", board, number);
@@ -389,6 +386,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
   end
 
   local file_tbl = pico.file.list(board_tbl["Name"], post_tbl["Number"]);
+
   if file_tbl then
     for i = 1, #file_tbl do
       local file = file_tbl[i];
@@ -398,8 +396,8 @@ function html.renderpostfiles(board_tbl, post_tbl)
 
       printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "");
       printf("<div class='post-file-info'>");
-      printf("<a href='/media/%s' title='Open file in new tab' target='_blank'>%s</a><br />%s%s",
-             filename, (#file_tbl == 1 and filename or filename:sub(1, 16) .. "..." .. extension),
+      printf("<a href='/media/%s' title='Open file in new tab' target='_blank'>%s...%s</a><br />%s%s",
+             filename, filename:sub(1, #file_tbl == 1 and 64 or 24), extension,
              html.formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
       printf(" <a href='/media/%s' title='Download file' download>(dl)</a>", filename);
 
@@ -443,7 +441,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
 end
 
 function html.renderpost(board_tbl, post_tbl)
-  printf("<div id='%d' class='post'>", post_tbl["Number"]);
+  printf("<div id='%d' class='post%s'>", post_tbl["Number"], post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
 
   if post_tbl["Subject"] ~= "" then
@@ -503,7 +501,7 @@ function html.rendercatalog(board_tbl, post_tbl)
 
   printf("</a>");
   printf("<div class='catalog-thread-info'>");
-  printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, pico.post.threadreplycount(board, number));
+  printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
   html.threadflags(post_tbl);
   printf("</div>");
 
@@ -654,6 +652,14 @@ end
 function html.form.mod_action_reason()
   printf("<fieldset><form method='POST'>");
   printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />");
+  printf("<input type='submit' value='Continue' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.mod_move_thread()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
   printf("<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
@@ -853,6 +859,7 @@ elseif cgi.pathinfo[1] == "System" then
     elseif cgi.pathinfo[3] == "post" then
       if not (cgi.pathinfo[4] == "delete"
               or cgi.pathinfo[4] == "unlink"
+              or cgi.pathinfo[4] == "move"
               or cgi.pathinfo[4] == "sticky"
               or cgi.pathinfo[4] == "lock"
               or cgi.pathinfo[4] == "autosage"
@@ -866,7 +873,6 @@ elseif cgi.pathinfo[1] == "System" then
 
       local board_tbl = pico.board.tbl(cgi.pathinfo[5]);
       local post_tbl, msg = pico.post.tbl(cgi.pathinfo[5], cgi.pathinfo[6]);
-
       if not post_tbl then
         html.error("Action failed", "Cannot find post: %s", msg);
       end
@@ -878,6 +884,8 @@ elseif cgi.pathinfo[1] == "System" then
           result, msg = pico.post.delete(cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
         elseif cgi.pathinfo[4] == "unlink" then
           result, msg = pico.post.unlink(cgi.pathinfo[5], cgi.pathinfo[6], cgi.pathinfo[7], POST["reason"]);
+        elseif cgi.pathinfo[4] == "move" then
+          result, msg = pico.post.movethread(cgi.pathinfo[5], cgi.pathinfo[6], POST["destination"], POST["reason"]);
         else
           result, msg = pico.post.toggle(cgi.pathinfo[4], cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
         end
@@ -886,9 +894,15 @@ elseif cgi.pathinfo[1] == "System" then
           html.error("Action failed", "Backend returned error: %s", msg);
         else
           cgi.headers["Status"] = "303 See Other";
-          cgi.headers["Location"] =
-            post_tbl["Parent"] and ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                                or ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+
+          if cgi.pathinfo[4] == "move" then
+            cgi.headers["Location"] = "/pico/" .. POST["destination"];
+          else
+            cgi.headers["Location"] =
+              post_tbl["Parent"] and ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
+                                  or ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+          end
+
           cgi.finalize();
         end;
       end
@@ -896,7 +910,13 @@ elseif cgi.pathinfo[1] == "System" then
       printf("You are about to <b>%s</b>%s the following post:", cgi.pathinfo[4],
              cgi.pathinfo[4] == "unlink" and " " .. cgi.pathinfo[7] .. " from" or "");
       html.renderpost(board_tbl, post_tbl);
-      html.form.mod_action_reason();
+
+      if cgi.pathinfo[4] == "move" then
+        html.form.mod_move_thread();
+      else
+        html.form.mod_action_reason();
+      end
+
       html.container.finish();
       html.finish();
     elseif cgi.pathinfo[3] == "file" then
@@ -1037,7 +1057,7 @@ elseif cgi.pathinfo[1] == "Overboard" then
 
   local overboard_tbl = pico.board.overboard();
   for i = 1, #overboard_tbl do
-    html.rendercatalog(board_tbl, overboard_tbl[i]);
+    html.rendercatalog(nil, overboard_tbl[i]);
   end
 
   printf("</div>");
@@ -1061,7 +1081,6 @@ elseif cgi.pathinfo[1] == "Recent" then
     printf("<hr />");
   end
 
-  printf("<hr />");
   printf("<div class='page-switcher'>");
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
   printf("<a class='page-switcher-prev' href='/pico/Recent/%d'>[Prev]</a>", page - 1);
@@ -1159,8 +1178,7 @@ else
 
     printf("<span id='thread-reply'>");
     printf("<a href='#postform'>[Reply]</a>");
-    printf("%d replies",
-           pico.post.threadreplycount(board_tbl["Name"], cgi.pathinfo[2]));
+    printf("%d replies", thread_tbl[0]["ReplyCount"]);
     printf("</span>");
 
     printf("</div>");

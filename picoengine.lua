@@ -125,8 +125,8 @@ function io.fileexists(path)
   end
 end
 
-local function sha256(data)
-  local bstring = openssl.digest.new("sha256"):final(data);
+local function sha512(data)
+  local bstring = openssl.digest.new("sha512"):final(data);
   local result = {};
 
   for i = 1, #bstring do
@@ -428,15 +428,14 @@ function pico.board.index(name, page)
 
   local index_tbl = {};
   local thread_ops = dbq("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                         "Comment, Sticky, Lock, Autosage, Cycle FROM Posts " ..
+                         "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                          "WHERE Board = ? AND Parent IS NULL ORDER BY Sticky DESC, LastBumpDate DESC LIMIT ? OFFSET ?",
                          name, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
     index_tbl[i] = {};
     index_tbl[i][0] = thread_ops[i];
-    index_tbl[i]["RepliesOmitted"] = pico.post.threadreplycount(thread_ops[i]["Board"],
-                                                                thread_ops[i]["Number"]) - windowsize;
+    index_tbl[i]["RepliesOmitted"] = thread_ops[i]["ReplyCount"] - windowsize;
 
     local tmp_tbl = dbq("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
                         "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?",
@@ -455,14 +454,14 @@ function pico.board.catalog(name)
     return nil, "Board does not exist";
   end
 
-  return dbq("SELECT Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, File " ..
+  return dbq("SELECT Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
              "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
 end
 
 function pico.board.overboard()
-  return dbq("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, File " ..
+  return dbq("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
              "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
@@ -577,7 +576,7 @@ function pico.file.add(path)
   end
 
   local data = assert(f:read("*a"));
-  local hash = sha256(data);
+  local hash = sha512(data);
   local filename = hash .. "." .. extension;
 
   if dbb("SELECT TRUE FROM Files WHERE Name = ?", filename) then
@@ -648,11 +647,19 @@ end
 
 -- list info of files belonging to a particular post
 function pico.file.list(board, number)
+  dbq("BEGIN TRANSACTION");
   local file_tbl = dbq("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC", board, number);
+  local stmt = db:prepare("SELECT * FROM Files WHERE Name = ?");
+
   for i = 1, #file_tbl do
-    file_tbl[i] = db1("SELECT * FROM Files WHERE Name = ?", file_tbl[i]["File"]);
+    stmt:bind(1, file_tbl[i]["File"]);
+    stmt:step();
+    file_tbl[i] = stmt:get_named_values();
+    stmt:reset();
   end
 
+  stmt:finalize();
+  dbq("END TRANSACTION");
   return file_tbl;
 end
 
@@ -681,11 +688,6 @@ function pico.post.refs(board, number)
   return list;
 end
 
-function pico.post.threadreplycount(board, number)
-  return db1("SELECT COUNT(*) AS ReplyCount FROM Posts WHERE Board = ? AND Parent = ?",
-             board, number)["ReplyCount"];
-end
-
 -- Return entire thread (parent + all replies) as a table
 function pico.post.thread(board, number)
   if not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
@@ -697,14 +699,19 @@ function pico.post.thread(board, number)
                          "WHERE Board = ? AND Parent = ? ORDER BY Number",
                          board, number);
   thread_tbl[0] = db1("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                      "Comment, Sticky, Lock, Autosage, Cycle FROM Posts " ..
+                      "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                       "WHERE Board = ? AND Number = ?", board, number);
   return thread_tbl;
 end
 
 -- Create a post and return its number
 -- 'files' is an array with a collection of file hashes to attach to the post
-function pico.post.create(board, parent, name, email, subject, comment, files, captcha_id, captcha_text)
+function pico.post.create(board, parent, name, email, subject, comment, files, captcha_id, captcha_text, bypasschecks)
+  if bypasschecks == true
+     and not (pico.account.current and pico.account.current["Board"] == nil) then
+    return nil, "Action not permitted";
+  end
+
   local board_tbl = pico.board.tbl(board);
   local parent_tbl = pico.post.tbl(board, parent);
   local is_thread = (not parent);
@@ -714,48 +721,50 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   subject = subject or "";
   comment = comment or "";
 
-  if not board_tbl then
-    return nil, "Board does not exist";
-  elseif not is_thread and not parent_tbl then
-    return nil, "Parent thread does not exist";
-  elseif not is_thread and parent_tbl["Parent"] then
-    return nil, "Parent post is not a thread";
-  elseif not is_thread and parent_tbl["Lock"] == 1
-         and not (pico.account.current and (pico.account.current["Board"] == nil
-                                            or pico.account.current["Board"] == board)) then
-    return nil, "Parent thread is locked";
-  elseif board_tbl["Lock"] == 1
-         and not (pico.account.current and (pico.account.current["Board"] == nil
-                                            or pico.account.current["Board"] == board)) then
-    return nil, "Board is locked";
-  elseif is_thread and board_tbl["TPHLimit"] > 0
-         and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
-    return nil, "Maximum thread creation rate exceeded";
-  elseif board_tbl["PPHLimit"] > 0
-         and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
-    return nil, "Maximum post creation rate exceeded";
-  elseif is_thread and #comment < board_tbl["ThreadMinLength"] then
-    return nil, "Thread text too short";
-  elseif #comment > board_tbl["PostMaxLength"] then
-    return nil, "Post text too long";
-  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
-    return nil, "Post contained too many newlines";
-  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
-    return nil, "Post contained too many double newlines";
-  elseif #name > 64 then
-    return nil, "Name too long";
-  elseif #email > 64 then
-    return nil, "Email too long";
-  elseif #subject > 64 then
-    return nil, "Subject too long";
-  elseif not is_thread and parent_tbl["Cycle"] ~= 1
-         and pico.post.threadreplycount(board, parent) >= board_tbl["PostLimit"] then
-    return nil, "Thread full";
-  elseif (not files or #files == 0) and #comment == 0 then
-    return nil, "Post is blank";
-  elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
-         and not checkcaptcha(captcha_id, captcha_text) then
-    return nil, "Captcha is required but no valid captcha supplied";
+  if not bypasschecks then
+    if not board_tbl then
+      return nil, "Board does not exist";
+    elseif not is_thread and not parent_tbl then
+      return nil, "Parent thread does not exist";
+    elseif not is_thread and parent_tbl["Parent"] then
+      return nil, "Parent post is not a thread";
+    elseif not is_thread and parent_tbl["Lock"] == 1
+           and not (pico.account.current and (pico.account.current["Board"] == nil
+                                              or pico.account.current["Board"] == board)) then
+      return nil, "Parent thread is locked";
+    elseif board_tbl["Lock"] == 1
+           and not (pico.account.current and (pico.account.current["Board"] == nil
+                                              or pico.account.current["Board"] == board)) then
+      return nil, "Board is locked";
+    elseif is_thread and board_tbl["TPHLimit"] > 0
+           and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
+      return nil, "Maximum thread creation rate exceeded";
+    elseif board_tbl["PPHLimit"] > 0
+           and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
+      return nil, "Maximum post creation rate exceeded";
+    elseif is_thread and #comment < board_tbl["ThreadMinLength"] then
+      return nil, "Thread text too short";
+    elseif #comment > board_tbl["PostMaxLength"] then
+      return nil, "Post text too long";
+    elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
+      return nil, "Post contained too many newlines";
+    elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
+      return nil, "Post contained too many double newlines";
+    elseif #name > 64 then
+      return nil, "Name too long";
+    elseif #email > 64 then
+      return nil, "Email too long";
+    elseif #subject > 64 then
+      return nil, "Subject too long";
+    elseif not is_thread and parent_tbl["Cycle"] ~= 1
+           and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
+      return nil, "Thread full";
+    elseif (not files or #files == 0) and #comment == 0 then
+      return nil, "Post is blank";
+    elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
+           and not checkcaptcha(captcha_id, captcha_text) then
+      return nil, "Captcha is required but no valid captcha supplied";
+    end
   end
 
   dbq("BEGIN TRANSACTION");
@@ -846,6 +855,52 @@ function pico.post.toggle(attribute, board, number, reason)
   log(false, board, "Toggled attribute '%s' on /%s/%d for reason: %s",
       attribute, board, number, reason);
   return true, "Attribute toggled successfully";
+end
+
+-- 1. Fetch all contents of the thread.
+-- 2. For each post of the thread, including the OP:
+--    1. Rewrite references in the post's comment using the old->new lookup table.
+--    2. Repost the post to the new board.
+--    3. Keep a lookup table of the old post number and the new post number.
+-- 3. Delete the old thread.
+function pico.post.movethread(board, number, newboard, reason)
+  if not pico.account.current
+     or pico.account.current["Board"] ~= nil then
+    return false, "Action not permitted";
+  elseif not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL", board, number) then
+    return false, "Post does not exist or is not a thread";
+  elseif not dbb("SELECT TRUE FROM Boards WHERE Name = ?", newboard) then
+    return false, "Destination board does not exist";
+  end
+
+  local thread_tbl = pico.post.thread(board, number);
+  local number_lut = {};
+  local newthread;
+
+  for i = 0, #thread_tbl do
+    local post_tbl = thread_tbl[i];
+    post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>([0-9]+)", number_lut);
+    post_tbl["Parent"] = post_tbl["Parent"] and newthread or nil;
+
+    local files_tbl = pico.file.list(post_tbl["Board"], post_tbl["Number"]);
+    for i = 1, #files_tbl do
+      files_tbl[i] = files_tbl[i]["Name"];
+    end
+
+    local newnumber = pico.post.create(newboard, post_tbl["Parent"],
+                                       post_tbl["Name"], post_tbl["Email"],
+                                       post_tbl["Subject"], post_tbl["Comment"],
+                                       files_tbl, nil, nil, true);
+    number_lut[tostring(post_tbl["Number"])] = ">>" .. tostring(newnumber);
+
+    if i == 0 then
+      newthread = newnumber;
+    end
+  end
+
+  dbq("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  log(false, nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
+  return true, "Thread moved successfully";
 end
 
 --
