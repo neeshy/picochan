@@ -315,8 +315,19 @@ video.post-video {
 
 img.post-file-thumbnail, video.post-video {
     float: left;
+}
+
+img.post-file-thumbnail, video.post-video, div.post-file-fullsize {
     margin-top: 5px;
     margin-right: 10px;
+}
+
+input[type='checkbox']:checked + img.post-file-thumbnail {
+    display: none;
+}
+
+div.post-file-fullsize {
+    float: right;
 }
 
 div.post-comment {
