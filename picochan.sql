@@ -52,7 +52,8 @@ CREATE TABLE Refs (
   Referee               INTEGER         NOT NULL,
   Referrer              INTEGER         NOT NULL,
 
-  PRIMARY KEY (Board, Referee, Referrer),
+  PRIMARY KEY (Board, Referee),
+  UNIQUE (Board, Referee, Referrer),
   FOREIGN KEY (Board, Referee) REFERENCES Posts (Board, Number),
   FOREIGN KEY (Board, Referrer) REFERENCES Posts (Board, Number),
   CHECK(Referee != Referrer)
@@ -176,6 +177,7 @@ END;
 CREATE TRIGGER remove_old_refs BEFORE DELETE ON Posts
 BEGIN
   DELETE FROM Refs WHERE Board = OLD.Board AND (Referee = OLD.Number OR Referrer = OLD.Number);
+  DELETE FROM FileRefs WHERE Board = OLD.Board AND Number = OLD.Number;
 END;
 
 CREATE TRIGGER remove_file_refs BEFORE DELETE ON Files
@@ -219,3 +221,4 @@ END;
 INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$2b$14$7zJicITlut7XR.LQ3trgNOmNDBCispQWgYfxVpexfA3.A/XCl1oYK');
 INSERT INTO GlobalConfig VALUES ('sitename', 'Picochan');
 INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
+INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');

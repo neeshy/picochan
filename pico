@@ -34,22 +34,14 @@ end
 -- INITIALIZATION
 --
 
--- pledge for security
 openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec");
-
--- put output into an output buffer rather than stdout, for compression purposes
 cgi.outputbuf = io.tmpfile();
 io.output(cgi.outputbuf);
+pico.account.register_login(COOKIE["session_key"]);
 
--- request information
+cgi.headers = {};
 cgi.pathinfo = os.getenv("PATH_INFO") and string.tokenize(os.getenv("PATH_INFO"):gsub("^/", ""), "/") or {};
 cgi.encodings = os.getenv("HTTP_ACCEPT_ENCODING") and httpencodinglist(os.getenv("HTTP_ACCEPT_ENCODING")) or {};
-
--- response information
-cgi.headers = {};
-
--- register a login if the user has a session cookie
-pico.account.register_login(COOKIE["session_key"]);
 
 --
 -- CGI FUNCTIONS
@@ -95,19 +87,13 @@ end
 
 function html.begin(...)
   local title = string.format(...);
-
-  if not title then
-    title = "";
-  else
-    title = title .. " - ";
-  end
+  title = title and (title .. " - ") or "";
 
   printf("<!DOCTYPE html>\n");
   printf("<html>");
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
   printf(    "<link rel='stylesheet' type='text/css' href='/static/picochan.css' />");
-
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
   printf(  "</head>");
@@ -200,7 +186,6 @@ end
 function html.list.entry(...)
   printf("<li>%s</li>", string.format(...));
 end
-
 
 function html.table.begin(id, ...)
   local arg = {...};
@@ -456,9 +441,10 @@ function html.renderpost(board_tbl, post_tbl)
   printf("<span class='post-name'>");
 
   if post_tbl["Email"] ~= "" then
-    printf("<a class='post-email' href='mailto:%s'>%s</a>", post_tbl["Email"], post_tbl["Name"]);
+    printf("<a class='post-email' href='mailto:%s'>%s</a>",
+           html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"]));
   else
-    printf("%s", post_tbl["Name"]);
+    printf("%s", html.striphtml(post_tbl["Name"]));
   end
 
   printf("</span>");
@@ -501,7 +487,6 @@ function html.rendercatalog(board_tbl, post_tbl)
   end
 
   printf("</a>");
-
   printf("<div class='catalog-thread-info'>");
   printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, pico.post.threadreplycount(board, number));
   printf("%s%s%s%s",
@@ -586,8 +571,8 @@ function html.form.board_config(board)
 
   printf("<fieldset><form method='POST'>");
   printf(  "<input type='hidden' name='Name' value='%s' />", board_tbl["Name"]);
-  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", board_tbl["Title"]);
-  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", board_tbl["Subtitle"]);
+  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]));
+  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"]));
   printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
   printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "");
   printf(  "<label for='PostMaxImages'>PostMaxImages</label><input id='PostMaxImages' name='PostMaxImages' type='number' value='%d' min=0 max=5 required /><br />", board_tbl["PostMaxImages"]);
@@ -643,10 +628,12 @@ function html.form.globalconfig(varname)
   printf("<fieldset><form id='globalconfig' method='POST'>");
   printf("<input type='hidden' name='name' value='%s' />", varname);
 
-  if varname == "rules" or varname == "announce" then
-    printf("<label for='value'>%s</label><textarea id='value' name='value' form='globalconfig' cols=40 rows=12>%s</textarea>", varname, pico.global.get(varname) or "");
+  if varname == "frontpage" or varname == "announce" then
+    printf("<label for='value'>%s</label><textarea id='value' name='value' form='globalconfig' cols=40 rows=12>%s</textarea>",
+           varname, html.striphtml(pico.global.get(varname)) or "");
   else
-    printf("<label for='value'>%s</label><input id='value' name='value' value='%s' type='text' /><br />", varname, pico.global.get(varname) or "");
+    printf("<label for='value'>%s</label><input id='value' name='value' value='%s' type='text' /><br />",
+           varname, html.striphtml(pico.global.get(varname)) or "");
   end
   printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
   printf("</form></fieldset>");
@@ -674,6 +661,7 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
   html.begin("welcome");
   html.redheader("Welcome to %s", sitename);
   html.container.begin();
+  printf(pico.global.get("frontpage") or "");
   html.container.finish();
   html.finish();
 elseif cgi.pathinfo[1] == "System" then
@@ -694,7 +682,8 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.begin("unordered");
       html.list.entry("<a href='/pico/System/mod/global/announce'>Change global announcement</a>");
       html.list.entry("<a href='/pico/System/mod/global/sitename'>Change site name</a>");
-      html.list.entry("<a href='/pico/System/mod/global/rules'>Change global rules</a>");
+      html.list.entry("<a href='/pico/System/mod/global/frontpage'>Change front-page content</a>");
+      html.list.entry("<a href='/pico/System/mod/global/defaultpostname'>Change default post name</a>");
       html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");
@@ -1038,25 +1027,17 @@ elseif cgi.pathinfo[1] == "Overboard" then
   printf("</div>");
   html.finish();
 else
-  if not pico.board.exists(cgi.pathinfo[1]) then
-    cgi.headers["Status"] = "404 Not Found";
-
-    html.begin("error");
-    html.redheader("Board Not Found");
-    html.container.begin();
-    printf("The board you specified does not exist.");
-    html.container.finish();
-    html.finish();
-
-    cgi.finalize();
-  end
-
   local board_tbl = pico.board.tbl(cgi.pathinfo[1]);
+
+  if not board_tbl then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Board Not Found", "The board you specified does not exist.");
+  end
 
   if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" or cgi.pathinfo[2] == "index" then
     html.begin("/%s/", board_tbl["Name"]);
-    printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], board_tbl["Title"]);
-    printf("<h2 id='boardsubtitle'>%s</h2>", board_tbl["Subtitle"]);
+    printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
+    printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
     html.announce();
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
     html.form.postform(board_tbl, nil);
@@ -1078,22 +1059,14 @@ else
 
     if not thread_tbl then
       cgi.headers["Status"] = "404 Not Found";
-
-      html.begin("error");
-      html.redheader("Thread Not Found");
-      html.container.begin();
-      printf("Cannot display thread: %s", msg);
-      html.container.finish();
-      html.finish();
-
-      cgi.finalize();
+      html.error("Thread Not Found", "Cannot display thread: %s", msg);
     end
 
     html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[0]["Subject"] and #thread_tbl[0]["Subject"] > 0)
                                                and html.striphtml(thread_tbl[0]["Subject"])
                                                or html.striphtml(thread_tbl[0]["Comment"]:sub(1, 64)));
-    printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], board_tbl["Title"]);
-    printf("<h2 id='boardsubtitle'>%s</h2>", board_tbl["Subtitle"]);
+    printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
+    printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
     html.announce();
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>");
     html.form.postform(board_tbl, cgi.pathinfo[2]);
@@ -1108,7 +1081,13 @@ else
     printf("<a href='/pico/%s'>[Catalog]</a>", board_tbl["Name"]);
     printf("<a href='/pico/Overboard'>[Overboard]</a>");
     printf("<a href=''>[Update]</a>");
-    printf("<a id='thread-reply' href='#postform'>[Reply]</a>");
+
+    printf("<span id='thread-reply'>");
+    printf("<a href='#postform'>[Reply]</a>");
+    printf("%d files, %d replies",
+           pico.post.threadfilecount(board_tbl["Name"], cgi.pathinfo[2]),
+           pico.post.threadreplycount(board_tbl["Name"], cgi.pathinfo[2]));
+    printf("</div>");
 
     printf("</div>");
     html.finish();

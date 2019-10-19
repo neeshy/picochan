@@ -18,9 +18,41 @@ local pico = {};
 
 local db, errcode, errmsg = sqlite3.open("picochan.db");
 assert(db, errmsg);
+db:busy_timeout(10000);
+db:exec("PRAGMA optimize");
 
 local bcrypt_rounds = 14;           -- reduce if logins are too slow
 local max_filesize = 16777216;      -- 16 MiB
+
+--
+-- DATABASE HELPER FUNCTIONS
+--
+
+-- query database and return result rows
+local function dbq(sql, ...)
+  local stmt = db:prepare(sql);
+  local rows = {};
+  assert(stmt, db:errmsg());
+
+  stmt:bind_values(...);
+
+  for row in stmt:nrows() do
+    rows[#rows + 1] = row;
+  end
+
+  stmt:finalize();
+  return rows;
+end
+
+-- query database and return first result row
+local function db1(sql, ...)
+  return dbq(sql, ...)[1];
+end
+
+-- query database and return true or false depending on existence of result rows
+local function dbb(sql, ...)
+  return (db1(sql, ...) ~= nil);
+end
 
 --
 -- MISCELLANEOUS FUNCTIONS
@@ -103,53 +135,6 @@ local function sha256(data)
   return table.concat(result);
 end
 
---
--- DATABASE HELPER FUNCTIONS
---
-
--- query database and return result rows
-local function dbq(sql, ...)
-  local stmt = db:prepare(sql);
-  local rows = {};
-  assert(stmt, db:errmsg());
-
-  stmt:bind_values(...);
-
-  for row in stmt:nrows() do
-    rows[#rows + 1] = row;
-  end
-
-  stmt:finalize();
-  return rows;
-end
-
--- query database and return first result row
-local function db1(sql, ...)
-  return dbq(sql, ...)[1];
-end
-
--- query database and return true or false depending on existence of result rows
-local function dbb(sql, ...)
-  return (db1(sql, ...) ~= nil);
-end
-
---
--- LOG ENTRY FUNCTIONS
---
-
--- Use nil for the board parameter if the action applies to all boards.
--- system_action is a boolean describing whether the action was performed by
--- the system or by a logged-in account.
-local function log(system_action, board, ...)
-  local account = system_action and nil or pico.account.current["Name"];
-  dbq("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
-      account or 'SYSTEM', board or 'GLOBAL', string.format(...));
-end
-
---
--- CAPTCHA CHECKING
---
-
 local function checkcaptcha(id, text)
   dbq("DELETE FROM Captchas WHERE ExpireDate < STRFTIME('%s', 'now')");
 
@@ -159,6 +144,15 @@ local function checkcaptcha(id, text)
   else
     return false;
   end
+end
+
+-- Use nil for the board parameter if the action applies to all boards.
+-- system_action is a boolean describing whether the action was performed by
+-- the system or by a logged-in account.
+local function log(system_action, board, ...)
+  local account = system_action and nil or pico.account.current["Name"];
+  dbq("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
+      account or 'SYSTEM', board or 'GLOBAL', string.format(...));
 end
 
 --
@@ -323,6 +317,7 @@ function pico.global.set(name, value)
     dbq("INSERT INTO GlobalConfig VALUES (?, ?)", name, value);
   end
 
+  log(false, nil, "Edited global configuration variable '%s'", name);
   return true, "Global configuration modified";
 end
 
@@ -418,7 +413,6 @@ function pico.board.configure(board_tbl)
       board_tbl["PostCaptcha"] or 0,	board_tbl["CaptchaTriggerTPH"],
       board_tbl["CaptchaTriggerPPH"],	board_tbl["BumpLimit"],
       board_tbl["PostLimit"],		board_tbl["ThreadLimit"],
-
       board_tbl["Name"]);
 
   log(false, board_tbl["Name"], "Modified board configuration");
@@ -547,27 +541,20 @@ function pico.file.add(path)
 
   if size > max_filesize then
     return nil, "File too large";
-  end
-
-  if not extension then
+  elseif not extension then
     return nil, "Could not identify file type";
   end
 
-  local data = f:read("*a");
-  if not data then
-    return nil, "Failed to read data from file";
-  end
-
+  local data = assert(f:read("*a"));
   local hash = sha256(data);
   local filename = hash .. "." .. extension;
+
   if dbb("SELECT TRUE FROM Files WHERE Name = ?", filename) then
     return filename, "File already existed and was not changed";
   end
 
   local newf = assert(io.open("media/" .. filename, "w"));
-  if not newf:write(data) then
-    return nil, "Failed to copy file to media directory";
-  end
+  assert(newf:write(data));
   newf:close();
 
   if class == "video" then
@@ -590,21 +577,18 @@ function pico.file.add(path)
     local dimensions = string.tokenize(p:read("*a"));
     p:close();
 
-    width = tonumber(dimensions[1]);
-    height = tonumber(dimensions[2]);
+    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
   elseif class == "video" then
     local p = io.popen("ffprobe -hide_banner media/" .. filename ..
                        " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
     local dimensions = string.tokenize(p:read("*a"), "x");
     p:close();
 
-    width = tonumber(dimensions[1]);
-    height = tonumber(dimensions[2]);
+    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
   end
 
   if (not width) or (not height) then
-    width = nil;
-    height = nil;
+    width, height = nil;
   end
 
   dbq("INSERT INTO Files VALUES (?, ?, ?, ?)", filename, size, width, height);
@@ -635,7 +619,8 @@ function pico.file.list(board, number)
     return nil, "Post does not exist";
   end
 
-  return dbq("SELECT * FROM Files WHERE Name IN (SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC)", board, number)
+  return dbq("SELECT * FROM Files WHERE Name IN (SELECT File FROM FileRefs " ..
+             "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC)", board, number);
 end
 
 --
@@ -649,13 +634,12 @@ end
 -- Return list of posts which >>reply to the specified post.
 function pico.post.refs(board, number)
   local list = dbq("SELECT Referrer FROM Refs WHERE Board = ? AND Referee = ?", board, number);
-  local retlist = {};
 
   for i = 1, #list do
-    retlist[i] = list[i]["Referrer"];
+    list[i] = list[i]["Referrer"];
   end
 
-  return retlist;
+  return list;
 end
 
 function pico.post.threadreplycount(board, number)
@@ -666,6 +650,18 @@ function pico.post.threadreplycount(board, number)
 
   return db1("SELECT COUNT(*) AS ReplyCount FROM Posts WHERE Board = ? AND Parent = ?",
              board, number)["ReplyCount"];
+end
+
+function pico.post.threadfilecount(board, number)
+  if not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
+             board, number) then
+    return nil, "Post is not a thread or does not exist";
+  end
+
+  return db1("SELECT COUNT(*) AS FileCount FROM FileRefs " ..
+             "WHERE Board = ? AND Number = ? " ..
+             "OR Number IN (SELECT Number FROM Posts WHERE Board = ? AND Parent = ?)",
+             board, number, board, number)["FileCount"];
 end
 
 -- Return entire thread (parent + all replies) as a table
@@ -692,6 +688,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   local is_thread = (not parent);
 
   name = (name ~= "") and name or pico.global.get("defaultpostname");
+  email = email or "";
+  subject = subject or "";
+  comment = comment or "";
 
   if not board_tbl then
     return nil, "Board does not exist";
@@ -730,6 +729,8 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   elseif not is_thread and parent_tbl["Cycle"] ~= 1
          and pico.post.threadreplycount(board, parent) >= board_tbl["PostLimit"] then
     return nil, "Thread full";
+  elseif (not files or #files == 0) and #comment == 0 then
+    return nil, "Post is blank";
   elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
          and not checkcaptcha(captcha_id, captcha_text) then
     return nil, "Captcha is required but no valid captcha supplied";

@@ -381,7 +381,7 @@ div#thread-view-links a {
     margin-right: 1.3ch;
 }
 
-div#thread-view-links a#thread-reply {
+span#thread-reply {
     float: right;
 }
 
