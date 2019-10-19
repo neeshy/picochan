@@ -326,8 +326,12 @@ input[type='checkbox']:checked + img.post-file-thumbnail {
     display: none;
 }
 
-div.post-file-fullsize {
+div.post-file-fullsize::after {
     float: right;
+}
+
+div.post-file-single div.post-file-fullsize {
+    float: left;
 }
 
 div.post-comment {

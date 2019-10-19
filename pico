@@ -271,6 +271,16 @@ function html.striphtml(s)
   return ret;
 end
 
+function html.unstriphtml(s)
+  local ret = s
+    :gsub("\"", "&quot;")
+    :gsub("&#39;", "'")
+    :gsub("&gt;", ">")
+    :gsub("&lt;", "<")
+    :gsub("&amp;", "&");
+  return ret;
+end
+
 function html.picofmt(board_tbl, post_tbl)
   if post_tbl["Email"] and post_tbl["Email"]:match("nofo") then
     return html.striphtml(post_tbl["Comment"]);
@@ -294,21 +304,29 @@ function html.picofmt(board_tbl, post_tbl)
       return string.format("<a class='reference' href='/pico/%s'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
     end
 
-    local ref_post_tbl = pico.post.tbl(board_tbl["Name"], number);
+    local ref_post_tbl = pico.post.tbl(board, number);
 
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
     else
       return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>", 
-                            board, ref_post_tbl["Parent"] or number, number, board, number);
+                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, board, number);
     end
+  end
+
+  local function handle_url(url)
+    url = html.unstriphtml(url);
+    local append = html.striphtml(url:match("[<>'\"]+$") or "");
+    url = url:gsub("[<>'\"]+$", "");
+    url = html.striphtml(url);
+    return string.format("<a href='%s'>%s</a>%s", url, url, append);
   end
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
   s = s:gsub("&gt;&gt;(%d+)", handle_refs);
-  s = s:gsub("(https?://)([a-zA-Z0-9%./%%_%-%+=%?&;:,#]+)", "<a href='%1%2'>%1%2</a>");
+  s = s:gsub("https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+", handle_url);
   s = s:gsub("&#39;&#39;&#39;(.-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;(.-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~(.-)~~", "<s>%1</s>");
@@ -357,6 +375,16 @@ function html.modlinks(board_tbl, post_tbl)
   printf("</span>");
 end
 
+function html.threadflags(post_tbl)
+  printf("<span class='thread-flags'>");
+  printf("%s%s%s%s",
+    post_tbl["Sticky"]   == 1 and "(S)" or "",
+    post_tbl["Lock"]     == 1 and "(L)" or "",
+    post_tbl["Autosage"] == 1 and "(A)" or "",
+    post_tbl["Cycle"]    == 1 and "(C)" or "");
+  printf("</span>");
+end
+
 function html.renderpostfiles(board_tbl, post_tbl)
   local function findthumbsize(w, h)
     local tw, th;
@@ -367,7 +395,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
     elseif h > w then
       th = 200;
       tw = math.ceil(w / h * 200);
-    elseif w > h then
+    elseif w >= h then
       tw = 200;
       th = math.ceil(h / w * 200);
     end
@@ -413,7 +441,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
-        printf("<img class='post-file-thumbnail' src='/media/thumb/%s' width='%s' height='%s' />",
+        printf("<img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' />",
                filename, findthumbsize(file["Width"], file["Height"]));
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
@@ -451,6 +479,7 @@ function html.renderpost(board_tbl, post_tbl)
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
   printf("<span class='post-number'><a href='#%d'>No.</a><a href='#postform'>%d</a></span>", post_tbl["Number"], post_tbl["Number"]);
 
+  html.threadflags(post_tbl);
   html.modlinks(board_tbl, post_tbl);
 
   local reflist = pico.post.refs(board_tbl["Name"], post_tbl["Number"]);
@@ -489,11 +518,7 @@ function html.rendercatalog(board_tbl, post_tbl)
   printf("</a>");
   printf("<div class='catalog-thread-info'>");
   printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, pico.post.threadreplycount(board, number));
-  printf("%s%s%s%s",
-    post_tbl["Sticky"]   == 1 and "(S)" or "",
-    post_tbl["Lock"]     == 1 and "(L)" or "",
-    post_tbl["Autosage"] == 1 and "(A)" or "",
-    post_tbl["Cycle"]    == 1 and "(C)" or "");
+  html.threadflags(post_tbl);
   printf("</div>");
 
   printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
@@ -1084,10 +1109,9 @@ else
 
     printf("<span id='thread-reply'>");
     printf("<a href='#postform'>[Reply]</a>");
-    printf("%d files, %d replies",
-           pico.post.threadfilecount(board_tbl["Name"], cgi.pathinfo[2]),
+    printf("%d replies",
            pico.post.threadreplycount(board_tbl["Name"], cgi.pathinfo[2]));
-    printf("</div>");
+    printf("</span>");
 
     printf("</div>");
     html.finish();

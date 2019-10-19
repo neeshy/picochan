@@ -298,10 +298,10 @@ end
 -- GLOBAL CONFIGURATION FUNCTIONS
 -- 
 
--- retrieve value of globalconfig variable or nil if it doesn't exist
+-- retrieve value of globalconfig variable or empty string if it doesn't exist
 function pico.global.get(name)
   local row = db1("SELECT Value FROM GlobalConfig WHERE Name = ?", name);
-  return row and row["Value"] or nil;
+  return row and row["Value"] or "";
 end
 
 -- setting a globalconfig variable to nil removes it.
@@ -619,8 +619,12 @@ function pico.file.list(board, number)
     return nil, "Post does not exist";
   end
 
-  return dbq("SELECT * FROM Files WHERE Name IN (SELECT File FROM FileRefs " ..
-             "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC)", board, number);
+  local file_tbl = dbq("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC", board, number);
+  for i = 1, #file_tbl do
+    file_tbl[i] = db1("SELECT * FROM Files WHERE Name = ?", file_tbl[i]["File"]);
+  end
+
+  return file_tbl;
 end
 
 --
@@ -650,18 +654,6 @@ function pico.post.threadreplycount(board, number)
 
   return db1("SELECT COUNT(*) AS ReplyCount FROM Posts WHERE Board = ? AND Parent = ?",
              board, number)["ReplyCount"];
-end
-
-function pico.post.threadfilecount(board, number)
-  if not dbb("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
-             board, number) then
-    return nil, "Post is not a thread or does not exist";
-  end
-
-  return db1("SELECT COUNT(*) AS FileCount FROM FileRefs " ..
-             "WHERE Board = ? AND Number = ? " ..
-             "OR Number IN (SELECT Number FROM Posts WHERE Board = ? AND Parent = ?)",
-             board, number, board, number)["FileCount"];
 end
 
 -- Return entire thread (parent + all replies) as a table

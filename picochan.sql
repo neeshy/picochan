@@ -43,8 +43,7 @@ CREATE TABLE Posts (
 
   PRIMARY KEY (Board, Number),
   FOREIGN KEY (Board) REFERENCES Boards(Name),
-  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number),
-  UNIQUE (Board, Number)
+  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number)
 );
 
 CREATE TABLE Refs (
@@ -52,8 +51,7 @@ CREATE TABLE Refs (
   Referee               INTEGER         NOT NULL,
   Referrer              INTEGER         NOT NULL,
 
-  PRIMARY KEY (Board, Referee),
-  UNIQUE (Board, Referee, Referrer),
+  PRIMARY KEY (Board, Referee, Referrer),
   FOREIGN KEY (Board, Referee) REFERENCES Posts (Board, Number),
   FOREIGN KEY (Board, Referrer) REFERENCES Posts (Board, Number),
   CHECK(Referee != Referrer)
