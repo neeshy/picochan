@@ -24,7 +24,7 @@ CREATE TABLE Boards (
   BumpLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(BumpLimit <= 1000 AND BumpLimit >= 0),
   PostLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(PostLimit <= 1000 AND PostLimit >= 0),
   ThreadLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(ThreadLimit <= 1000 AND ThreadLimit > 0)
-);
+) WITHOUT ROWID;
 
 CREATE TABLE Posts (
   Board			TEXT		NOT NULL,
@@ -142,6 +142,11 @@ BEGIN
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
 END;
 
+CREATE TRIGGER set_post_date AFTER INSERT ON Posts
+BEGIN
+  UPDATE Posts SET Date = STRFTIME('%s', 'now'), LastBumpDate = STRFTIME('%s', 'now') WHERE rowid = NEW.rowid;
+END;
+
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NULL
    AND (SELECT ThreadCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
@@ -165,11 +170,21 @@ BEGIN
                                                       'Automatically enabled per-post captcha due to excessive PPH');
 END;
 
-CREATE TRIGGER delete_cyclical AFTER INSERT ON Posts
+CREATE TRIGGER delete_cyclical BEFORE INSERT ON Posts
   WHEN (SELECT Cycle FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent) = TRUE
-   AND (SELECT COUNT(*) FROM Posts WHERE Parent = NEW.Parent) >= (SELECT PostLimit FROM Boards WHERE Name = NEW.Board)
+   AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent = NEW.Parent)
+       >= (SELECT PostLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   DELETE FROM Posts WHERE Board = NEW.Board AND Number = (SELECT MIN(Number) FROM Posts WHERE Parent = NEW.Parent);
+END;
+
+CREATE TRIGGER slide_thread BEFORE INSERT ON Posts
+  WHEN (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL)
+       >= (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board)
+BEGIN
+  DELETE FROM Posts
+  WHERE Board = NEW.Board AND Parent IS NULL AND Sticky = FALSE
+        AND LastBumpDate = (SELECT MIN(LastBumpDate) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL);
 END;
 
 CREATE TRIGGER remove_old_refs BEFORE DELETE ON Posts
@@ -203,15 +218,13 @@ BEGIN
   UPDATE Logs SET Date = STRFTIME('%s', 'now') WHERE rowid = NEW.rowid;
 END;
 
-CREATE TRIGGER set_post_date AFTER INSERT ON Posts
-BEGIN
-  UPDATE Posts SET Date = STRFTIME('%s', 'now'), LastBumpDate = STRFTIME('%s', 'now') WHERE rowid = NEW.rowid;
-END;
-
 CREATE TRIGGER set_captcha_expiry AFTER INSERT ON Captchas
 BEGIN
   UPDATE Captchas SET ExpireDate = STRFTIME('%s', 'now') + 1800 WHERE Id = NEW.Id;
 END;
+
+CREATE INDEX posts_parent ON Posts (Parent);
+CREATE INDEX logs_date ON Logs (Date DESC);
 
 -- This is a default account. You should use this only for setup purposes.
 -- The setup account should be DELETED after use.

@@ -20,7 +20,8 @@ nav#topbar {
     position: fixed;
     left: 0;
     top: 0;
-    height: 1.75em;
+    padding-top: 0.25ch;
+    padding-bottom: 0.25ch;
     background-color: #222;
     border-bottom: 1px solid #000;
 }
@@ -28,7 +29,7 @@ nav#topbar {
 nav#topbar>ul {
     list-style-type: none;
     margin: 0;
-    padding: 0.25em 0 0 0;
+    padding: 0;
 }
 
 nav#topbar>ul>li {
@@ -61,6 +62,13 @@ h2#boardsubtitle {
     text-align: center;
     color: #E00;
     margin-top: -15px;
+}
+
+div#announce {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13pt;
+    margin-bottom: 10px;
 }
 
 div.container {
@@ -122,11 +130,15 @@ th, td {
     padding-right: 5px;
 }
 
-form>label {
+fieldset {
+    border: none;
+}
+
+form label {
     background-color: #333;
     text-align: left;
     display: inline-block;
-    width: 100px;
+    width: 18ch;
     vertical-align: top;
     margin-right: 5px;
     padding-right: 5px;
@@ -135,7 +147,23 @@ form>label {
     padding-bottom: 3px;
 }
 
-button, input[type=submit] {
+input {
+    font-family: monospace;
+}
+
+form input[type=text],
+form input[type=email],
+form input[type=password],
+form input[type=number],
+form input[type=checkbox] {
+    height: 2.15ch;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #000;
+    width: 25ch;
+}
+
+form button, form input[type=submit] {
     border: 1px solid #000;
     color: #000;
     padding-top: 1px;
@@ -144,66 +172,50 @@ button, input[type=submit] {
     padding-right: 5px;
 }
 
-fieldset {
-    border: none;
-}
-
-input {
-    font-family: monospace;
-}
-
-input[type=text], input[type=email], input[type=password], input[type=number], input[type=checkbox] {
+form textarea {
     margin-right: 5px;
     margin-bottom: 5px;
     border: 1px solid #000;
-    width: 200px;
-}
-
-textarea {
-    margin-right: 5px;
-    margin-bottom: 5px;
-    border: 1px solid #000;
-    width: calc(100% - 75px);
     resize: both;
-}
-
-form#postform>input[type=file] {
-    max-width: 300px;
-}
-
-a#logout-button {
-    float: right;
-}
-
-div#announce {
-    text-align: center;
-    font-weight: bold;
-    font-size: 13pt;
-    margin-bottom: 10px;
 }
 
 form#postform {
     float: right;
     position: fixed;
-    top: 30px;
-    right: 10px;
+    top: calc(2.5ch + 1.3ch + 1px);
+    right: 1.3ch;
     background-color: #222;
     border: 1px solid #000;
     padding: 5px;
     display: none;
 }
 
-form#postform>label {
-    width: 7ch;
-}
-
 form#postform:target {
     display: block;
 }
 
-form#postform>a.close-button {
+form#postform a.close-button {
     float: right;
     font-weight: bold;
+}
+
+form#postform label {
+    width: 7ch;
+}
+
+form#postform textarea {
+    width: calc(100% - 7ch - 30px);
+    margin: 0;
+}
+
+form#postform input[type=file] {
+    max-width: 300px;
+    margin-top: 3px;
+}
+
+form#postform input#captcha {
+    margin-bottom: 0;
+    margin-top: 1px;
 }
 
 a#new-post {

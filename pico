@@ -158,7 +158,7 @@ end
 function html.announce()
   local announce = pico.global.get("announce");
 
-  if announce and announce ~= "" then
+  if announce ~= "" then
     printf("<div id='announce'>%s</div>", announce);
   end
 end
@@ -187,9 +187,9 @@ function html.list.entry(...)
   printf("<li>%s</li>", string.format(...));
 end
 
-function html.table.begin(id, ...)
+function html.table.begin(...)
   local arg = {...};
-  printf("<table id='%s'>", id);
+  printf("<table>");
   printf("<tr>");
 
   for i = 1, #arg do
@@ -327,13 +327,13 @@ function html.picofmt(board_tbl, post_tbl)
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
   s = s:gsub("&gt;&gt;(%d+)", handle_refs);
   s = s:gsub("https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+", handle_url);
-  s = s:gsub("&#39;&#39;&#39;(.-)&#39;&#39;&#39;", "<b>%1</b>");
-  s = s:gsub("&#39;&#39;(.-)&#39;&#39;", "<i>%1</i>");
-  s = s:gsub("~~(.-)~~", "<s>%1</s>");
-  s = s:gsub("__(.-)__", "<u>%1</u>");
-  s = s:gsub("==(.-)==", "<span class='redtext'>%1</span>");
-  s = s:gsub("%*%*(.-)%*%*", "<span class='spoiler'>%1</span>");
-  s = s:gsub("%(%(%(.-%)%)%)", "<span class='kiketext'>%1</span>");
+  s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
+  s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
+  s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
+  s = s:gsub("__([^\r\n]-)__", "<u>%1</u>");
+  s = s:gsub("==([^\r\n]-)==", "<span class='redtext'>%1</span>");
+  s = s:gsub("%*%*([^\r\n]-)%*%*", "<span class='spoiler'>%1</span>");
+  s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
   s = s:gsub("([\r\n])(&lt;.-)([\r\n])", "%1<span class='pinktext'>%2</span>%3");
 
@@ -376,13 +376,16 @@ function html.modlinks(board_tbl, post_tbl)
 end
 
 function html.threadflags(post_tbl)
-  printf("<span class='thread-flags'>");
-  printf("%s%s%s%s",
-    post_tbl["Sticky"]   == 1 and "(S)" or "",
-    post_tbl["Lock"]     == 1 and "(L)" or "",
-    post_tbl["Autosage"] == 1 and "(A)" or "",
-    post_tbl["Cycle"]    == 1 and "(C)" or "");
-  printf("</span>");
+  if (post_tbl["Sticky"] == 1 or post_tbl["Lock"] == 1
+      or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
+    printf("<span class='thread-flags'>");
+    printf("%s%s%s%s",
+      post_tbl["Sticky"]   == 1 and "(S)" or "",
+      post_tbl["Lock"]     == 1 and "(L)" or "",
+      post_tbl["Autosage"] == 1 and "(A)" or "",
+      post_tbl["Cycle"]    == 1 and "(C)" or "");
+    printf("</span>");
+  end
 end
 
 function html.renderpostfiles(board_tbl, post_tbl)
@@ -657,10 +660,10 @@ function html.form.globalconfig(varname)
     printf("<label for='value'>%s</label><textarea id='value' name='value' form='globalconfig' cols=40 rows=12>%s</textarea>",
            varname, html.striphtml(pico.global.get(varname)) or "");
   else
-    printf("<label for='value'>%s</label><input id='value' name='value' value='%s' type='text' /><br />",
+    printf("<label for='value'>%s</label><input id='value' name='value' value='%s' type='text' />",
            varname, html.striphtml(pico.global.get(varname)) or "");
   end
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
+  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
   printf("</form></fieldset>");
 end
 
@@ -897,7 +900,7 @@ elseif cgi.pathinfo[1] == "System" then
           cgi.headers["Status"] = "303 See Other";
           cgi.headers["Location"] =
             post_tbl["Parent"] and ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                                or ("/pico/" .. board_tbl["Name"]);
+                                or ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
           cgi.finalize();
         end;
       end
@@ -944,7 +947,7 @@ elseif cgi.pathinfo[1] == "System" then
     printf("<a class='mod-log-page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
     printf("<a class='mod-log-page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
     printf("</div>");
-    html.table.begin("mod-log-table", "Account", "Board", "Date", "Description");
+    html.table.begin("Account", "Board", "Date", "Description");
 
     local log_tbl = pico.log.retrieve(page);
     for i = 1, #log_tbl do
@@ -967,7 +970,7 @@ elseif cgi.pathinfo[1] == "System" then
     html.begin("stats");
     html.redheader("Posting Statistics");
     html.container.begin("wide");
-    html.table.begin("posting-stats", "Board", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts");
+    html.table.begin("Board", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts");
 
     local g_tpw7d = 0;
     local g_tpd1d = 0;

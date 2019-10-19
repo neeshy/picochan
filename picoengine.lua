@@ -136,14 +136,8 @@ local function sha256(data)
 end
 
 local function checkcaptcha(id, text)
-  dbq("DELETE FROM Captchas WHERE ExpireDate < STRFTIME('%s', 'now')");
-
-  if dbb("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?)", id, text) then
-    dbq("DELETE FROM Captchas WHERE Id = ?", id);
-    return true;
-  else
-    return false;
-  end
+  dbq("DELETE FROM Captchas WHERE ExpireDate < STRFTIME('%s', 'now') OR Id = ?", id);
+  return dbb("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?)", id, text);
 end
 
 -- Use nil for the board parameter if the action applies to all boards.
@@ -385,7 +379,6 @@ function pico.board.tbl(name)
   return db1("SELECT * FROM Boards WHERE Name = ?", name);
 end
 
--- not modifiable: name, maxpostnumber
 function pico.board.configure(board_tbl)
   if not pico.account.current
      or (pico.account.current["Type"] ~= "admin"
@@ -427,7 +420,7 @@ function pico.board.catalog(name)
   return dbq("SELECT Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, File " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
-             "ORDER BY Sticky DESC, LastBumpDate DESC LIMIT 1000", name);
+             "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
 end
 
 function pico.board.overboard()
@@ -728,8 +721,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     return nil, "Captcha is required but no valid captcha supplied";
   end
 
-  -- TODO: This is a race condition (another post could be made before the post number is
-  --       checked, which could cause a problem). Fix it later because it's not so important.
+  dbq("BEGIN TRANSACTION");
   dbq("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Comment) " ..
       "VALUES (?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, comment);
   local number = db1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
@@ -757,6 +749,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     end
   end
 
+  dbq("END TRANSACTION");
   return number;
 end
 
