@@ -398,13 +398,13 @@ function pico.board.configure(board_tbl)
   end
 
   dbq("UPDATE Boards SET Title = ?, Subtitle = ?, Lock = ?, DisplayOverboard = ?, " ..
-      "PostMaxImages = ?, ThreadMinLength = ?, PostMaxLength = ?, PostMaxNewlines = ?, " ..
+      "PostMaxFiles = ?, ThreadMinLength = ?, PostMaxLength = ?, PostMaxNewlines = ?, " ..
       "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
       "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
       "BumpLimit = ?, PostLimit = ?, ThreadLimit = ? WHERE Name = ?",
       board_tbl["Title"],		board_tbl["Subtitle"],
       board_tbl["Lock"] or 0,		board_tbl["DisplayOverboard"] or 0,
-      board_tbl["PostMaxImages"],	board_tbl["ThreadMinLength"],	
+      board_tbl["PostMaxFiles"],	board_tbl["ThreadMinLength"],	
       board_tbl["PostMaxLength"],	board_tbl["PostMaxNewlines"],
       board_tbl["PostMaxDblNewlines"],	board_tbl["TPHLimit"],
       board_tbl["PPHLimit"],		board_tbl["ThreadCaptcha"] or 0,
@@ -417,9 +417,42 @@ function pico.board.configure(board_tbl)
   return true, "Board configured successfully";
 end
 
+function pico.board.index(name, page)
+  if not dbb("SELECT TRUE FROM Boards WHERE Name = ?", name) then
+    return nil, "Board does not exist";
+  end
+
+  page = page or 1;
+  local pagesize = pico.global.get("indexpagesize");
+  local windowsize = pico.global.get("indexwindowsize");
+
+  local index_tbl = {};
+  local thread_ops = dbq("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
+                         "Comment, Sticky, Lock, Autosage, Cycle FROM Posts " ..
+                         "WHERE Board = ? AND Parent IS NULL ORDER BY Sticky DESC, LastBumpDate DESC LIMIT ? OFFSET ?",
+                         name, pagesize, (page - 1) * pagesize);
+
+  for i = 1, #thread_ops do
+    index_tbl[i] = {};
+    index_tbl[i][0] = thread_ops[i];
+    index_tbl[i]["RepliesOmitted"] = pico.post.threadreplycount(thread_ops[i]["Board"],
+                                                                thread_ops[i]["Number"]) - windowsize;
+
+    local tmp_tbl = dbq("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
+                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?",
+                        thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
+
+    while #tmp_tbl > 0 do
+      index_tbl[i][#index_tbl[i] + 1] = table.remove(tmp_tbl);
+    end
+  end
+
+  return index_tbl;
+end
+
 function pico.board.catalog(name)
   if not dbb("SELECT TRUE FROM Boards WHERE Name = ?", name) then
-    return false, "Board does not exist";
+    return nil, "Board does not exist";
   end
 
   return dbq("SELECT Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, File " ..

@@ -54,8 +54,6 @@ function cgi.write_headers()
   io.stdout:write("\n");
 end
 
--- This function compresses the output of the program and sends it according to
--- the compression algorithm preference "brotli -> gzip -> deflate -> nothing"
 function cgi.finalize()
   cgi.outputbuf:seek("set");
 
@@ -257,6 +255,7 @@ function html.date(timestamp, reldisplay)
 end
 
 function html.striphtml(s)
+  s = tostring(s);
   local ret = s
     :gsub("&", "&amp;")
     :gsub("<", "&lt;")
@@ -267,6 +266,7 @@ function html.striphtml(s)
 end
 
 function html.unstriphtml(s)
+  s = tostring(s);
   local ret = s
     :gsub("\"", "&quot;")
     :gsub("&#39;", "'")
@@ -474,7 +474,8 @@ function html.renderpost(board_tbl, post_tbl)
 
   printf("</span>");
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
-  printf("<span class='post-number'><a href='#%d'>No.</a><a href='#postform'>%d</a></span>", post_tbl["Number"], post_tbl["Number"]);
+  printf("<span class='post-number'><a href='#%d'>No.</a><a href='/pico/%s/%d#postform'>%d</a></span>",
+         post_tbl["Number"], board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
   html.modlinks(board_tbl, post_tbl);
@@ -540,8 +541,8 @@ function html.form.postform(board_tbl, parent)
   printf(  "<input type='submit' value='Post' accesskey='s' /><br />");
   printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"]);
 
-  for i = 1, board_tbl["PostMaxImages"] do
-    printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />%s", i, i, i, i, i ~= board_tbl["PostMaxImages"] and "<br />" or "");
+  for i = 1, board_tbl["PostMaxFiles"] do
+    printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />%s", i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "");
   end
 
   if parent == nil and board_tbl["ThreadCaptcha"] == 1
@@ -558,7 +559,7 @@ end
 
 function html.form.mod_login()
   printf("<fieldset><form method='POST'>");
-  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required /><br />");
+  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />");
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
   printf("</form></fieldset>");
@@ -566,7 +567,7 @@ end
 
 function html.form.board_create()
   printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required /><br />");
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
   printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />");
   printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />");
@@ -575,7 +576,7 @@ end
 
 function html.form.board_delete()
   printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required /><br />");
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' /><br />");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
@@ -583,7 +584,7 @@ end
 
 function html.form.board_config_select()
   printf("<fieldset><form method='POST'>");
-  printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required /><br />");
+  printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required autofocus /><br />");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
@@ -597,7 +598,7 @@ function html.form.board_config(board)
   printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"]));
   printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
   printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "");
-  printf(  "<label for='PostMaxImages'>PostMaxImages</label><input id='PostMaxImages' name='PostMaxImages' type='number' value='%d' min=0 max=5 required /><br />", board_tbl["PostMaxImages"]);
+  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min=0 max=5 required /><br />", board_tbl["PostMaxFiles"]);
   printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' required /><br />", board_tbl["ThreadMinLength"]);
   printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' required /><br />", board_tbl["PostMaxLength"]);
   printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' required /><br />", board_tbl["PostMaxNewlines"]);
@@ -617,7 +618,7 @@ end
 
 function html.form.account_create()
   printf("<fieldset><form id='account-create' method='POST'>");
-  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required /><br />");
+  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
   printf("<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />");
   printf("<label for='type'>Type</label><select form='account-create' id='type' name='type'>");
   printf(  "<option value='admin'>Administrator</option>");
@@ -632,7 +633,7 @@ end
 
 function html.form.account_delete()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required /><br />");
+  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
   printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
   printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
@@ -649,12 +650,13 @@ end
 function html.form.globalconfig(varname)
   printf("<fieldset><form id='globalconfig' method='POST'>");
   printf("<input type='hidden' name='name' value='%s' />", varname);
+  printf("<label for='value'>%s</label>", varname);
 
   if varname == "frontpage" or varname == "announce" then
-    printf("<label for='value'>%s</label><textarea id='value' name='value' form='globalconfig' cols=40 rows=12>%s</textarea>",
+    printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
            varname, html.striphtml(pico.global.get(varname)) or "");
   else
-    printf("<label for='value'>%s</label><input id='value' name='value' value='%s' type='text' />",
+    printf("<input id='value' name='value' value='%s' type='text' autofocus />",
            varname, html.striphtml(pico.global.get(varname)) or "");
   end
   printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
@@ -663,7 +665,7 @@ end
 
 function html.form.mod_action_reason()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />");
   printf("<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
@@ -683,7 +685,7 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
   html.begin("welcome");
   html.redheader("Welcome to %s", sitename);
   html.container.begin();
-  printf(pico.global.get("frontpage") or "");
+  printf("%s", pico.global.get("frontpage") or "");
   html.container.finish();
   html.finish();
 elseif cgi.pathinfo[1] == "System" then
@@ -706,6 +708,8 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/global/sitename'>Change site name</a>");
       html.list.entry("<a href='/pico/System/mod/global/frontpage'>Change front-page content</a>");
       html.list.entry("<a href='/pico/System/mod/global/defaultpostname'>Change default post name</a>");
+      html.list.entry("<a href='/pico/System/mod/global/indexpagesize'>Change index page size</a>");
+      html.list.entry("<a href='/pico/System/mod/global/indexwindowsize'>Change index window size</a>");
       html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");
@@ -937,9 +941,9 @@ elseif cgi.pathinfo[1] == "System" then
     local page = tonumber(GET["page"] or 1);
     page = (page < 1) and 1 or page;
 
-    printf("<div class='mod-log-page-switcher'>");
-    printf("<a class='mod-log-page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='mod-log-page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<div class='page-switcher'>");
+    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.table.begin("Account", "Board", "Date", "Description");
 
@@ -954,9 +958,9 @@ elseif cgi.pathinfo[1] == "System" then
     end
 
     html.table.finish();
-    printf("<div class='mod-log-page-switcher'>");
-    printf("<a class='mod-log-page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='mod-log-page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<div class='page-switcher'>");
+    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.container.finish();
     html.finish();
@@ -1063,18 +1067,50 @@ else
     html.announce();
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
     html.form.postform(board_tbl, nil);
-    printf("<a href=''>[Update]</a>");
-    printf("<hr /><div class='catalog-container'>");
+    printf("<a href='/pico/%s/catalog'>[Catalog]</a> <a href='/pico/%s/index'>[Index]</a> <a href=''>[Update]</a>",
+           board_tbl["Name"], board_tbl["Name"]);
+    printf("<hr />");
 
     if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" then
+      printf("<div class='catalog-container'>");
       local catalog_tbl = pico.board.catalog(board_tbl["Name"]);
 
       for i = 1, #catalog_tbl do
         html.rendercatalog(board_tbl, catalog_tbl[i]);
       end
+
+      printf("</div>");
+    elseif cgi.pathinfo[2] == "index" then
+      local page = tonumber(cgi.pathinfo[3]) or 1;
+      page = (page > 0) and page or 1;
+      local index_tbl = pico.board.index(board_tbl["Name"], page);
+
+      for i = 1, #index_tbl do
+        printf("<div class='index-thread'>");
+        html.renderpost(board_tbl, index_tbl[i][0]);
+
+        printf("<span class='index-thread-summary'>");
+        if index_tbl[i]["RepliesOmitted"] > 0 then
+          printf("%d replies omitted. ", index_tbl[i]["RepliesOmitted"]);
+        end
+
+        printf("Click <a href='/pico/%s/%d'>here</a> to view full thread.", board_tbl["Name"], index_tbl[i][0]["Number"]);
+        printf("</span>");
+
+        for j = 1, #index_tbl[i] do
+          html.renderpost(board_tbl, index_tbl[i][j]);
+        end
+
+        printf("</div><hr />");
+      end
+
+      printf("<div class='page-switcher'>");
+      printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+      printf("<a class='page-switcher-prev' href='/pico/%s/index/%d'>[Prev]</a>", board_tbl["Name"], page - 1);
+      printf("<a class='page-switcher-next' href='/pico/%s/index/%d'>[Next]</a>", board_tbl["Name"], page + 1);
+      printf("</div>");
     end
 
-    printf("</div>");
     html.finish();
   else
     local thread_tbl, msg = pico.post.thread(board_tbl["Name"], cgi.pathinfo[2]);
@@ -1100,7 +1136,8 @@ else
 
     printf("<hr />");
     printf("<div id='thread-view-links'>");
-    printf("<a href='/pico/%s'>[Catalog]</a>", board_tbl["Name"]);
+    printf("<a href='/pico/%s/catalog'>[Catalog]</a>", board_tbl["Name"]);
+    printf("<a href='/pico/%s/index'>[Index]</a>", board_tbl["Name"]);
     printf("<a href='/pico/Overboard'>[Overboard]</a>");
     printf("<a href=''>[Update]</a>");
 

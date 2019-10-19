@@ -232,6 +232,7 @@ hr {
     border-bottom: 1px solid #000;
     border-left: none;
     border-right: none;
+    clear: both;
 }
 
 div.catalog-container {
@@ -266,12 +267,24 @@ div.catalog-thread-subject {
     color: #05F;
 }
 
+div.index-thread span.index-thread-summary {
+    font-style: italic;
+    margin-left: 1.3ch;
+}
+
 div.post {
     background-color: #222;
     padding: 1.3ch;
     margin-top: 1.3ch;
     border: 1px solid #000;
     display: table;
+}
+
+div.index-thread div.post:first-of-type {
+    background: none;
+    border: none;
+    display: block;
+    padding-top: 0;
 }
 
 div.post:target {
@@ -328,8 +341,12 @@ img.post-file-thumbnail, video.post-video {
 }
 
 img.post-file-thumbnail, video.post-video, div.post-file-fullsize {
-    margin-top: 5px;
-    margin-right: 10px;
+    margin-top: 1.3ch;
+    margin-right: 1.3ch;
+}
+
+div.index-thread div.post:first-of-type img.post-file-thumbnail {
+    margin-bottom: 1.3ch;
 }
 
 input[type='checkbox']:checked + img.post-file-thumbnail {
@@ -350,6 +367,7 @@ div.post-comment {
     margin: 1.3ch;
     margin-bottom: 0.7ch;
     max-width: 150ch;
+    display: block;
 }
 
 div.post-comment a {
@@ -399,6 +417,6 @@ span#thread-reply {
     float: right;
 }
 
-div.mod-log-page-switcher a.mod-log-page-switcher-next {
+div.page-switcher a.page-switcher-next {
     float: right;
 }

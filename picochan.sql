@@ -5,20 +5,20 @@ CREATE TABLE Boards (
   MaxPostNumber		INTEGER		NOT NULL				DEFAULT 0	CHECK(MaxPostNumber >= 0),
   Lock			BOOLEAN		NOT NULL				DEFAULT FALSE,
   DisplayOverboard	BOOLEAN		NOT NULL				DEFAULT TRUE,
-  PostMaxImages		INTEGER		NOT NULL				DEFAULT 5	CHECK(PostMaxImages BETWEEN 0 AND 5),
+  PostMaxFiles		INTEGER		NOT NULL				DEFAULT 5	CHECK(PostMaxFiles BETWEEN 0 AND 5),
   ThreadMinLength	INTEGER		NOT NULL				DEFAULT 1,
-  PostMaxLength		INTEGER		NOT NULL				DEFAULT 32768,
-  PostMaxNewlines	INTEGER		NOT NULL				DEFAULT 1024,
-  PostMaxDblNewlines	INTEGER		NOT NULL				DEFAULT 16,
+  PostMaxLength		INTEGER		NOT NULL				DEFAULT 8192	CHECK(PostMaxLength <= 32768),
+  PostMaxNewlines	INTEGER		NOT NULL				DEFAULT 64	CHECK(PostMaxNewlines <= 1024),
+  PostMaxDblNewlines	INTEGER		NOT NULL				DEFAULT 16	CHECK(PostMaxDblNewlines <= 512),
   TPHLimit		INTEGER		NOT NULL				DEFAULT -1,
   PPHLimit		INTEGER		NOT NULL				DEFAULT -1,
   ThreadCaptcha		BOOLEAN		NOT NULL				DEFAULT FALSE,
   PostCaptcha		BOOLEAN		NOT NULL				DEFAULT FALSE,
   CaptchaTriggerTPH	INTEGER		NOT NULL				DEFAULT -1,
   CaptchaTriggerPPH	INTEGER		NOT NULL				DEFAULT -1,
-  BumpLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(BumpLimit BETWEEN 0 AND 1000),
-  PostLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(PostLimit BETWEEN 0 AND 1000),
-  ThreadLimit		INTEGER		NOT NULL				DEFAULT 1000	CHECK(ThreadLimit BETWEEN 1 AND 1000)
+  BumpLimit		INTEGER		NOT NULL				DEFAULT 200	CHECK(BumpLimit BETWEEN 0 AND 1000),
+  PostLimit		INTEGER		NOT NULL				DEFAULT 250	CHECK(PostLimit BETWEEN 0 AND 1000),
+  ThreadLimit		INTEGER		NOT NULL				DEFAULT 500	CHECK(ThreadLimit BETWEEN 1 AND 1000)
 ) WITHOUT ROWID;
 
 CREATE TABLE Posts (
@@ -227,3 +227,5 @@ INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$2b$14$7zJi
 INSERT INTO GlobalConfig VALUES ('sitename', 'Picochan');
 INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
+INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
+INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
