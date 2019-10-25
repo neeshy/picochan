@@ -1,9 +1,10 @@
 #!/usr/local/bin/haserl -u16384
 <% -- Picochan CGI/HTML Frontend
 
+local openbsd = require("picoaux.openbsd");
+local brotli = require("picoaux.brotli");
+local zlib = require("picoaux.zlib");
 local pico = require("picoengine");
-local zlib = require("zlib");
-local openbsd = require("openbsd");
 
 local cgi = {};
 local html = {};
@@ -12,6 +13,20 @@ local html = {};
       html.container = {};
       html.form = {};
 
+--
+-- INITIALIZATION
+--
+
+-- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
+openbsd.unveil("./picochan.db", "rw");
+openbsd.unveil("./picochan.db-journal", "rwc");
+openbsd.unveil("./media/", "rwxc");
+openbsd.unveil("/tmp/", "rwc");
+openbsd.unveil("/usr/local", "x");
+openbsd.unveil("/bin/sh", "x");
+openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
+
+cgi.outputbuf = io.tmpfile();
 local sitename = pico.global.get("sitename");
 
 local function printf(...)
@@ -29,12 +44,6 @@ local function httpencodinglist(s)
   return ret;
 end
 
---
--- INITIALIZATION
---
-
-openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec");
-cgi.outputbuf = io.tmpfile();
 io.output(cgi.outputbuf);
 pico.account.register_login(COOKIE["session_key"]);
 
@@ -57,14 +66,18 @@ end
 function cgi.finalize()
   cgi.outputbuf:seek("set");
 
-  if cgi.encodings["gzip"] then
+  if cgi.encodings["br"] then
+    cgi.headers["Content-Encoding"] = "br";
+    cgi.write_headers();
+    io.stdout:write(brotli.compress(cgi.outputbuf:read("*a"), 2, "text"));
+  elseif cgi.encodings["gzip"] then
     cgi.headers["Content-Encoding"] = "gzip";
     cgi.write_headers();
-    io.stdout:write(zlib.deflate(9, 31)(cgi.outputbuf:read("*a"), "finish"));
+    io.stdout:write(zlib.compress(cgi.outputbuf:read("*a"), 1, 31, 9));
   elseif cgi.encodings["deflate"] then
     cgi.headers["Content-Encoding"] = "deflate";
     cgi.write_headers();
-    io.stdout:write(zlib.deflate(9)(cgi.outputbuf:read("*a"), "finish"));
+    io.stdout:write(zlib.compress(cgi.outputbuf:read("*a"), 1, -15, 9));
   else
     cgi.headers["Content-Encoding"] = "identity";
     cgi.write_headers();
@@ -168,23 +181,21 @@ function html.list.entry(...)
 end
 
 function html.table.begin(...)
-  local arg = {...};
   printf("<table>");
   printf("<tr>");
 
-  for i = 1, #arg do
-    printf("<th>%s</th>", arg[i]);
+  for i = 1, select("#", ...) do
+    printf("<th>%s</th>", select(i, ...));
   end
 
   printf("</tr>");
 end
 
 function html.table.entry(...)
-  local arg = {...};
   printf("<tr>");
 
-  for i = 1, #arg do
-    printf("<td>%s</td>", arg[i]);
+  for i = 1, select("#", ...) do
+    printf("<td>%s</td>", select(i, ...));
   end
 
   printf("</tr>");
@@ -424,7 +435,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
         printf("<label>");
         printf("<input type='checkbox' hidden />");
         printf("<img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' />",
-               filename, findthumbsize(file["Width"], file["Height"]));
+               filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif extension == "epub" then
