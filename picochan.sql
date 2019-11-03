@@ -1,3 +1,6 @@
+PRAGMA application_id = 37564;
+PRAGMA user_version = 1;
+
 CREATE TABLE Boards (
   Name			TEXT		NOT NULL	UNIQUE	PRIMARY KEY			CHECK(LENGTH(Name) BETWEEN 1 AND 8),
   Title			TEXT		NOT NULL	UNIQUE					CHECK(LENGTH(Title) BETWEEN 1 AND 32),
@@ -250,3 +253,4 @@ INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
+INSERT INTO GlobalConfig VALUES ('bcryptrounds', 14);

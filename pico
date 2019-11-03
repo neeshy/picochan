@@ -1,5 +1,6 @@
 #!/usr/local/bin/haserl -u16384
 <% -- Picochan CGI/HTML Frontend
+-- HAPAS ARE SUPERIOR TO WHITES
 
 local openbsd = require("picoaux.openbsd");
 local brotli = require("picoaux.brotli");
@@ -22,15 +23,15 @@ openbsd.unveil("./picochan.db", "rw");
 openbsd.unveil("./picochan.db-journal", "rwc");
 openbsd.unveil("./media/", "rwxc");
 openbsd.unveil("/tmp/", "rwc");
-openbsd.unveil("/usr/local", "x");
+openbsd.unveil("/usr/local/", "x");
 openbsd.unveil("/bin/sh", "x");
 openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
 
-cgi.outputbuf = io.tmpfile();
+local outputbuf = {};
 local sitename = pico.global.get("sitename");
 
 local function printf(...)
-  io.write(string.format(...));
+  outputbuf[#outputbuf + 1] = string.format(...);
 end
 
 local function httpencodinglist(s)
@@ -44,7 +45,6 @@ local function httpencodinglist(s)
   return ret;
 end
 
-io.output(cgi.outputbuf);
 pico.account.register_login(COOKIE["session_key"]);
 
 cgi.headers = {};
@@ -57,31 +57,31 @@ cgi.encodings = ENV["HTTP_ACCEPT_ENCODING"] and httpencodinglist(ENV["HTTP_ACCEP
 
 function cgi.write_headers()
   for k, v in pairs(cgi.headers) do
-    io.stdout:write(k, ": ", v, "\n");
+    io.write(k, ": ", v, "\n");
   end
 
-  io.stdout:write("\n");
+  io.write("\n");
 end
 
 function cgi.finalize()
-  cgi.outputbuf:seek("set");
+  local outputbuf = table.concat(outputbuf);
 
   if cgi.encodings["br"] then
     cgi.headers["Content-Encoding"] = "br";
     cgi.write_headers();
-    io.stdout:write(brotli.compress(cgi.outputbuf:read("*a"), 2, "text"));
+    io.write(brotli.compress(outputbuf, 2, "text"));
   elseif cgi.encodings["gzip"] then
     cgi.headers["Content-Encoding"] = "gzip";
     cgi.write_headers();
-    io.stdout:write(zlib.compress(cgi.outputbuf:read("*a"), 1, 31, 9));
+    io.write(zlib.compress(outputbuf, 1, 31, 9));
   elseif cgi.encodings["deflate"] then
     cgi.headers["Content-Encoding"] = "deflate";
     cgi.write_headers();
-    io.stdout:write(zlib.compress(cgi.outputbuf:read("*a"), 1, -15, 9));
+    io.write(zlib.compress(outputbuf, 1, -15, 9));
   else
     cgi.headers["Content-Encoding"] = "identity";
     cgi.write_headers();
-    io.stdout:write(cgi.outputbuf:read("*a"));
+    io.write(outputbuf);
   end
 
   os.exit(0);
@@ -134,7 +134,7 @@ function html.finish()
 end
 
 function html.error(title, ...)
-  cgi.outputbuf:seek("set");
+  outputbuf = {};
   html.begin("error");
   html.redheader(title);
   html.container.begin();
@@ -270,13 +270,13 @@ function html.unstriphtml(s)
   return ret;
 end
 
-function html.picofmt(post_tbl)
+function html.picofmt(post_tbl, disable_refs)
   if post_tbl["Email"] and post_tbl["Email"]:match("nofo") then
     return html.striphtml(post_tbl["Comment"]);
   end
 
   local function handle_refs(number)
-    local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number);
+    local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number, true);
 
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
@@ -293,7 +293,7 @@ function html.picofmt(post_tbl)
       return string.format("<a class='reference' href='/pico/%s'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
     end
 
-    local ref_post_tbl = pico.post.tbl(board, number);
+    local ref_post_tbl = pico.post.tbl(board, number, true);
 
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
@@ -312,9 +312,13 @@ function html.picofmt(post_tbl)
   end
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
-  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
-  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
-  s = s:gsub("&gt;&gt;(%d+)", handle_refs);
+
+  if not disable_refs then
+    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
+    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
+    s = s:gsub("&gt;&gt;(%d+)", handle_refs);
+  end
+
   s = s:gsub("https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
@@ -396,7 +400,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
     return tw, th;
   end
 
-  local file_tbl = pico.file.list(board_tbl["Name"], post_tbl["Number"]);
+  local file_tbl = post_tbl["Files"];
 
   if file_tbl then
     for i = 1, #file_tbl do
@@ -430,7 +434,8 @@ function html.renderpostfiles(board_tbl, post_tbl)
 
       if class == "image" or extension == "pdf" then
         printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/media/thumb/%s'] + div.post-file-fullsize::after " ..
-               "{content: url('/media/%s');}</style>", filename, filename, file["Width"], file["Height"]);
+               "{background-image: url('/media/%s'); width: %dpx; height: %dpx;}</style>",
+               filename, filename, file["Width"] or 0, file["Height"] or 0);
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
@@ -518,7 +523,7 @@ function html.rendercatalog(board_tbl, post_tbl)
 
   printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
   printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
-  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
+  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
 
   printf("</div>");
 end
@@ -651,10 +656,10 @@ function html.form.globalconfig(varname)
 
   if varname == "frontpage" or varname == "announce" then
     printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
-           varname, html.striphtml(pico.global.get(varname)) or "");
+           html.striphtml(pico.global.get(varname)) or "");
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
-           varname, html.striphtml(pico.global.get(varname)) or "");
+           html.striphtml(pico.global.get(varname)) or "");
   end
   printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
   printf("</form></fieldset>");
@@ -717,6 +722,7 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/global/indexwindowsize'>Change index window size</a>");
       html.list.entry("<a href='/pico/System/mod/global/recentpagesize'>Change recent posts page size</a>");
       html.list.entry("<a href='/pico/System/mod/global/logpagesize'>Change mod log page size</a>");
+      html.list.entry("<a href='/pico/System/mod/global/bcryptrounds'>Change log_rounds parameter of bcrypt</a>");
       html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");

@@ -1,8 +1,12 @@
 -- Picochan Backend.
+-- HAPAS ARE SUPERIOR TO WHITES
 
 local sqlite3 = require("picoaux.sqlite3");
 local openbsd = require("picoaux.openbsd");
 local sha = require("picoaux.sha");
+
+require("picoaux.iomisc");
+require("picoaux.stringmisc");
 
 local pico = {};
       pico.global = {};
@@ -19,85 +23,13 @@ assert(db, errmsg);
 db:q("PRAGMA busy_timeout = 10000");
 db:q("PRAGMA foreign_keys = ON");
 db:q("PRAGMA recursive_triggers = ON");
+db:q("PRAGMA secure_delete = ON");
 
-local bcrypt_rounds = 14;           -- reduce if logins are too slow
-local max_filesize = 16777216;      -- 16 MiB
+local max_filesize = 16777216; -- 16 MiB. Users should not change.
 
 --
 -- MISCELLANEOUS FUNCTIONS
 --
-
-function string.random(length, pattern)
-  local length = length or 64;
-  local pattern = pattern or "a-zA-Z0-9"
-  local result = "";
-  local ascii = {};
-  local dict = "";
-
-  for i = 0, 255 do
-    ascii[#ascii + 1] = string.char(i);
-  end
-
-  ascii = table.concat(ascii);
-  dict = ascii:gsub("[^" .. pattern .. "]", "");
-
-  while string.len(result) < length do
-    local randidx = openbsd.arc4random(1, string.len(dict));
-    local randbyte = dict:byte(randidx);
-    result = result .. string.char(randbyte);
-  end
-
-  return result;
-end
-
-function string.tokenize(input, delimiter)
-  local result = {};
-  delimiter = delimiter or " ";
-
-  if input == nil then
-    return {};
-  end
-
-  for match in (input .. delimiter):gmatch("(.-)" .. delimiter) do
-    result[#result + 1] = match;
-  end
-
-  return result;
-end
-
-local AND = bit.band;
-local OR = bit.bor;
-local RSHIFT = bit.rshift;
-local LSHIFT = bit.lshift;
-
-function string.base64(s)
-  local bs = { [0] =
-    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
-    'Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f',
-    'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
-    'w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/',
-  };
-
-  local byte, rep = string.byte, string.rep;
-  local pad = 2 - ((#s-1) % 3);
-  s = (s..rep('\0', pad)):gsub("...", function(cs)
-      local a, b, c = byte(cs, 1, 3);
-      return bs[RSHIFT(a, 2)] .. bs[OR(LSHIFT(AND(a, 3), 4), RSHIFT(b, 4))] ..
-             bs[OR(LSHIFT(AND(b, 15), 2), RSHIFT(c, 6))] .. bs[AND(c, 63)];
-  end);
-  return s:sub(1, #s-pad) .. rep('=', pad);
-end
-
-function io.fileexists(path)
-  local f = io.open(filename, "r");
-
-  if f ~= nil then
-    f:close();
-    return true;
-  else
-    return false;
-  end
-end
 
 local function checkcaptcha(id, text)
   if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
@@ -231,7 +163,7 @@ function pico.account.create(name, password, type, board)
   end
 
   db:q("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
-      name, type, board, openbsd.bcrypt.digest(password, bcrypt_rounds));
+      name, type, board, openbsd.bcrypt.digest(password, pico.global.get("bcryptrounds")));
   log(false, board, "Created new %s account '%s'", type, name);
   return true, "Account created successfully";
 end
@@ -264,7 +196,7 @@ function pico.account.changepass(name, password)
   end
 
   db:q("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
-       openbsd.bcrypt.digest(password, bcrypt_rounds), name);
+       openbsd.bcrypt.digest(password, pico.global.get("bcryptrounds")), name);
   log(false, account_tbl["Board"], "Changed password of account '%s'", name);
   return true, "Account password changed successfully";
 end
@@ -455,6 +387,10 @@ function pico.board.index(name, page)
     while #tmp_tbl > 0 do
       index_tbl[i][#index_tbl[i] + 1] = table.remove(tmp_tbl);
     end
+
+    for j = 0, #index_tbl[i] do
+      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
+    end
   end
 
   return index_tbl;
@@ -489,12 +425,12 @@ end
 --   * intervals = 7 (7 * 24 hours = 1 week)
 function pico.board.stats.threadrate(board, interval, intervals)
   return math.ceil(db:r("SELECT (COUNT(*) / ?) AS Rate FROM Posts WHERE Board = ? AND Parent IS NULL AND Date > (STRFTIME('%s', 'now') - (? * 3600))",
-             intervals, board, interval * intervals)["Rate"]);
+                        intervals, board, interval * intervals)["Rate"]);
 end
 
 function pico.board.stats.postrate(board, interval, intervals)
   return math.ceil(db:r("SELECT (COUNT(*) / ?) AS Rate FROM Posts WHERE Board = ? AND Date > (STRFTIME('%s', 'now') - (? * 3600))",
-             intervals, board, interval * intervals)["Rate"]);
+                        intervals, board, interval * intervals)["Rate"]);
 end
 
 function pico.board.stats.totalposts(board)
@@ -579,10 +515,10 @@ end
 -- Also add its information to the database.
 function pico.file.add(path)
   local f = assert(io.open(path, "r"));
-  local size = f:seek("end");
+  local size = assert(f:seek("end"));
   local extension = identify_file(path);
   local class = pico.file.class(extension);
-  f:seek("set");
+  assert(f:seek("set"));
 
   if size > max_filesize then
     return nil, "File too large";
@@ -659,7 +595,6 @@ function pico.file.delete(hash, reason)
   return true, "File deleted successfully";
 end
 
--- list info of files belonging to a particular post
 function pico.file.list(board, number)
   db:q("BEGIN TRANSACTION");
   local file_tbl = db:q("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC", board, number);
@@ -684,25 +619,31 @@ end
 function pico.post.recent(page)
   page = tonumber(page) or 1;
   local pagesize = pico.global.get("recentpagesize");
-  return db:q("SELECT * FROM Posts ORDER BY Date DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
+  local recent_tbl = db:q("SELECT * FROM Posts ORDER BY Date DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
+  for i = 1, #recent_tbl do
+    recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"]);
+  end
+  return recent_tbl;
 end
 
-function pico.post.tbl(board, number)
-  return db:r("SELECT * FROM Posts WHERE Board = ? AND Number = ?", board, number);
+function pico.post.tbl(board, number, omit_files)
+  local post_tbl = db:r("SELECT * FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  if post_tbl and not omit_files then
+    post_tbl["Files"] = pico.file.list(board, number);
+  end
+  return post_tbl;
 end
 
 -- Return list of posts which >>reply to the specified post.
 function pico.post.refs(board, number)
   local list = db:q("SELECT Referrer FROM Refs WHERE Board = ? AND Referee = ?", board, number);
-
   for i = 1, #list do
     list[i] = list[i]["Referrer"];
   end
-
   return list;
 end
 
--- Return entire thread (parent + all replies) as a table
+-- Return entire thread (parent + all replies + all file info) as a table
 function pico.post.thread(board, number)
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
              board, number) then
@@ -710,11 +651,32 @@ function pico.post.thread(board, number)
   end
 
   local thread_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
-                         "WHERE Board = ? AND Parent = ? ORDER BY Number",
-                         board, number);
+                          "WHERE Board = ? AND Parent = ? ORDER BY Number ASC", board, number);
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                      "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
-                      "WHERE Board = ? AND Number = ?", board, number);
+                       "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
+                       "WHERE Board = ? AND Number = ?", board, number);
+  local stmt1 = db:prepare("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
+  local stmt2 = db:prepare("SELECT * FROM Files WHERE Name = ?");
+  db:q("BEGIN TRANSACTION");
+
+  for i = 0, #thread_tbl do
+    local post_tbl = thread_tbl[i];
+    post_tbl["Files"] = {};
+    stmt1:bind_values(post_tbl["Board"], post_tbl["Number"]);
+
+    while stmt1:step() == sqlite3.ROW do
+      stmt2:bind(1, stmt1:get_value(1));
+      stmt2:step();
+      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt2:get_named_values();
+      stmt2:reset();
+    end
+
+    stmt1:reset();
+  end
+
+  db:q("END TRANSACTION");
+  stmt1:finalize();
+  stmt2:finalize();
   return thread_tbl;
 end
 
@@ -742,13 +704,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Parent thread does not exist";
     elseif not is_thread and parent_tbl["Parent"] then
       return nil, "Parent post is not a thread";
-    elseif not is_thread and parent_tbl["Lock"] == 1
-           and not (pico.account.current and (pico.account.current["Board"] == nil
-                                              or pico.account.current["Board"] == board)) then
+    elseif not is_thread and parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board, parent) then
       return nil, "Parent thread is locked";
-    elseif board_tbl["Lock"] == 1
-           and not (pico.account.current and (pico.account.current["Board"] == nil
-                                              or pico.account.current["Board"] == board)) then
+    elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
       return nil, "Board is locked";
     elseif is_thread and board_tbl["TPHLimit"] > 0
            and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
@@ -894,14 +852,14 @@ function pico.post.movethread(board, number, newboard, reason)
     post_tbl["Parent"] = post_tbl["Parent"] and newthread or nil;
 
     local files_tbl = pico.file.list(post_tbl["Board"], post_tbl["Number"]);
-    for i = 1, #files_tbl do
-      files_tbl[i] = files_tbl[i]["Name"];
+    for j = 1, #post_tbl["Files"] do
+      post_tbl["Files"][j] = post_tbl["Files"][j]["Name"];
     end
 
     local newnumber = pico.post.create(newboard, post_tbl["Parent"],
                                        post_tbl["Name"], post_tbl["Email"],
                                        post_tbl["Subject"], post_tbl["Comment"],
-                                       files_tbl, nil, nil, true);
+                                       post_tbl["Files"], nil, nil, true);
     number_lut[tostring(post_tbl["Number"])] = ">>" .. tostring(newnumber);
 
     if i == 0 then
@@ -934,9 +892,9 @@ function pico.captcha.create()
 
   for i = 1, 6 do
     xx[i] = ((48 * i - 168) + math.random(-5, 5));
-    yy[i] = math.random(-10, 10);
-    rr[i] = math.random(-30, 30);
-    ss[i] = math.random(-40, 40);
+    yy[i] = openbsd.arc4random(-15, 15);
+    rr[i] = openbsd.arc4random(-30, 30);
+    ss[i] = openbsd.arc4random(-30, 30);
     cc[i] = string.random(1, "a-z");
     bx[i] = (150 + 1.1 * xx[i]);
     by[i] = (40 + 2 * yy[i]);
@@ -951,9 +909,9 @@ function pico.captcha.create()
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-fill none -strokewidth 2 " ..
+    "-fill none -strokewidth 3 " ..
     "-draw 'bezier %f,%d %f,%d %f,%d %f,%d' " ..
-    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 1 JPEG:-",
+    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 0 JPEG:-",
     xx[1], yy[1], rr[1], ss[1], cc[1],
     xx[2], yy[2], rr[2], ss[2], cc[2],
     xx[3], yy[3], rr[3], ss[3], cc[3],

@@ -345,7 +345,7 @@ img.post-file-thumbnail, video.post-video, div.post-file-fullsize {
     margin-right: 1.3ch;
 }
 
-div.thread img.post-file-thumbnail, div.thread div.post-file-fullsize::after {
+div.thread img.post-file-thumbnail {
     margin-bottom: 1.3ch;
 }
 
@@ -353,8 +353,18 @@ input[type='checkbox']:checked + img.post-file-thumbnail {
     display: none;
 }
 
+input[type='checkbox']:checked + img.post-file-thumbnail + div.post-file-fullsize:after {
+    content: "";
+}
+
 div.post-file-fullsize::after {
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-origin: content-box;
+    max-width: 90vw;
+    max-height: 90vh;
     float: right;
+    margin-bottom: 1.3ch;
 }
 
 div.post-file-single div.post-file-fullsize {
