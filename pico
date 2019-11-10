@@ -149,11 +149,7 @@ function html.redheader(...)
 end
 
 function html.announce()
-  local announce = pico.global.get("announce");
-
-  if announce ~= "" then
-    printf("<div id='announce'>%s</div>", announce);
-  end
+  printf("<div id='announce'>%s</div>", pico.global.get("announce"));
 end
 
 function html.container.begin(width)
@@ -181,23 +177,18 @@ function html.list.entry(...)
 end
 
 function html.table.begin(...)
-  printf("<table>");
-  printf("<tr>");
-
+  printf("<table><tr>");
   for i = 1, select("#", ...) do
     printf("<th>%s</th>", select(i, ...));
   end
-
   printf("</tr>");
 end
 
 function html.table.entry(...)
   printf("<tr>");
-
   for i = 1, select("#", ...) do
     printf("<td>%s</td>", select(i, ...));
   end
-
   printf("</tr>");
 end
 
@@ -444,7 +435,9 @@ function html.renderpostfiles(board_tbl, post_tbl)
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif extension == "epub" then
-        printf("<img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 />");
+        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
+      elseif extension == "txt" then
+        printf("<a href='/media/%s' target='_blank'><img class='post-file-thumbnail' src='/static/txt.png' width=100 height=70 alt='[TEXT]' /></a>", filename);
       elseif class == "video" then
         printf("<video class='post-video' controls loop preload='none' src='/media/%s' poster='/media/thumb/%s'></video>", filename, filename);
       elseif class == "audio" then
@@ -457,7 +450,8 @@ function html.renderpostfiles(board_tbl, post_tbl)
 end
 
 function html.renderpost(board_tbl, post_tbl)
-  printf("<div id='%d' class='post%s'>", post_tbl["Number"], post_tbl["Parent"] and "" or " thread");
+  printf("<div id='%d' class='post-container'>", post_tbl["Number"]);
+  printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
 
   if post_tbl["Subject"] ~= "" then
@@ -490,7 +484,7 @@ function html.renderpost(board_tbl, post_tbl)
   printf("</div>");
   html.renderpostfiles(board_tbl, post_tbl);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
-  printf("</div>");
+  printf("</div></div>");
 end
 
 function html.rendercatalog(board_tbl, post_tbl)
@@ -526,6 +520,17 @@ function html.rendercatalog(board_tbl, post_tbl)
   printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
 
   printf("</div>");
+end
+
+function html.brc(title, redheader)
+  html.begin(title);
+  html.redheader(redheader);
+  html.container.begin();
+end
+
+function html.cfinish()
+  html.container.finish();
+  html.finish();
 end
 
 function html.form.postform(board_tbl, parent)
@@ -680,6 +685,24 @@ function html.form.mod_move_thread()
   printf("</form></fieldset>");
 end
 
+function html.form.mod_multidelete()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf("<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />");
+  printf("<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf("<input type='submit' value='Continue' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.mod_pattdelete()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf("<input type='submit' value='Continue' />");
+  printf("</form></fieldset>");
+end
+
 --
 -- PAGE DEFINITIONS
 --
@@ -707,9 +730,7 @@ elseif cgi.pathinfo[1] == "System" then
     end
 
     if cgi.pathinfo[3] == nil or cgi.pathinfo[3] == "" then
-      html.begin("dashboard");
-      html.redheader("Moderation Dashboard");
-      html.container.begin();
+      html.brc("dashboard", "Moderation Dashboard");
       printf("You are logged in as <b>%s</b>. Your account type is <b>%s</b>.",
              pico.account.current["Name"], pico.account.current["Type"]);
       html.container.barheader("Global");
@@ -724,6 +745,11 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/global/logpagesize'>Change mod log page size</a>");
       html.list.entry("<a href='/pico/System/mod/global/bcryptrounds'>Change log_rounds parameter of bcrypt</a>");
       html.list.finish();
+      html.container.barheader("Miscellaneous Tools");
+      html.list.begin("unordered");
+      html.list.entry("<a href='/pico/System/mod/tools/multidelete'>Multi-delete by range</a>");
+      html.list.entry("<a href='/pico/System/mod/tools/pattdelete'>Pattern delete</a>");
+      html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");
       html.list.entry("<a href='/pico/System/mod/account/create'>Create an account</a>");
@@ -736,12 +762,9 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/board/delete'>Delete a board</a>");
       html.list.entry("<a href='/pico/System/mod/board/config'>Configure a board</a>");
       html.list.finish();
-      html.container.finish();
-      html.finish();
+      html.cfinish();
     elseif cgi.pathinfo[3] == "login" then
-      html.begin("login");
-      html.redheader("Moderator Login");
-      html.container.begin();
+      html.brc("login", "Moderator Login");
 
       if POST["username"] and POST["password"] then
         local session_key, errmsg = pico.account.login(POST["username"], POST["password"]);
@@ -756,10 +779,8 @@ elseif cgi.pathinfo[1] == "System" then
         end
       end
 
-      html.container.barheader("Enter information");
       html.form.mod_login();
-      html.container.finish();
-      html.finish();
+      html.cfinish();
     elseif cgi.pathinfo[3] == "logout" then
       pico.account.logout();
       cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/pico; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
@@ -767,9 +788,7 @@ elseif cgi.pathinfo[1] == "System" then
       cgi.headers["Location"] = "/pico/Overboard";
       cgi.finalize();
     elseif cgi.pathinfo[3] == "global" then
-      html.begin("change global configuration");
-      html.redheader("Edit global configuration variable");
-      html.container.begin();
+      html.brc("change global configuration", "Change global configuration");
 
       if POST["name"] then
         local result, msg;
@@ -783,25 +802,19 @@ elseif cgi.pathinfo[1] == "System" then
       end
 
       html.form.globalconfig(cgi.pathinfo[4]);
-      html.container.finish();
-      html.finish();
+      html.cfinish();
     elseif cgi.pathinfo[3] == "account" then
       if cgi.pathinfo[4] == "create" then
-        html.begin("create account");
-        html.redheader("Create an Account");
-        html.container.begin();
+        html.brc("create account", "Create account");
 
         if POST["name"] ~= nil and POST["name"] ~= "" then
           printf("%s", select(2, pico.account.create(POST["name"], POST["password"], POST["type"], POST["board"])));
         end
 
         html.form.account_create();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       elseif cgi.pathinfo[4] == "delete" then
-        html.begin("delete account");
-        html.redheader("Delete an Account");
-        html.container.begin();
+        html.brc("delete account", "Delete account");
 
         if POST["name"] and POST["reason"] then
           local status, msg = pico.account.delete(POST["name"], POST["reason"]);
@@ -809,26 +822,20 @@ elseif cgi.pathinfo[1] == "System" then
         end
 
         html.form.account_delete();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       elseif cgi.pathinfo[4] == "config" then
-        html.begin("configure account");
-        html.redheader("Configure an Account");
-        html.container.begin();
+        html.brc("configure account", "Configure account");
 
         if POST["name"] and POST["password"] then
           printf("%s", select(2, pico.account.changepass(POST["name"], POST["password"])));
         end
 
         html.form.account_config();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       end
     elseif cgi.pathinfo[3] == "board" then
       if cgi.pathinfo[4] == "create" then
-        html.begin("create board");
-        html.redheader("Create a Board");
-        html.container.begin();
+        html.brc("create board", "Create board");
 
         if POST["name"] and POST["title"] and POST["subtitle"] then
           local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"]);
@@ -836,12 +843,9 @@ elseif cgi.pathinfo[1] == "System" then
         end
 
         html.form.board_create();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       elseif cgi.pathinfo[4] == "delete" then
-        html.begin("delete board");
-        html.redheader("Delete a Board");
-        html.container.begin();
+        html.brc("delete board", "Delete board");
 
         if POST["name"] and POST["reason"] then
           local status, msg = pico.board.delete(POST["name"], POST["reason"]);
@@ -849,12 +853,9 @@ elseif cgi.pathinfo[1] == "System" then
         end
 
         html.form.board_delete();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       elseif cgi.pathinfo[4] == "config" then
-        html.begin("configure board");
-        html.redheader("Configure a Board");
-        html.container.begin();
+        html.brc("configure board", "Configure board");
 
         if POST["Name"] == nil or POST["Name"] == "" then
           html.form.board_config_select();
@@ -870,8 +871,7 @@ elseif cgi.pathinfo[1] == "System" then
           html.form.board_config(POST["Name"]);
         end
 
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       end
     elseif cgi.pathinfo[3] == "post" then
       if not (cgi.pathinfo[4] == "delete"
@@ -934,13 +934,32 @@ elseif cgi.pathinfo[1] == "System" then
         html.form.mod_action_reason();
       end
 
-      html.container.finish();
-      html.finish();
+      html.cfinish();
+    elseif cgi.pathinfo[3] == "tools" then
+      if cgi.pathinfo[4] == "multidelete" then
+        html.brc("multidelete", "Multidelete");
+
+        if POST["board"] then
+          local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"], POST["reason"]);
+          printf("%s", msg);
+        end
+
+        html.form.mod_multidelete();
+        html.cfinish();
+      elseif cgi.pathinfo[4] == "pattdelete" then
+        html.brc("pattern delete", "Pattern delete");
+
+        if POST["pattern"] then
+          local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
+          printf("%s", msg);
+        end
+
+        html.form.mod_pattdelete();
+        html.cfinish();
+      end
     elseif cgi.pathinfo[3] == "file" then
       if cgi.pathinfo[4] == "delete" then
-        html.begin("delete file");
-        html.redheader("Delete a File");
-        html.container.begin();
+        html.brc("delete file", "Delete file");
 
         if POST["reason"] and POST["reason"] ~= "" then
           local result, msg = pico.file.delete(cgi.pathinfo[5], POST["reason"]);
@@ -956,8 +975,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", cgi.pathinfo[5]);
         html.form.mod_action_reason();
-        html.container.finish();
-        html.finish();
+        html.cfinish();
       end
     end
   elseif cgi.pathinfo[2] == "log" then
@@ -989,8 +1007,7 @@ elseif cgi.pathinfo[1] == "System" then
     printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
     printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
     printf("</div>");
-    html.container.finish();
-    html.finish();
+    html.cfinish();
   elseif cgi.pathinfo[2] == "stats" then
     html.begin("stats");
     html.redheader("Posting Statistics");
@@ -1020,14 +1037,13 @@ elseif cgi.pathinfo[1] == "System" then
       g_pph1h = g_pph1h + pph1h;
       g_total = g_total + total;
 
-      html.table.entry(string.format("<a href='/%s' title='%s'>/%s/</a>", board, board_list_tbl[i]["Title"], board),
+      html.table.entry(string.format("<a href='/pico/%s' title='%s'>/%s/</a>", board, board_list_tbl[i]["Title"], board),
                        tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
     end
 
     html.table.entry("<i>GLOBAL</i>", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
     html.table.finish();
-    html.container.finish();
-    html.finish();
+    html.cfinish();
   elseif cgi.pathinfo[2] == "post" then
     local file_hashes = {};
 

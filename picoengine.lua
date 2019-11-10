@@ -224,7 +224,7 @@ function pico.account.register_login(key)
   end
 
   pico.account.current = db:r("SELECT * FROM Accounts WHERE Name = (SELECT Account FROM Sessions " ..
-                             "WHERE Key = ? AND ExpireDate > STRFTIME('%s', 'now'))", key);
+                              "WHERE Key = ? AND ExpireDate > STRFTIME('%s', 'now'))", key);
   db:q("UPDATE Sessions SET ExpireDate = STRFTIME('%s', 'now') + 86400 WHERE Key = ?", key);
 end
 
@@ -481,6 +481,8 @@ local function identify_file(path)
   elseif data:sub(1,4) == "PK\x03\x04"
      and data:sub(31,58) == "mimetypeapplication/epub+zip" then
     return "epub";
+  elseif not data:find("[^%w%s%p]") then
+    return "txt";
   else
     return nil;
   end
@@ -505,7 +507,8 @@ function pico.file.class(extension)
     ["ogg"]  = "audio",
     ["flac"] = "audio",
     ["pdf"]  = "document",
-    ["epub"] = "document"
+    ["epub"] = "document",
+    ["txt"]  = "document"
   };
 
   return lookup[extension] or extension;
@@ -784,6 +787,63 @@ function pico.post.delete(board, number, reason)
   return true, "Post deleted successfully";
 end
 
+-- example: pico.post.multidelete("b", "31-57 459-1000", "33 35 48 466", "spam")
+function pico.post.multidelete(board, include, exclude, reason)
+  local auth, msg = permit("admin bo", "board", board);
+  if not auth then return auth, msg end;
+  assert(include, "Invalid include parameter");
+
+  if not db:b("SELECT TRUE FROM Boards WHERE Name = ?", board) then
+    return false, "Board does not exist";
+  end
+
+  local sql = {"DELETE FROM Posts WHERE Board = ? AND (TRUE=FALSE"};
+  local sqlp = {board};
+  local inclist = (include or ""):tokenize();
+  local exclist = (exclude or ""):tokenize();
+
+  local function genspec(spec, sql, sqlp)
+    if spec:match("-") then
+      local start, finish = unpack(spec:tokenize("-"));
+      start, finish = tonumber(start), tonumber(finish);
+      if not start or not finish then
+        return false, "Invalid range specification";
+      end
+
+      sql[#sql + 1] = "OR Number BETWEEN ? AND ?";
+      sqlp[#sqlp + 1] = start;
+      sqlp[#sqlp + 1] = finish;
+    else
+      local number = tonumber(spec);
+      if not number then
+        return false, "Invalid single specification";
+      end
+
+      sql[#sql + 1] = "OR Number = ?";
+      sqlp[#sqlp + 1] = number;
+    end
+  end
+
+  for i = 1, #inclist do genspec(inclist[i], sql, sqlp) end;
+  sql[#sql + 1] = ") AND NOT (TRUE=FALSE";
+  for i = 1, #exclist do genspec(exclist[i], sql, sqlp) end;
+  sql[#sql + 1] = ")";
+
+  db:q(table.concat(sql, " "), unpack(sqlp));
+  log(false, board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
+  return true, "Posts deleted successfully";
+end
+
+function pico.post.pattdelete(pattern, reason)
+  local auth, msg = permit("admin");
+  if not auth then return auth, msg end;
+  if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end;
+
+  db:q("DELETE FROM Posts WHERE Comment LIKE ?", "%" .. pattern .. "%");
+  log(false, board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason);
+  return true, "Posts deleted successfully";
+end
+
 -- remove a file from a post without deleting it
 function pico.post.unlink(board, number, file, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board, number);
@@ -926,7 +986,7 @@ function pico.captcha.create()
   p:close();
 
   local captcha_id = string.random(16);
-  db:q("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 900)", captcha_id, table.concat(cc));
+  db:q("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc));
 
   return captcha_id, string.base64(captcha_data);
 end

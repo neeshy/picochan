@@ -272,6 +272,11 @@ div.index-thread span.index-thread-summary {
     margin-left: 1.3ch;
 }
 
+div.post-container {
+    margin-top: calc(-3ch + 1px);
+    padding-top: calc(3ch - 1px);
+}
+
 div.post {
     background-color: #222;
     padding: 1.3ch;
@@ -287,7 +292,7 @@ div.thread {
     padding-top: 0;
 }
 
-div.post:target {
+div.post-container:target div.post {
     background-color: #333;
 }
 
@@ -359,6 +364,7 @@ input[type='checkbox']:checked + img.post-file-thumbnail + div.post-file-fullsiz
 
 div.post-file-fullsize::after {
     background-repeat: no-repeat;
+    background-position: center;
     background-size: contain;
     background-origin: content-box;
     max-width: 90vw;
