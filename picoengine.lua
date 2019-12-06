@@ -5,7 +5,6 @@ local sqlite3 = require("picoaux.sqlite3");
 local openbsd = require("picoaux.openbsd");
 local sha = require("picoaux.sha");
 
-require("picoaux.iomisc");
 require("picoaux.stringmisc");
 
 local pico = {};
