@@ -2,6 +2,7 @@
 
 local sqlite3 = require("lsqlite3");
 local bcrypt = require("bcrypt");
+local bit32 = require("bit32");
 local openssl = {};
       openssl.rand = require("openssl.rand");
       openssl.digest = require("openssl.digest");
@@ -109,7 +110,10 @@ function string.base64(s)
   local pad = 2 - ((#s-1) % 3);
   s = (s..rep('\0', pad)):gsub("...", function(cs)
       local a, b, c = byte(cs, 1, 3);
-      return bs[a>>2] .. bs[(a&3)<<4|(b>>4)] .. bs[(b&15)<<2|(c>>6)] .. bs[c&63];
+      return bs[bit32.rshift(a,2)] ..
+          bs[bit32.bor(bit32.lshift(bit32.band(a,3),4),(bit32.rshift(b,4)))] ..
+          bs[bit32.bor(bit32.lshift(bit32.band(b,15),2),(bit32.rshift(c,6)))] ..
+          bs[bit32.band(c,63)];
   end);
   return s:sub(1, #s-pad) .. rep('=', pad);
 end

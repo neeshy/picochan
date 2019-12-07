@@ -3,7 +3,6 @@
 
 local pico = require("picoengine");
 local zlib = require("zlib");
-local openbsd = require("openbsd");
 
 local cgi = {};
 local html = {};
@@ -33,7 +32,6 @@ end
 -- INITIALIZATION
 --
 
-openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec");
 cgi.outputbuf = io.tmpfile();
 io.output(cgi.outputbuf);
 pico.account.register_login(COOKIE["session_key"]);
