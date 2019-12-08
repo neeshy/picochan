@@ -462,6 +462,10 @@ function pico.board.stats.totalposts(board)
   return db1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
 end
 
+function pico.board.stats.lastbumpdate(board)
+  return db1("SELECT LastBumpDate FROM Posts WHERE Board = ? ORDER BY LastBumpDate DESC", board)["LastBumpDate"];
+end
+
 --
 -- FILE MANAGEMENT FUNCTIONS
 --

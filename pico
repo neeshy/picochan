@@ -3,6 +3,7 @@
 
 local pico = require("picoengine");
 local zlib = require("zlib");
+local json = require("json");
 
 local cgi = {};
 local html = {};
@@ -1044,6 +1045,38 @@ elseif cgi.pathinfo[1] == "overboard.html" then
 
   printf("</div>");
   html.finish();
+elseif cgi.pathinfo[1] == "webring.json" then
+  local fd = assert(io.open("webring.json", "r"));
+  local data = assert(fd:read("*a"));
+  fd:close();
+
+  local webring = assert(json.decode(data));
+  assert(webring["url"]);
+  assert(webring["logo"]);
+  assert(webring["following"]);
+  assert(webring["known"]);
+
+  webring["name"] = webring["name"] or sitename;
+  webring["endpoint"] = webring["url"] .. "/" .. "webring.json";
+  webring["boards"] = {};
+
+  local boards = pico.board.list();
+  for i = 1, #boards do
+    local board = {};
+    local board_tbl = pico.board.tbl(boards[i]["Name"]);
+    board["uri"] = board_tbl["Name"];
+    board["title"] = board_tbl["Title"];
+    board["subtitle"] = board_tbl["Subtitle"];
+    board["path"] = webring["url"] .. "/" .. board_tbl["Name"] .. "/";
+    board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1);
+    board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"]);
+    board["tags"] = {};
+    board["lastPostTimestamp"] = os.date("%Y-%m-%dT%H:%M:%SZ",
+      pico.board.stats.lastbumpdate(board_tbl["Name"]));
+    webring["boards"][i] = board;
+  end
+  cgi.headers["Content-Type"] = "application/json"
+  io.write(json.encode(webring));
 else
   local board_tbl = pico.board.tbl(cgi.pathinfo[1]);
 
