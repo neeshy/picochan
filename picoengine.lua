@@ -463,7 +463,8 @@ function pico.board.stats.totalposts(board)
 end
 
 function pico.board.stats.lastbumpdate(board)
-  return db1("SELECT LastBumpDate FROM Posts WHERE Board = ? ORDER BY LastBumpDate DESC", board)["LastBumpDate"];
+  local result = db1("SELECT LastBumpDate FROM Posts WHERE Board = ? ORDER BY LastBumpDate DESC", board);
+  return result and result["LastBumpDate"] or 0;
 end
 
 --

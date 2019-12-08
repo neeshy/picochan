@@ -310,6 +310,31 @@ function html.picofmt(post_tbl)
     end
   end
 
+  local function handle_xhrefs(host, board, number)
+    local webring_tbl = json.webring();
+    local known = webring_tbl["known"];
+    known[0] = webring_tbl["url"];
+    for i = 0, #known do
+      local stripped = known[i]:match("^(https?://[^/]+).*$")
+      if stripped:gsub("^https?://", "") == host then
+        local response = requests.get(string.format("%s/%s/%s", stripped, board, number));
+        local status_code = response["status_code"];
+        if status_code == 200 or status_code == 301 then
+          return string.format("<a class='reference' href='%s/%s/%s'>&gt;&gt;&gt;&gt;/%s/%s/%s</a>",
+                                stripped, board, number, host, board, number);
+        else
+          local status_code = requests.get(string.format("%s/%s/", stripped, board))["status_code"];
+          if status_code == 200 then
+            return string.format("<a class='reference' href='%s/%s/'>&gt;&gt;&gt;&gt;/%s/%s/</a>%s",
+                                  stripped, board, host, board, number);
+          else
+            return string.format("<s><a class='reference'>&gt;&gt;&gt;&gt;/%s/%s/%s</a></s>", host, board, number);
+          end
+        end
+      end
+    end
+  end
+
   local function handle_url(url)
     url = html.unstriphtml(url);
     local append = html.striphtml(url:match("[<>'\"]+$") or "");
@@ -319,10 +344,11 @@ function html.picofmt(post_tbl)
   end
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
+  s = s:gsub("https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+", handle_url);
+  s = s:gsub("&gt;&gt;&gt;&gt;/([%d%l.]+)/([%d%l]-)/(%d+)", handle_xhrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
   s = s:gsub("&gt;&gt;(%d+)", handle_refs);
-  s = s:gsub("https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
@@ -1095,7 +1121,7 @@ elseif cgi.pathinfo[1] == "fediboard.html" then
 
   local overboard_tbl = pico.board.overboard();
 
-  local following = assert(json.webring()["following"]);
+  local following = json.webring()["following"];
   for i = 1, #following do
     local endpoint = requests.get(following[i]);
     if endpoint["status_code"] == 200 then
@@ -1158,8 +1184,19 @@ else
     local thread_tbl, msg = pico.post.thread(board_tbl["Name"], cgi.pathinfo[2]);
 
     if not thread_tbl then
-      cgi.headers["Status"] = "404 Not Found";
-      html.error("Thread Not Found", "Cannot display thread: %s", msg);
+      local post_tbl = pico.post.tbl(board_tbl["Name"], cgi.pathinfo[2]);
+      if not post_tbl then
+        cgi.headers["Status"] = "404 Not Found";
+        html.error("Thread Not Found", "Cannot display thread: %s", msg);
+      else
+        -- TODO: make hostname a global (or use request host)
+        -- relying on webring.json
+        webring_tbl = json.webring()
+        cgi.headers["Status"] = "301 Moved Permanently";
+        cgi.headers["Location"] = string.format("%s/%s/%s#%s",
+          webring_tbl["url"], board_tbl["Name"], post_tbl["Parent"], post_tbl["Number"]);
+        cgi.finalize();
+      end
     end
 
     html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[0]["Subject"] and #thread_tbl[0]["Subject"] > 0)
