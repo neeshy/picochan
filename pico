@@ -4,6 +4,7 @@
 local pico = require("picoengine");
 local zlib = require("zlib");
 local json = require("json");
+local requests = require("requests");
 
 local cgi = {};
 local html = {};
@@ -98,6 +99,7 @@ function html.begin(...)
   printf(      "<li class='system'><a href='/log.html' accesskey='2'>log</a></li>");
   printf(      "<li class='system'><a href='/stats.html' accesskey='3'>stats</a></li>");
   printf(      "<li class='system'><a href='/overboard.html' accesskey='4'>overboard</a></li>");
+  printf(      "<li class='system'><a href='/fediboard.html' accesskey='5'>fediboard</a></li>");
 
   local boards = pico.board.list();
   for i = 1, #boards do
@@ -492,20 +494,22 @@ end
 function html.rendercatalog(board_tbl, post_tbl)
   local board = board_tbl and board_tbl["Name"] or post_tbl["Board"];
   local number = post_tbl["Number"];
+  local base_url = post_tbl["Host"] or "";
+  local short_url = base_url:gsub("https?://", "");
 
   printf("<div class='catalog-thread'>");
-  printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
+  printf("<a class='catalog-thread-link' href='%s/%s/%d'>", base_url, board, number);
 
   if post_tbl["File"] then
     local extension = pico.file.extension(post_tbl["File"]);
     local class = pico.file.class(extension);
 
     if class == "image" or class == "video" or extension == "pdf" then
-      printf("<img alt='***' src='/media/icon/%s' />", post_tbl["File"]);
+      printf("<img alt='***' src='%s/media/icon/%s' />", base_url, post_tbl["File"]);
     elseif class == "audio" then
-      printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
+      printf("<img alt='***' src='%s/static/audio.png' width=100 height=70 />", base_url);
     elseif extension == "epub" then
-      printf("<img alt='***' src='/static/epub.png' width=100 height=70 />");
+      printf("<img alt='***' src='%s/static/epub.png' width=100 height=70 />", base_url);
     end
   else
     printf("***");
@@ -513,7 +517,7 @@ function html.rendercatalog(board_tbl, post_tbl)
 
   printf("</a>");
   printf("<div class='catalog-thread-info'>");
-  printf("<a href='/%s'>/%s/</a> R:%d ", board, board, pico.post.threadreplycount(board, number));
+  printf("<a href='%s/%s'>%s/%s/</a> R:%d ", base_url, board, short_url, board, pico.post.threadreplycount(board, number));
   html.threadflags(post_tbl);
   printf("</div>");
 
@@ -668,12 +672,50 @@ function html.form.mod_action_reason()
 end
 
 --
+-- JSON FUNCTIONS
+--
+
+function json.webring()
+  local fd = assert(io.open("webring.json", "r"));
+  local data = assert(fd:read("*a"));
+  fd:close();
+
+  local webring = assert(json.decode(data));
+  assert(webring["url"]);
+  assert(webring["logo"]);
+  assert(webring["following"]);
+  assert(webring["known"]);
+
+  webring["name"] = webring["name"] or sitename;
+  webring["endpoint"] = webring["url"] .. "/" .. "webring.json";
+  webring["boards"] = {};
+
+  local boards = pico.board.list();
+  for i = 1, #boards do
+    local board = {};
+    local board_tbl = pico.board.tbl(boards[i]["Name"]);
+    board["uri"] = board_tbl["Name"];
+    board["title"] = board_tbl["Title"];
+    board["subtitle"] = board_tbl["Subtitle"];
+    board["path"] = webring["url"] .. "/" .. board_tbl["Name"] .. "/";
+    board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1);
+    board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"]);
+    board["tags"] = {};
+    board["lastPostTimestamp"] = os.date("%Y-%m-%dT%H:%M:%SZ",
+      pico.board.stats.lastbumpdate(board_tbl["Name"]));
+    webring["boards"][i] = board;
+  end
+
+  return webring
+end
+
+--
 -- PAGE DEFINITIONS
 --
 
 cgi.headers["Content-Type"] = "text/html; charset=utf-8";
 cgi.headers["Cache-Control"] = "no-cache";
-cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self';";
+--cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self';";
 cgi.headers["Referrer-Policy"] = "no-referrer";
 cgi.headers["X-DNS-Prefetch-Control"] = "off";
 cgi.headers["X-Frame-Options"] = "deny";
@@ -1045,38 +1087,45 @@ elseif cgi.pathinfo[1] == "overboard.html" then
 
   printf("</div>");
   html.finish();
-elseif cgi.pathinfo[1] == "webring.json" then
-  local fd = assert(io.open("webring.json", "r"));
-  local data = assert(fd:read("*a"));
-  fd:close();
+elseif cgi.pathinfo[1] == "fediboard.html" then
+  html.begin("fediboard");
+  html.redheader("%s Fediboard", sitename);
+  html.announce();
+  printf("<a href=''>[Update]</a><hr /><div class='catalog-container'>");
 
-  local webring = assert(json.decode(data));
-  assert(webring["url"]);
-  assert(webring["logo"]);
-  assert(webring["following"]);
-  assert(webring["known"]);
+  local overboard_tbl = pico.board.overboard();
 
-  webring["name"] = webring["name"] or sitename;
-  webring["endpoint"] = webring["url"] .. "/" .. "webring.json";
-  webring["boards"] = {};
-
-  local boards = pico.board.list();
-  for i = 1, #boards do
-    local board = {};
-    local board_tbl = pico.board.tbl(boards[i]["Name"]);
-    board["uri"] = board_tbl["Name"];
-    board["title"] = board_tbl["Title"];
-    board["subtitle"] = board_tbl["Subtitle"];
-    board["path"] = webring["url"] .. "/" .. board_tbl["Name"] .. "/";
-    board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1);
-    board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"]);
-    board["tags"] = {};
-    board["lastPostTimestamp"] = os.date("%Y-%m-%dT%H:%M:%SZ",
-      pico.board.stats.lastbumpdate(board_tbl["Name"]));
-    webring["boards"][i] = board;
+  local following = assert(json.webring()["following"]);
+  for i = 1, #following do
+    local endpoint = requests.get(following[i]);
+    if endpoint["status_code"] == 200 then
+      local remote_webring = assert(json.decode(endpoint["text"]));
+      local remote_host = assert(remote_webring["url"]);
+      local remote_overboard = requests.get(remote_host .. "/overboard.json");
+      if remote_overboard["status_code"] == 200 then
+        local remote_overboard_tbl = assert(json.decode(remote_overboard["text"]));
+        for j = 1, #remote_overboard_tbl do
+          remote_overboard_tbl[j]["Host"] = remote_host;
+          overboard_tbl[#overboard_tbl + 1] = remote_overboard_tbl[j];
+        end
+      end
+    end
   end
-  cgi.headers["Content-Type"] = "application/json"
-  io.write(json.encode(webring));
+
+  table.sort(overboard_tbl,
+    function(a, b) return a["LastBumpDate"] > b["LastBumpDate"] end);
+  for i = 1, #overboard_tbl do
+    html.rendercatalog(board_tbl, overboard_tbl[i]);
+  end
+
+  printf("</div>");
+  html.finish();
+elseif cgi.pathinfo[1] == "webring.json" then
+  cgi.headers["Content-Type"] = "application/json";
+  io.write(json.encode(json.webring()));
+elseif cgi.pathinfo[1] == "overboard.json" then
+  cgi.headers["Content-Type"] = "application/json";
+  io.write(json.encode(pico.board.overboard()));
 else
   local board_tbl = pico.board.tbl(cgi.pathinfo[1]);
 
@@ -1131,6 +1180,7 @@ else
     printf("<div id='thread-view-links'>");
     printf("<a href='/%s'>[Catalog]</a>", board_tbl["Name"]);
     printf("<a href='/overboard.html'>[Overboard]</a>");
+    printf("<a href='/fediboard.html'>[Fediboard]</a>");
     printf("<a href=''>[Update]</a>");
 
     printf("<span id='thread-reply'>");
