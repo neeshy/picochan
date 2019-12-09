@@ -117,6 +117,7 @@ CREATE TABLE Captchas (
 CREATE TABLE Webring (
   Endpoint              TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
   Type                  TEXT            NOT NULL                                DEFAULT 'known',
+  Compatible            BOOLEAN         NOT NULL                                DEFAULT FALSE,
   CHECK(Type IN ('following', 'known', 'blacklist'))
 ) WITHOUT ROWID;
 
