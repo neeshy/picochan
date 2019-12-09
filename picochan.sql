@@ -112,6 +112,12 @@ CREATE TABLE Captchas (
   ExpireDate		DATETIME	NOT NULL				DEFAULT 0
 ) WITHOUT ROWID;
 
+CREATE TABLE Webring (
+  Endpoint              TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
+  Type                  TEXT            NOT NULL                                DEFAULT 'known',
+  CHECK(Type IN ('following', 'known', 'blacklist'))
+) WITHOUT ROWID;
+
 CREATE TRIGGER delete_child_posts BEFORE DELETE ON Posts WHEN OLD.Parent IS NULL
 BEGIN
   DELETE FROM Posts WHERE Board = OLD.Board AND Parent = OLD.Number;
@@ -254,3 +260,4 @@ INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('bcryptrounds', 14);
+INSERT INTO GlobalConfig VALUES ('url', 'http://localhost');

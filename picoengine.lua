@@ -16,6 +16,7 @@ local pico = {};
       pico.post = {};
       pico.log = {};
       pico.captcha = {};
+      pico.webring = {};
 
 local db, errcode, errmsg = sqlite3.open("picochan.db", sqlite3.OPEN_READWRITE);
 assert(db, errmsg);
@@ -430,6 +431,11 @@ end
 
 function pico.board.stats.totalposts(board)
   return db:r("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
+end
+
+function pico.board.stats.lastbumpdate(board)
+  local result = db:r("SELECT LastBumpDate FROM Posts WHERE Board = ? ORDER BY LastBumpDate DESC", board);
+  return result and result["LastBumpDate"] or nil;
 end
 
 --
@@ -967,6 +973,91 @@ function pico.captcha.create()
   db:q("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc));
 
   return captcha_id, string.base64(captcha_data);
+end
+
+--
+-- WEBRING FUNCTIONS
+--
+
+function pico.webring.tbl()
+  local tbl = {}
+  tbl["name"] = pico.global.get("sitename");
+  tbl["url"] = pico.global.get("url");
+  tbl["endpoint"] = tbl["url"] .. "/webring.json";
+  tbl["logo"] = {tbl["url"] .. "/Static/logo.png"};
+
+  tbl["following"] = {};
+  tbl["known"] = {};
+  tbl["blacklist"] = {};
+  tbl["boards"] = {};
+
+  hosts = db:q("SELECT * FROM Webring");
+  for i = 1, #hosts do
+    local host = hosts[i];
+    local type = host["Type"];
+    tbl[type][#tbl[type] + 1] = host["Endpoint"];
+    if type == "following" then
+      tbl["known"][#tbl["known"] + 1] = host["Endpoint"];
+    end
+  end
+
+  local boards = pico.board.list();
+  for i = 1, #boards do
+   local board = {};
+   local board_tbl = boards[i];
+   board["uri"] = board_tbl["Name"];
+   board["title"] = board_tbl["Title"];
+   board["subtitle"] = board_tbl["Subtitle"];
+   board["path"] = tbl["url"] .. "/" .. board_tbl["Name"] .. "/";
+   board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1);
+   board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"]);
+   board["tags"] = {};
+   local lastbumpdate = pico.board.stats.lastbumpdate(board_tbl["Name"]);
+   board["lastPostTimestamp"] = lastbumpdate and os.date("!%Y-%m-%dT%H:%M:%SZ", lastbumpdate);
+   tbl["boards"][i] = board;
+  end
+
+  return tbl;
+end
+
+function pico.webring.add(endpoint, type)
+  local auth, msg = permit("admin");
+  if not auth then return auth, msg end;
+
+  if not endpoint then
+    return false, "Endpoint not supplied";
+  elseif not type then
+    return false, "Endpoint type not supplied";
+  elseif not (type == "following" or type == "known" or type == "blacklist") then
+    return false, "Invalid value for endpoint type";
+  end
+
+  if db:b("SELECT TRUE FROM Webring WHERE Endpoint = ?", endpoint) then
+    return false, "Endpoint is already stored";
+  end
+
+  db:q("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type)
+  log(false, nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
+
+  return true, "Endpoint successfully added";
+end
+
+function pico.webring.remove(endpoint, reason)
+  local auth, msg = permit("admin");
+  if not auth then return auth, msg end;
+
+  if not endpoint then
+    return false, "Endpoint not supplied";
+  end
+
+  if not db:b("SELECT TRUE FROM Webring WHERE Endpoint = ?", endpoint) then
+    return false, "Endpoint has not been added";
+  end
+
+  db:q("DELETE FROM Webring WHERE Endpoint = ?", endpoint);
+  log(false, nil, "Removed webring endpoint '%s' for reason: %s", endpoint, reason);
+
+  return true, "Endpoint successfully removed";
 end
 
 return pico;
