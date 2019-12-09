@@ -70,7 +70,7 @@ end
 --   admin gvol bo lvol
 -- targettype may be one of the following:
 --   acct board post
-local function permit(permclass, targettype, targarg1, targarg2)
+local function permit(permclass, targettype, targarg)
   -- STEP 1. Check account type
   if pico.account.current == nil then
     return false, "Action not permitted (not logged in)";
@@ -91,11 +91,11 @@ local function permit(permclass, targettype, targarg1, targarg2)
 
   if targettype == "acct" then
     -- Special case: Anyone can modify their own account (password change)
-    if pico.account.current["Name"] == targarg1 then
+    if pico.account.current["Name"] == targarg then
       return true;
     end
 
-    local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", targarg1);
+    local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", targarg);
 
     if pico.account.current["Type"] == "gvol" then
       return false, "Action not permitted (account type not authorized)";
@@ -112,7 +112,7 @@ local function permit(permclass, targettype, targarg1, targarg2)
     if pico.account.current["Type"] == "gvol" then
       return false, "Action not permitted (account type not authorized)";
     elseif pico.account.current["Type"] == "bo" then
-      if targarg1 == pico.account.current["Board"] then
+      if targarg == pico.account.current["Board"] then
         return true;
       else
         return false, "Action not permitted (attempt to modify non-assigned board)";
@@ -125,7 +125,7 @@ local function permit(permclass, targettype, targarg1, targarg2)
       return true;
     elseif (pico.account.current["Type"] == "bo")
         or (pico.account.current["Type"] == "lvol") then
-      if targarg1 == pico.account.current["Board"] then
+      if targarg == pico.account.current["Board"] then
         return true;
       else
         return false, "Action not permitted (attempt to modify post outside assigned board)";
@@ -681,7 +681,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Parent thread does not exist";
     elseif not is_thread and parent_tbl["Parent"] then
       return nil, "Parent post is not a thread";
-    elseif not is_thread and parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board, parent) then
+    elseif not is_thread and parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
       return nil, "Parent thread is locked";
     elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
       return nil, "Board is locked";
@@ -749,7 +749,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 end
 
 function pico.post.delete(board, number, reason)
-  local auth, msg = permit("admin gvol bo lvol", "post", board, number);
+  local auth, msg = permit("admin gvol bo lvol", "post", board);
   if not auth then return auth, msg end;
 
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?", board, number) then
@@ -820,7 +820,7 @@ end
 
 -- remove a file from a post without deleting it
 function pico.post.unlink(board, number, file, reason)
-  local auth, msg = permit("admin gvol bo lvol", "post", board, number);
+  local auth, msg = permit("admin gvol bo lvol", "post", board);
   if not auth then return auth, msg end;
 
   if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
@@ -836,7 +836,7 @@ end
 
 -- toggle sticky, lock, autosage, or cycle
 function pico.post.toggle(attribute, board, number, reason)
-  local auth, msg = permit("admin gvol bo lvol", "post", board, number);
+  local auth, msg = permit("admin gvol bo lvol", "post", board);
   if not auth then return auth, msg end;
 
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?", board, number) then
@@ -867,7 +867,7 @@ end
 --    3. Keep a lookup table of the old post number and the new post number.
 -- 3. Delete the old thread.
 function pico.post.movethread(board, number, newboard, reason)
-  local auth, msg = permit("admin gvol", "post", board, number);
+  local auth, msg = permit("admin gvol", "post", board);
   if not auth then return auth, msg end;
 
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL", board, number) then
