@@ -2,7 +2,7 @@
 -- HAPAS ARE SUPERIOR TO WHITES
 
 local sqlite3 = require("picoaux.sqlite3");
-local openbsd = require("picoaux.openbsd");
+local crypto = require("picoaux.crypto");
 local sha = require("picoaux.sha");
 
 require("picoaux.stringmisc");
@@ -158,7 +158,7 @@ function pico.account.create(name, password, type, board)
   end
 
   db:q("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
-      name, type, board, openbsd.bcrypt.digest(password, pico.global.get("bcryptrounds")));
+      name, type, board, crypto.bcrypt.digest(password, pico.global.get("bcryptrounds")));
   log(false, board, "Created new %s account '%s'", type, name);
   return true, "Account created successfully";
 end
@@ -191,7 +191,7 @@ function pico.account.changepass(name, password)
   end
 
   db:q("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
-       openbsd.bcrypt.digest(password, pico.global.get("bcryptrounds")), name);
+       crypto.bcrypt.digest(password, pico.global.get("bcryptrounds")), name);
   log(false, account_tbl["Board"], "Changed password of account '%s'", name);
   return true, "Account password changed successfully";
 end
@@ -200,7 +200,7 @@ end
 -- mod-only actions.
 function pico.account.login(name, password)
   if not db:b("SELECT TRUE FROM Accounts WHERE Name = ?", name)
-  or not openbsd.bcrypt.verify(password, db:r("SELECT PwHash FROM Accounts WHERE Name = ?", name)["PwHash"]) then
+  or not crypto.bcrypt.verify(password, db:r("SELECT PwHash FROM Accounts WHERE Name = ?", name)["PwHash"]) then
     return nil, "Invalid username or password";
   end
 
@@ -929,10 +929,10 @@ function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{};
 
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + openbsd.arc4random(-5, 5));
-    yy[i] = openbsd.arc4random(-15, 15);
-    rr[i] = openbsd.arc4random(-30, 30);
-    ss[i] = openbsd.arc4random(-30, 30);
+    xx[i] = ((48 * i - 168) + crypto.arc4random(-5, 5));
+    yy[i] = crypto.arc4random(-15, 15);
+    rr[i] = crypto.arc4random(-30, 30);
+    ss[i] = crypto.arc4random(-30, 30);
     cc[i] = string.random(1, "a-z");
     bx[i] = (150 + 1.1 * xx[i]);
     by[i] = (40 + 2 * yy[i]);
