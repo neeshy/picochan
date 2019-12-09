@@ -98,7 +98,7 @@ local function permit(permclass, targettype, targarg)
 
     local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", targarg);
 
-    if pico.account.current["Type"] == "gvol" then
+    if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
       return false, "Action not permitted (account type not authorized)";
     elseif pico.account.current["Type"] == "bo" then
       if account_tbl["Board"] == pico.account.current["Board"] then
@@ -106,11 +106,9 @@ local function permit(permclass, targettype, targarg)
       else
         return false, "Action not permitted (attempt to modify account outside assigned board)";
       end
-    elseif pico.account.current["Type"] == "lvol" then
-      return false, "Action not permitted (account type not authorized)";
     end
   elseif targettype == "board" then
-    if pico.account.current["Type"] == "gvol" then
+    if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
       return false, "Action not permitted (account type not authorized)";
     elseif pico.account.current["Type"] == "bo" then
       if targarg == pico.account.current["Board"] then
@@ -118,8 +116,6 @@ local function permit(permclass, targettype, targarg)
       else
         return false, "Action not permitted (attempt to modify non-assigned board)";
       end
-    elseif pico.account.current["Type"] == "lvol" then
-      return false, "Action not permitted (account type not authorized)";
     end
   elseif targettype == "post" then
     if pico.account.current["Type"] == "gvol" then
