@@ -996,7 +996,7 @@ end
 -- WEBRING FUNCTIONS
 --
 
-function pico.webring.tbl()
+function pico.webring.tbl(compatible)
   local tbl = {}
   tbl["name"] = pico.global.get("sitename");
   tbl["url"] = pico.global.get("url");
@@ -1008,7 +1008,8 @@ function pico.webring.tbl()
   tbl["blacklist"] = {};
   tbl["boards"] = {};
 
-  hosts = db:q("SELECT * FROM Webring");
+  hosts = db:q("SELECT Endpoint, Type FROM Webring" ..
+               (compatible and " WHERE Compatible" or ""));
   for i = 1, #hosts do
     local host = hosts[i];
     local type = host["Type"];
@@ -1041,7 +1042,7 @@ function pico.webring.endpoint.tbl(endpoint)
   return db:r("SELECT * FROM Webring WHERE Endpoint = ?", endpoint);
 end
 
-function pico.webring.endpoint.add(endpoint, type)
+function pico.webring.endpoint.add(endpoint, type, compatible)
   local auth, msg = permit("admin");
   if not auth then return auth, msg end;
 
@@ -1055,7 +1056,8 @@ function pico.webring.endpoint.add(endpoint, type)
     return false, "Endpoint is already stored";
   end
 
-  db:q("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type);
+  db:q("INSERT INTO Webring (Endpoint, Type, Compatible) VALUES (?, ?, ?)",
+       endpoint, type, compatible and 1 or 0);
   log(false, nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
 
   return true, "Endpoint successfully added";
@@ -1087,8 +1089,9 @@ function pico.webring.endpoint.configure(endpoint_tbl)
     return false, "Endpoint does not exist";
   end
 
-  db:q("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
-       endpoint_tbl["Type"] or "known", endpoint_tbl["Endpoint"]);
+  db:q("UPDATE Webring SET Type = ?, Compatible = ? WHERE Endpoint = ?",
+       endpoint_tbl["Type"] or "known", endpoint_tbl["Compatible"] or 0,
+       endpoint_tbl["Endpoint"]);
   log(false, nil, "Modified webring endpoint configuration for '%s'",
       endpoint_tbl["Endpoint"]);
   return true, "Endpoint configured successfully";
