@@ -4,6 +4,7 @@
 
 local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
+local json = require("picoaux.json");
 
 local html = {};
       html.table = {};
@@ -752,6 +753,47 @@ function html.form.account_config()
   printf("</form></fieldset>");
 end
 
+function html.form.endpoint_add()
+  printf("<fieldset><form id='endpoint-add' method='POST'>");
+  printf("<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
+  printf("<label for='type'>Type</label><select form='endpoint-add' id='type' name='type'>");
+  printf(  "<option value='following' selected>Following</option>");
+  printf(  "<option value='known'>Known Only</option>");
+  printf(  "<option value='blacklist'>Blacklisted</option>");
+  printf("</select><br />");
+  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.endpoint_remove()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.endpoint_config_select()
+  printf("<fieldset><form method='POST'>");
+  printf(  "<label for='Endpoint'>Endpoint</label><input id='Endpoint' name='Endpoint' type='text' required autofocus /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.endpoint_config(endpoint)
+  local endpoint_tbl = pico.webring.endpoint.tbl(endpoint);
+
+  printf("<fieldset><form method='POST'>");
+  printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl["Endpoint"]));
+  printf(  "<label for='Type'>Type</label><select id='Type' name='Type'>");
+  printf(    "<option value='following'%s>Following</option>", endpoint_tbl["Type"] == "following" and " selected" or "");
+  printf(    "<option value='known'%s>Known Only</option>", endpoint_tbl["Type"] == "known" and " selected" or "");
+  printf(    "<option value='blacklist'%s>Blacklisted</option>", endpoint_tbl["Type"] == "blacklist" and " selected" or "");
+  printf(  "</select><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />");
+  printf("</form></fieldset>");
+end
+
 function html.form.globalconfig(varname)
   printf("<fieldset><form id='globalconfig' method='POST'>");
   printf("<input type='hidden' name='name' value='%s' />", varname);
@@ -840,6 +882,7 @@ handlers["/Mod"] = function()
       html.list.begin("unordered");
       html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>");
       html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>");
+      html.list.entry("<a href='/Mod/global/url'>Change site URL</a>");
       html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>");
       html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>");
       html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>");
@@ -863,6 +906,11 @@ handlers["/Mod"] = function()
       html.list.entry("<a href='/Mod/board/create'>Create a board</a>");
       html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>");
       html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
+      html.container.barheader("Webring");
+      html.list.begin("unordered");
+      html.list.entry("<a href='/Mod/webring/add'>Add a webring endpoint</a>");
+      html.list.entry("<a href='/Mod/webring/remove'>Remove a webring endpoint</a>");
+      html.list.entry("<a href='/Mod/webring/config'>Configure a webring endpoint</a>");
       html.list.finish();
       html.cfinish();
 end;
@@ -1000,6 +1048,51 @@ handlers["/Mod/board/config"] = function()
           end
 
           html.form.board_config(POST["Name"]);
+        end
+
+        html.cfinish();
+end;
+
+handlers["/Mod/webring/add"] = function()
+        account_check();
+        html.brc("add webring endpoint", "Add webring endpoint");
+
+        if POST["endpoint"] and POST["type"] then
+          local status, msg = pico.webring.endpoint.add(POST["endpoint"], POST["type"]);
+          printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
+        end
+
+        html.form.endpoint_add();
+end;
+
+handlers["/Mod/webring/remove"] = function()
+        account_check();
+        html.brc("remove webring endpoint", "Remove webring endpoint");
+
+        if POST["endpoint"] and POST["reason"] then
+          local status, msg = pico.webring.endpoint.remove(POST["endpoint"], POST["reason"]);
+          printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
+        end
+
+        html.form.endpoint_remove();
+end;
+
+handlers["/Mod/webring/config"] = function()
+        account_check();
+        html.brc("configure webring endpoint", "Configure webring endpoint");
+
+        if POST["Endpoint"] == nil or POST["Endpoint"] == "" then
+          html.form.endpoint_config_select();
+        elseif not pico.webring.endpoint.exists(POST["Endpoint"]) then
+          printf("Cannot configure webring endpoint: Endpoint does not exist");
+          html.form.endpoint_config_select();
+        else
+          if POST["Type"] then
+            local status, msg = pico.webring.endpoint.configure(POST);
+            printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg);
+          end
+
+          html.form.endpoint_config(POST["Endpoint"]);
         end
 
         html.cfinish();
@@ -1362,6 +1455,11 @@ handlers["/%l+/%d+"] = function()
 
     printf("</div>");
     html.finish();
+end;
+
+handlers["/webring.json"] = function()
+  cgi.headers["Content-Type"] = "application/json";
+  printf("%s", json.encode(pico.webring.tbl()));
 end;
 
 for patt, func in pairs(handlers) do

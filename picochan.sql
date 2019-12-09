@@ -114,6 +114,12 @@ CREATE TABLE Captchas (
   ExpireDate            DATETIME        NOT NULL                                DEFAULT 0
 ) WITHOUT ROWID;
 
+CREATE TABLE Webring (
+  Endpoint              TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
+  Type                  TEXT            NOT NULL                                DEFAULT 'known',
+  CHECK(Type IN ('following', 'known', 'blacklist'))
+) WITHOUT ROWID;
+
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL AND NEW.Email NOT LIKE '%sage%'
    AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
@@ -228,3 +234,4 @@ INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
+INSERT INTO GlobalConfig VALUES ('url', 'http://localhost');
