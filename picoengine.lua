@@ -929,7 +929,7 @@ function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{};
 
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + math.random(-5, 5));
+    xx[i] = ((48 * i - 168) + openbsd.arc4random(-5, 5));
     yy[i] = openbsd.arc4random(-15, 15);
     rr[i] = openbsd.arc4random(-30, 30);
     ss[i] = openbsd.arc4random(-30, 30);
