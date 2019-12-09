@@ -5,6 +5,7 @@
 local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
 local json = require("picoaux.json");
+local request = require("picoaux.request");
 
 local html = {};
       html.table = {};
@@ -26,7 +27,7 @@ if jit.os == "BSD" then
   openbsd.unveil("/tmp/", "rwc");
   openbsd.unveil("/usr/local/", "x");
   openbsd.unveil("/bin/sh", "x");
-  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
+  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns");
 end
 
 local sitename = pico.global.get("sitename");
@@ -64,7 +65,7 @@ function html.begin(...)
   printf(      "<li class='system'><a href='/' accesskey='`'>main</a></li>");
   printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>");
   printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>");
-  printf(      "<li class='system'><a href='/Stats' accesskey='3'>stats</a></li>");
+  printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>");
   printf(      "<li class='system'><a href='/Recent' accesskey='4'>recent</a></li>");
   printf(      "<li class='system'><a href='/Overboard' accesskey='5'>overboard</a></li>");
 
@@ -1104,11 +1105,50 @@ end;
 
 handlers["/Log/(%d+)"] = handlers["/Log"];
 
-handlers["/Stats"] = function()
-  html.begin("stats");
-  html.redheader("Posting Statistics");
+handlers["/Boards"] = function()
+  local known = pico.webring.tbl()["known"];
+  local webring_boards = {};
+
+  for i = 1, #known do
+    local response = request.send(known[i], {["timeout"] = 1});
+    if response then
+      local status = response["code"];
+      if status == 200 or status == 301 then
+        local status, boards = pcall(function()
+          local webring = assert(json.decode(response["body"]));
+          local site_name = assert(webring["name"]);
+          local site_boards = assert(webring["boards"]);
+          local boards = {};
+          for j = 1, #site_boards do
+            local board = {};
+            board["site_name"] = site_name;
+            board["name"] = html.striphtml(site_boards[j]["uri"]) or "";
+            board["title"] = html.striphtml(site_boards[j]["title"]) or "";
+            board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or "";
+            board["path"] = html.striphtml(site_boards[j]["path"]) or "";
+            board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or "";
+            board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or "";
+
+            boards[#boards + 1] = board;
+          end
+          return boards;
+        end);
+        if status then
+          for j = 1, #boards do
+            webring_boards[#webring_boards + 1] = boards[j];
+          end
+        end
+      end
+    end
+  end
+
+  html.begin("boards");
+  html.redheader("Board List");
   html.container.begin("wide");
-  html.table.begin("Board", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts");
+  if #webring_boards ~= 0 then
+    html.container.barheader("Local Boards");
+  end
+  html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts");
 
   local g_tpw7d = 0;
   local g_tpd1d = 0;
@@ -1119,6 +1159,8 @@ handlers["/Stats"] = function()
   local board_list_tbl = pico.board.list();
   for i = 1, #board_list_tbl do
     local board = board_list_tbl[i]["Name"];
+    local title = board_list_tbl[i]["Title"];
+    local subtitle = board_list_tbl[i]["Subtitle"];
     local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1);
     local tpd1d = pico.board.stats.threadrate(board, 24, 1);
     local ppd7d = pico.board.stats.postrate(board, 24, 7);
@@ -1133,11 +1175,24 @@ handlers["/Stats"] = function()
     g_pph1h = g_pph1h + pph1h;
     g_total = g_total + total;
 
-    html.table.entry(string.format("<a href='/%s' title='%s'>/%s/</a>", board, board_list_tbl[i]["Title"], board),
-                     tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
+    html.table.entry(string.format("<a href='/%s' title='%s'>/%s/</a>", board, title, board),
+                     title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
   end
 
-  html.table.entry("<i>GLOBAL</i>", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
+  html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
+  html.table.finish();
+
+  if #webring_boards ~= 0 then
+    html.container.barheader("Webring Boards");
+    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts");
+    for i = 1, #webring_boards do
+      local board = webring_boards[i];
+      html.table.entry(string.format("<a href='%s' title='%s'>%s/%s/</a>",
+                       board["path"], board["title"], board["site_name"], board["name"]),
+                       board["title"], board["subtitle"], board["pph"], board["total"]);
+    end
+  end
+
   html.table.finish();
   html.cfinish();
 end;
