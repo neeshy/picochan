@@ -437,11 +437,7 @@ end
 --
 
 -- return a file's extension based on its contents
-local function identify_file(path)
-  local fd = assert(io.open(path, "r"));
-  local data = fd:read(128);
-  fd:close();
-
+local function identify_file(data)
   if data == nil or #data == 0 then
     return nil;
   end
@@ -514,17 +510,20 @@ end
 function pico.file.add(path)
   local f = assert(io.open(path, "r"));
   local size = assert(f:seek("end"));
-  local extension = identify_file(path);
-  local class = pico.file.class(extension);
-  assert(f:seek("set"));
-
   if size > max_filesize then
+    f:close()
     return nil, "File too large";
-  elseif not extension then
+  end
+  assert(f:seek("set"));
+  local data = assert(f:read("*a"));
+  f:close()
+
+  local extension = identify_file(data);
+  if not extension then
     return nil, "Could not identify file type";
   end
+  local class = pico.file.class(extension);
 
-  local data = assert(f:read("*a"));
   local hash = sha.hash("sha512", data);
   local filename = hash .. "." .. extension;
 
@@ -536,31 +535,29 @@ function pico.file.add(path)
   assert(newf:write(data));
   newf:close();
 
+  local width, height;
   if class == "video" then
     os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
                "gm convert -strip - -filter Box -thumbnail 200x200 JPEG:media/thumb/" .. filename);
     os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
                "gm convert -flatten -strip - -filter Box -quality 60 " ..
                "-thumbnail 100x70 JPEG:media/icon/" .. filename);
+
+    local p = io.popen("ffprobe -hide_banner media/" .. filename ..
+                       " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
+    local dimensions = string.tokenize(p:read("*a"), "x");
+    p:close();
+
+    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
   elseif class == "image" or extension == "pdf" then
     os.execute("exec gm convert -strip media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
                " -filter Box -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
                "media/thumb/" .. filename);
     os.execute("exec gm convert -background '#222' -flatten -strip media/" .. filename ..
                "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:media/icon/" .. filename);
-  end
 
-  local width, height;
-  if class == "image" or extension == "pdf" then
     local p = io.popen("gm identify -format '%w %h' media/" .. filename .. "[0]", "r");
     local dimensions = string.tokenize(p:read("*a"));
-    p:close();
-
-    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
-  elseif class == "video" then
-    local p = io.popen("ffprobe -hide_banner media/" .. filename ..
-                       " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
-    local dimensions = string.tokenize(p:read("*a"), "x");
     p:close();
 
     width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
