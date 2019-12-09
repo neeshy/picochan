@@ -302,6 +302,36 @@ function html.picofmt(post_tbl, disable_refs)
     end
   end
 
+  local function handle_xhrefs(host, board, number)
+    local webring_tbl = pico.webring.tbl(true);
+
+    local url = webring_tbl["url"]:match("^https?://([^/]+)");
+    if url == host then
+      ref_post_tbl = pico.post.tbl(board, number, true);
+      if ref_post_tbl then
+        return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;&gt;&gt;/%s/%s/%d</a>",
+                             ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, host, board, number);
+      end
+    else
+      local known = webring_tbl["known"];
+      for i = 1, #known do
+        url = known[i]:match("^(https?://[^/]+)");
+        if url:gsub("^https?://", "") == host then
+          local response = requests.get(string.format("%s/%s/%s", url, board, number));
+          local status_code = response["status_code"];
+          if status_code == 200 or status_code == 301 then
+            return string.format("<a class='reference' href='%s/%s/%d'>&gt;&gt;&gt;&gt;/%s/%s/%d</a>",
+                                  url, board, number, host, board, number);
+          else
+            break
+          end
+        end
+      end
+    end
+
+    return string.format("<s><a class='reference'>&gt;&gt;&gt;&gt;/%s/%s/%s</a></s>", host, board, number);
+  end
+
   local function handle_url(previous, url)
     local balance_tbl = {
       ["("] = ")",
@@ -321,13 +351,15 @@ function html.picofmt(post_tbl, disable_refs)
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
 
+  s = s:gsub("(.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+)", handle_url);
+
   if not disable_refs then
+    s = s:gsub("&gt;&gt;&gt;&gt;/([%d%l.]+)/([%d%l]-)/(%d+)", handle_xhrefs);
     s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
     s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
     s = s:gsub("&gt;&gt;(%d+)", handle_refs);
   end
 
-  s = s:gsub("(.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+)", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
