@@ -238,7 +238,7 @@ end
 
 --
 -- GLOBAL CONFIGURATION FUNCTIONS
--- 
+--
 
 -- retrieve value of globalconfig variable or empty string if it doesn't exist
 function pico.global.get(name)
@@ -581,7 +581,7 @@ function pico.file.delete(hash, reason)
     return false, "File does not exist";
   end
 
-  db:q("DELETE FROM Files WHERE Name = ?", hash);  
+  db:q("DELETE FROM Files WHERE Name = ?", hash);
   os.remove("media/" .. hash);
   os.remove("media/icon/" .. hash);
   os.remove("media/thumb/" .. hash);
