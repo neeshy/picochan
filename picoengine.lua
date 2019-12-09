@@ -591,20 +591,9 @@ function pico.file.delete(hash, reason)
 end
 
 function pico.file.list(board, number)
-  db:q("BEGIN TRANSACTION");
-  local file_tbl = db:q("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC", board, number);
-  local stmt = db:prepare("SELECT * FROM Files WHERE Name = ?");
-
-  for i = 1, #file_tbl do
-    stmt:bind(1, file_tbl[i]["File"]);
-    stmt:step();
-    file_tbl[i] = stmt:get_named_values();
-    stmt:reset();
-  end
-
-  stmt:finalize();
-  db:q("END TRANSACTION");
-  return file_tbl;
+  return db:q("SELECT Files.* From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+              "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC",
+              board, number);
 end
 
 --
@@ -650,28 +639,22 @@ function pico.post.thread(board, number)
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
                        "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                        "WHERE Board = ? AND Number = ?", board, number);
-  local stmt1 = db:prepare("SELECT File FROM FileRefs WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
-  local stmt2 = db:prepare("SELECT * FROM Files WHERE Name = ?");
+  local stmt = db:prepare("SELECT Files.* From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+                          "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
   db:q("BEGIN TRANSACTION");
 
   for i = 0, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Files"] = {};
-    stmt1:bind_values(post_tbl["Board"], post_tbl["Number"]);
-
-    while stmt1:step() == sqlite3.ROW do
-      stmt2:bind(1, stmt1:get_value(1));
-      stmt2:step();
-      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt2:get_named_values();
-      stmt2:reset();
+    stmt:bind_values(post_tbl["Board"], post_tbl["Number"]);
+    while stmt:step() == sqlite3.ROW do
+      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt:get_named_values();
     end
-
-    stmt1:reset();
+    stmt:reset();
   end
 
   db:q("END TRANSACTION");
-  stmt1:finalize();
-  stmt2:finalize();
+  stmt:finalize();
   return thread_tbl;
 end
 
