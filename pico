@@ -2,7 +2,6 @@
 <% -- Picochan CGI/HTML Frontend
 -- HAPAS ARE SUPERIOR TO WHITES
 
-local openbsd = require("picoaux.openbsd");
 local brotli = require("picoaux.brotli");
 local zlib = require("picoaux.zlib");
 local pico = require("picoengine");
@@ -18,14 +17,17 @@ local html = {};
 -- INITIALIZATION
 --
 
--- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
-openbsd.unveil("./picochan.db", "rw");
-openbsd.unveil("./picochan.db-journal", "rwc");
-openbsd.unveil("./Media/", "rwxc");
-openbsd.unveil("/tmp/", "rwc");
-openbsd.unveil("/usr/local/", "x");
-openbsd.unveil("/bin/sh", "x");
-openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
+if jit.os == "BSD" then
+  -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
+  local openbsd = require("picoaux.openbsd");
+  openbsd.unveil("./picochan.db", "rw");
+  openbsd.unveil("./picochan.db-journal", "rwc");
+  openbsd.unveil("./Media/", "rwxc");
+  openbsd.unveil("/tmp/", "rwc");
+  openbsd.unveil("/usr/local/", "x");
+  openbsd.unveil("/bin/sh", "x");
+  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
+end
 
 local outputbuf = {};
 local sitename = pico.global.get("sitename");
