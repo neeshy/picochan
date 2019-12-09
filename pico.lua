@@ -15,6 +15,19 @@ local html = {};
 -- INITIALIZATION
 --
 
+if jit.os == "BSD" then
+  -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
+  local openbsd = require("picoaux.openbsd");
+  openbsd.unveil("./picochan.db", "rw");
+  openbsd.unveil("./picochan.db-journal", "rwc");
+  openbsd.unveil("./Media/", "rwxc");
+  openbsd.unveil("/dev/urandom", "r");
+  openbsd.unveil("/tmp/", "rwc");
+  openbsd.unveil("/usr/local/", "x");
+  openbsd.unveil("/bin/sh", "x");
+  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
+end
+
 local sitename = pico.global.get("sitename");
 pico.account.register_login(COOKIE["session_key"]);
 
