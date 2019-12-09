@@ -47,21 +47,21 @@ function html.begin(...)
   printf(  "</head>");
   printf(  "<body>");
   printf(    "<nav id='topbar'><ul>");
-  printf(      "<li class='system'><a href='/pico/' accesskey='`'>main</a></li>");
-  printf(      "<li class='system'><a href='/pico/System/mod' accesskey='1'>mod</a></li>");
-  printf(      "<li class='system'><a href='/pico/System/log' accesskey='2'>log</a></li>");
-  printf(      "<li class='system'><a href='/pico/System/stats' accesskey='3'>stats</a></li>");
-  printf(      "<li class='system'><a href='/pico/Recent' accesskey='4'>recent</a></li>");
-  printf(      "<li class='system'><a href='/pico/Overboard' accesskey='5'>overboard</a></li>");
+  printf(      "<li class='system'><a href='/' accesskey='`'>main</a></li>");
+  printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>");
+  printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>");
+  printf(      "<li class='system'><a href='/Stats' accesskey='3'>stats</a></li>");
+  printf(      "<li class='system'><a href='/Recent' accesskey='4'>recent</a></li>");
+  printf(      "<li class='system'><a href='/Overboard' accesskey='5'>overboard</a></li>");
 
   local boards = pico.board.list();
   for i = 1, #boards do
-    printf("<li class='board'><a href='/pico/%s' title='%s'>/%s/</a></li>",
+    printf("<li class='board'><a href='/%s' title='%s'>/%s/</a></li>",
            boards[i]["Name"], boards[i]["Title"], boards[i]["Name"]);
   end
 
   if pico.account.current then
-    printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/pico/System/mod/logout'>[Logout]</a></span>", pico.account.current["Name"]);
+    printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current["Name"]);
   end
 
   printf(    "</ul>");
@@ -214,14 +214,14 @@ function html.picofmt(post_tbl, disable_refs)
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
     else
-      return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;%d</a>",
+      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;%d</a>",
                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
     end
   end
 
   local function handle_xbrefs(board, number)
     if not tonumber(number) then
-      return string.format("<a class='reference' href='/pico/%s'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
+      return string.format("<a class='reference' href='/%s'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
     end
 
     local ref_post_tbl = pico.post.tbl(board, number, true);
@@ -229,7 +229,7 @@ function html.picofmt(post_tbl, disable_refs)
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
     else
-      return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>",
+      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>",
                            board, ref_post_tbl["Parent"] or number, number, board, number);
     end
   end
@@ -297,14 +297,14 @@ function html.modlinks(post_tbl)
   end
 
   printf("<span class='mod-links'>");
-  printf("<a href='/pico/System/mod/post/delete/%s/%d'>[D]</a>", board, number);
+  printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number);
 
   if not post_tbl["Parent"] then
-    printf("<a href='/pico/System/mod/post/move/%s/%d'>[M]</a>", board, number);
-    printf("<a href='/pico/System/mod/post/sticky/%s/%d'>[S]</a>", board, number);
-    printf("<a href='/pico/System/mod/post/lock/%s/%d'>[L]</a>", board, number);
-    printf("<a href='/pico/System/mod/post/autosage/%s/%d'>[A]</a>", board, number);
-    printf("<a href='/pico/System/mod/post/cycle/%s/%d'>[C]</a>", board, number);
+    printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", board, number);
+    printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", board, number);
+    printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", board, number);
+    printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", board, number);
+    printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", board, number);
   end
 
   printf("</span>");
@@ -343,11 +343,11 @@ function html.renderpostfiles(post_tbl)
       if pico.account.current and ((not pico.account.current["Board"])
                                    or (pico.account.current["Board"] == post_tbl["Board"])) then
         printf(" <span class='mod-links'>");
-        printf("<a href='/pico/System/mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
+        printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
                post_tbl["Board"], post_tbl["Number"], filename);
 
         if not pico.account.current["Board"] then
-          printf("<a href='/pico/System/mod/file/delete/%s' title='Delete File'>[F]</a>",
+          printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
                  filename);
         end
 
@@ -408,7 +408,7 @@ function html.renderpost(post_tbl, include_board_in_id)
 
   printf("</span>");
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
-  printf("<span class='post-number'><a href='/pico/%s/%d#%d'>No.</a><a href='/pico/%s/%d#postform'>%d</a></span>",
+  printf("<span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
@@ -417,7 +417,7 @@ function html.renderpost(post_tbl, include_board_in_id)
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
-    printf("<a class='referrer' href='/pico/%s/%d#%d'>&gt;&gt;%d</a> ",
+    printf("<a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
            post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
   end
 
@@ -436,7 +436,7 @@ function html.rendercatalog(catalog_tbl)
     local number = post_tbl["Number"];
 
     printf("<div class='catalog-thread'>");
-    printf("<a class='catalog-thread-link' href='/pico/%s/%d'>", board, number);
+    printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
 
     if post_tbl["File"] then
       local extension = pico.file.extension(post_tbl["File"]);
@@ -462,7 +462,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("</a>");
     printf("<div class='catalog-thread-info'>");
-    printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
+    printf("<a href='/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
     html.threadflags(post_tbl);
     printf("</div>");
 
@@ -488,7 +488,7 @@ function html.cfinish()
 end
 
 function html.form.postform(board_tbl, parent)
-  printf("<fieldset><form id='postform' action='/pico/System/post' method='POST' enctype='multipart/form-data'>");
+  printf("<fieldset><form id='postform' action='/Post' method='POST' enctype='multipart/form-data'>");
   printf(  "<input name='board' value='%s' type='hidden' />", board_tbl["Name"]);
 
   if parent ~= nil then
@@ -675,48 +675,47 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
   printf("%s", pico.global.get("frontpage") or "");
   html.container.finish();
   html.finish();
-elseif cgi.pathinfo[1] == "System" then
-  if cgi.pathinfo[2] == "mod" then
-    if not pico.account.current and cgi.pathinfo[3] ~= "login" then
+  elseif cgi.pathinfo[1] == "Mod" then
+    if not pico.account.current and cgi.pathinfo[2] ~= "login" then
       cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/pico/System/mod/login";
+      cgi.headers["Location"] = "/Mod/login";
       cgi.finalize();
     end
 
-    if cgi.pathinfo[3] == nil or cgi.pathinfo[3] == "" then
+    if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" then
       html.brc("dashboard", "Moderation Dashboard");
       printf("You are logged in as <b>%s</b>. Your account type is <b>%s</b>.",
              pico.account.current["Name"], pico.account.current["Type"]);
       html.container.barheader("Global");
       html.list.begin("unordered");
-      html.list.entry("<a href='/pico/System/mod/global/announce'>Change global announcement</a>");
-      html.list.entry("<a href='/pico/System/mod/global/sitename'>Change site name</a>");
-      html.list.entry("<a href='/pico/System/mod/global/frontpage'>Change front-page content</a>");
-      html.list.entry("<a href='/pico/System/mod/global/defaultpostname'>Change default post name</a>");
-      html.list.entry("<a href='/pico/System/mod/global/indexpagesize'>Change index page size</a>");
-      html.list.entry("<a href='/pico/System/mod/global/indexwindowsize'>Change index window size</a>");
-      html.list.entry("<a href='/pico/System/mod/global/recentpagesize'>Change recent posts page size</a>");
-      html.list.entry("<a href='/pico/System/mod/global/logpagesize'>Change mod log page size</a>");
+      html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>");
+      html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>");
+      html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>");
+      html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>");
+      html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>");
+      html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>");
+      html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>");
+      html.list.entry("<a href='/Mod/global/logpagesize'>Change mod log page size</a>");
       html.list.finish();
       html.container.barheader("Miscellaneous Tools");
       html.list.begin("unordered");
-      html.list.entry("<a href='/pico/System/mod/tools/multidelete'>Multi-delete by range</a>");
-      html.list.entry("<a href='/pico/System/mod/tools/pattdelete'>Pattern delete</a>");
+      html.list.entry("<a href='/Mod/tools/multidelete'>Multi-delete by range</a>");
+      html.list.entry("<a href='/Mod/tools/pattdelete'>Pattern delete</a>");
       html.list.finish();
       html.container.barheader("Accounts");
       html.list.begin("unordered");
-      html.list.entry("<a href='/pico/System/mod/account/create'>Create an account</a>");
-      html.list.entry("<a href='/pico/System/mod/account/delete'>Delete an account</a>");
-      html.list.entry("<a href='/pico/System/mod/account/config'>Configure an account</a>");
+      html.list.entry("<a href='/Mod/account/create'>Create an account</a>");
+      html.list.entry("<a href='/Mod/account/delete'>Delete an account</a>");
+      html.list.entry("<a href='/Mod/account/config'>Configure an account</a>");
       html.list.finish();
       html.container.barheader("Boards");
       html.list.begin("unordered");
-      html.list.entry("<a href='/pico/System/mod/board/create'>Create a board</a>");
-      html.list.entry("<a href='/pico/System/mod/board/delete'>Delete a board</a>");
-      html.list.entry("<a href='/pico/System/mod/board/config'>Configure a board</a>");
+      html.list.entry("<a href='/Mod/board/create'>Create a board</a>");
+      html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>");
+      html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
       html.list.finish();
       html.cfinish();
-    elseif cgi.pathinfo[3] == "login" then
+    elseif cgi.pathinfo[2] == "login" then
       html.brc("login", "Moderator Login");
 
       if POST["username"] and POST["password"] then
@@ -725,22 +724,22 @@ elseif cgi.pathinfo[1] == "System" then
         if not session_key then
           printf("Cannot log in: %s", errmsg);
         else
-          cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/pico; SameSite=Strict";
+          cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict";
           cgi.headers["Status"] = "303 See Other";
-          cgi.headers["Location"] = "/pico/System/mod";
+          cgi.headers["Location"] = "/Mod";
           cgi.finalize();
         end
       end
 
       html.form.mod_login();
       html.cfinish();
-    elseif cgi.pathinfo[3] == "logout" then
+    elseif cgi.pathinfo[2] == "logout" then
       pico.account.logout();
-      cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/pico; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
+      cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
       cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/pico/Overboard";
+      cgi.headers["Location"] = "/Overboard";
       cgi.finalize();
-    elseif cgi.pathinfo[3] == "global" then
+    elseif cgi.pathinfo[2] == "global" then
       html.brc("change global configuration", "Change global configuration");
 
       if POST["name"] then
@@ -754,10 +753,10 @@ elseif cgi.pathinfo[1] == "System" then
         printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
       end
 
-      html.form.globalconfig(cgi.pathinfo[4]);
+      html.form.globalconfig(cgi.pathinfo[3]);
       html.cfinish();
-    elseif cgi.pathinfo[3] == "account" then
-      if cgi.pathinfo[4] == "create" then
+    elseif cgi.pathinfo[2] == "account" then
+      if cgi.pathinfo[3] == "create" then
         html.brc("create account", "Create account");
 
         if POST["name"] ~= nil and POST["name"] ~= "" then
@@ -766,7 +765,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.form.account_create();
         html.cfinish();
-      elseif cgi.pathinfo[4] == "delete" then
+      elseif cgi.pathinfo[3] == "delete" then
         html.brc("delete account", "Delete account");
 
         if POST["name"] and POST["reason"] then
@@ -776,7 +775,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.form.account_delete();
         html.cfinish();
-      elseif cgi.pathinfo[4] == "config" then
+      elseif cgi.pathinfo[3] == "config" then
         html.brc("configure account", "Configure account");
 
         if POST["name"] and POST["password"] then
@@ -786,8 +785,8 @@ elseif cgi.pathinfo[1] == "System" then
         html.form.account_config();
         html.cfinish();
       end
-    elseif cgi.pathinfo[3] == "board" then
-      if cgi.pathinfo[4] == "create" then
+    elseif cgi.pathinfo[2] == "board" then
+      if cgi.pathinfo[3] == "create" then
         html.brc("create board", "Create board");
 
         if POST["name"] and POST["title"] and POST["subtitle"] then
@@ -797,7 +796,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.form.board_create();
         html.cfinish();
-      elseif cgi.pathinfo[4] == "delete" then
+      elseif cgi.pathinfo[3] == "delete" then
         html.brc("delete board", "Delete board");
 
         if POST["name"] and POST["reason"] then
@@ -807,7 +806,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.form.board_delete();
         html.cfinish();
-      elseif cgi.pathinfo[4] == "config" then
+      elseif cgi.pathinfo[3] == "config" then
         html.brc("configure board", "Configure board");
 
         if POST["Name"] == nil or POST["Name"] == "" then
@@ -826,23 +825,23 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.cfinish();
       end
-    elseif cgi.pathinfo[3] == "post" then
-      if not (cgi.pathinfo[4] == "delete"
-              or cgi.pathinfo[4] == "unlink"
-              or cgi.pathinfo[4] == "move"
-              or cgi.pathinfo[4] == "sticky"
-              or cgi.pathinfo[4] == "lock"
-              or cgi.pathinfo[4] == "autosage"
-              or cgi.pathinfo[4] == "cycle") then
+    elseif cgi.pathinfo[2] == "post" then
+      if not (cgi.pathinfo[3] == "delete"
+              or cgi.pathinfo[3] == "unlink"
+              or cgi.pathinfo[3] == "move"
+              or cgi.pathinfo[3] == "sticky"
+              or cgi.pathinfo[3] == "lock"
+              or cgi.pathinfo[3] == "autosage"
+              or cgi.pathinfo[3] == "cycle") then
         html.error("Invalid action", "Action is invalid");
       end
 
-      html.begin("%s post", cgi.pathinfo[4]);
+      html.begin("%s post", cgi.pathinfo[3]);
       html.redheader("Modify or Delete a Post");
       html.container.begin();
 
-      local board_tbl = pico.board.tbl(cgi.pathinfo[5]);
-      local post_tbl, msg = pico.post.tbl(cgi.pathinfo[5], cgi.pathinfo[6]);
+      local board_tbl = pico.board.tbl(cgi.pathinfo[4]);
+      local post_tbl, msg = pico.post.tbl(cgi.pathinfo[4], cgi.pathinfo[5]);
       if not post_tbl then
         html.error("Action failed", "Cannot find post: %s", msg);
       end
@@ -850,14 +849,14 @@ elseif cgi.pathinfo[1] == "System" then
       if POST["reason"] and POST["reason"] ~= "" then
         local result, msg;
 
-        if cgi.pathinfo[4] == "delete" then
-          result, msg = pico.post.delete(cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
-        elseif cgi.pathinfo[4] == "unlink" then
-          result, msg = pico.post.unlink(cgi.pathinfo[5], cgi.pathinfo[6], cgi.pathinfo[7], POST["reason"]);
-        elseif cgi.pathinfo[4] == "move" then
-          result, msg = pico.post.movethread(cgi.pathinfo[5], cgi.pathinfo[6], POST["destination"], POST["reason"]);
+        if cgi.pathinfo[3] == "delete" then
+          result, msg = pico.post.delete(cgi.pathinfo[4], cgi.pathinfo[5], POST["reason"]);
+        elseif cgi.pathinfo[3] == "unlink" then
+          result, msg = pico.post.unlink(cgi.pathinfo[4], cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
+        elseif cgi.pathinfo[3] == "move" then
+          result, msg = pico.post.movethread(cgi.pathinfo[4], cgi.pathinfo[5], POST["destination"], POST["reason"]);
         else
-          result, msg = pico.post.toggle(cgi.pathinfo[4], cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
+          result, msg = pico.post.toggle(cgi.pathinfo[3], cgi.pathinfo[4], cgi.pathinfo[5], POST["reason"]);
         end
 
         if not result then
@@ -865,31 +864,31 @@ elseif cgi.pathinfo[1] == "System" then
         else
           cgi.headers["Status"] = "303 See Other";
 
-          if cgi.pathinfo[4] == "move" then
-            cgi.headers["Location"] = "/pico/" .. POST["destination"];
+          if cgi.pathinfo[3] == "move" then
+            cgi.headers["Location"] = "/" .. POST["destination"];
           else
             cgi.headers["Location"] =
-              post_tbl["Parent"] and ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                                  or ("/pico/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+              post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
+                                  or ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
           end
 
           cgi.finalize();
         end;
       end
 
-      printf("You are about to <b>%s</b>%s the following post:", cgi.pathinfo[4],
-             cgi.pathinfo[4] == "unlink" and " " .. cgi.pathinfo[7] .. " from" or "");
+      printf("You are about to <b>%s</b>%s the following post:", cgi.pathinfo[3],
+             cgi.pathinfo[3] == "unlink" and " " .. cgi.pathinfo[6] .. " from" or "");
       html.renderpost(post_tbl);
 
-      if cgi.pathinfo[4] == "move" then
+      if cgi.pathinfo[3] == "move" then
         html.form.mod_move_thread();
       else
         html.form.mod_action_reason();
       end
 
       html.cfinish();
-    elseif cgi.pathinfo[3] == "tools" then
-      if cgi.pathinfo[4] == "multidelete" then
+    elseif cgi.pathinfo[2] == "tools" then
+      if cgi.pathinfo[3] == "multidelete" then
         html.brc("multidelete", "Multidelete");
 
         if POST["board"] then
@@ -899,7 +898,7 @@ elseif cgi.pathinfo[1] == "System" then
 
         html.form.mod_multidelete();
         html.cfinish();
-      elseif cgi.pathinfo[4] == "pattdelete" then
+      elseif cgi.pathinfo[3] == "pattdelete" then
         html.brc("pattern delete", "Pattern delete");
 
         if POST["pattern"] then
@@ -910,38 +909,38 @@ elseif cgi.pathinfo[1] == "System" then
         html.form.mod_pattdelete();
         html.cfinish();
       end
-    elseif cgi.pathinfo[3] == "file" then
-      if cgi.pathinfo[4] == "delete" then
+    elseif cgi.pathinfo[2] == "file" then
+      if cgi.pathinfo[3] == "delete" then
         html.brc("delete file", "Delete file");
 
         if POST["reason"] and POST["reason"] ~= "" then
-          local result, msg = pico.file.delete(cgi.pathinfo[5], POST["reason"]);
+          local result, msg = pico.file.delete(cgi.pathinfo[4], POST["reason"]);
 
           if not result then
             html.error("Action failed", "Backend returned error: %s", msg);
           else
             cgi.headers["Status"] = "303 See Other";
-            cgi.headers["Location"] = "/pico/Overboard";
+            cgi.headers["Location"] = "/Overboard";
             cgi.finalize();
           end
         end
 
-        printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", cgi.pathinfo[5]);
+        printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", cgi.pathinfo[4]);
         html.form.mod_action_reason();
         html.cfinish();
       end
     end
-  elseif cgi.pathinfo[2] == "log" then
+  elseif cgi.pathinfo[1] == "Log" then
     html.begin("logs");
     html.redheader("Moderation Logs");
     html.container.begin("wide");
 
-    local page = tonumber(cgi.pathinfo[3]) or 1;
+    local page = tonumber(cgi.pathinfo[2]) or 1;
     page = (page < 1) and 1 or page;
 
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='/pico/System/log/%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='/pico/System/log/%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.table.begin("Account", "Board", "Date", "Description");
 
@@ -949,18 +948,18 @@ elseif cgi.pathinfo[1] == "System" then
     for i = 1, #log_tbl do
       local entry = log_tbl[i];
       html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
-                       entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/pico/%s'>/%s/</a>", entry["Board"], entry["Board"]),
+                       entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/%s'>/%s/</a>", entry["Board"], entry["Board"]),
                        html.date(entry["Date"]),
                        html.striphtml(entry["Description"]));
     end
 
     html.table.finish();
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='/pico/System/log/%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='/pico/System/log/%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.cfinish();
-  elseif cgi.pathinfo[2] == "stats" then
+  elseif cgi.pathinfo[1] == "Stats" then
     html.begin("stats");
     html.redheader("Posting Statistics");
     html.container.begin("wide");
@@ -989,14 +988,14 @@ elseif cgi.pathinfo[1] == "System" then
       g_pph1h = g_pph1h + pph1h;
       g_total = g_total + total;
 
-      html.table.entry(string.format("<a href='/pico/%s' title='%s'>/%s/</a>", board, board_list_tbl[i]["Title"], board),
+      html.table.entry(string.format("<a href='/%s' title='%s'>/%s/</a>", board, board_list_tbl[i]["Title"], board),
                        tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
     end
 
     html.table.entry("<i>GLOBAL</i>", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
     html.table.finish();
     html.cfinish();
-  elseif cgi.pathinfo[2] == "post" then
+  elseif cgi.pathinfo[1] == "Post" then
     local file_hashes = {};
 
     -- step 1. add all the files of the post (if any) to pico's file registration
@@ -1029,11 +1028,10 @@ elseif cgi.pathinfo[1] == "System" then
     cgi.headers["Status"] = "303 See Other";
 
     if not POST["parent"] then
-      cgi.headers["Location"] = "/pico/" .. POST["board"] .. "/" .. number;
+      cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. number;
     else
-      cgi.headers["Location"] = "/pico/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
+      cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
     end
-  end
 elseif cgi.pathinfo[1] == "Overboard" then
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
@@ -1058,8 +1056,8 @@ elseif cgi.pathinfo[1] == "Recent" then
   printf("<hr />");
   printf("<div class='page-switcher'>");
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-  printf("<a class='page-switcher-prev' href='/pico/Recent/%d'>[Prev]</a>", page - 1);
-  printf("<a class='page-switcher-next' href='/pico/Recent/%d'>[Next]</a>", page + 1);
+  printf("<a class='page-switcher-prev' href='/Recent/%d'>[Prev]</a>", page - 1);
+  printf("<a class='page-switcher-next' href='/Recent/%d'>[Next]</a>", page + 1);
   printf("</div>");
   html.finish();
 else
@@ -1077,7 +1075,7 @@ else
     html.announce();
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
     html.form.postform(board_tbl, nil);
-    printf("<a href='/pico/%s/catalog'>[Catalog]</a> <a href='/pico/%s/index'>[Index]</a> <a href=''>[Update]</a>",
+    printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href=''>[Update]</a>",
            board_tbl["Name"], board_tbl["Name"]);
     printf("<hr />");
 
@@ -1097,7 +1095,7 @@ else
           printf("%d replies omitted. ", index_tbl[i]["RepliesOmitted"]);
         end
 
-        printf("Click <a href='/pico/%s/%d'>here</a> to view full thread.", board_tbl["Name"], index_tbl[i][0]["Number"]);
+        printf("Click <a href='/%s/%d'>here</a> to view full thread.", board_tbl["Name"], index_tbl[i][0]["Number"]);
         printf("</span>");
 
         for j = 1, #index_tbl[i] do
@@ -1109,8 +1107,8 @@ else
 
       printf("<div class='page-switcher'>");
       printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-      printf("<a class='page-switcher-prev' href='/pico/%s/index/%d'>[Prev]</a>", board_tbl["Name"], page - 1);
-      printf("<a class='page-switcher-next' href='/pico/%s/index/%d'>[Next]</a>", board_tbl["Name"], page + 1);
+      printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board_tbl["Name"], page - 1);
+      printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board_tbl["Name"], page + 1);
       printf("</div>");
     end
 
@@ -1139,9 +1137,9 @@ else
 
     printf("<hr />");
     printf("<div id='thread-view-links'>");
-    printf("<a href='/pico/%s/catalog'>[Catalog]</a>", board_tbl["Name"]);
-    printf("<a href='/pico/%s/index'>[Index]</a>", board_tbl["Name"]);
-    printf("<a href='/pico/Overboard'>[Overboard]</a>");
+    printf("<a href='/%s/catalog'>[Catalog]</a>", board_tbl["Name"]);
+    printf("<a href='/%s/index'>[Index]</a>", board_tbl["Name"]);
+    printf("<a href='/Overboard'>[Overboard]</a>");
     printf("<a href=''>[Update]</a>");
 
     printf("<span id='thread-reply'>");
