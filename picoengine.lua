@@ -678,22 +678,28 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   if not bypasschecks then
     if not board_tbl then
       return nil, "Board does not exist";
-    elseif not is_thread and not parent_tbl then
-      return nil, "Parent thread does not exist";
-    elseif not is_thread and parent_tbl["Parent"] then
-      return nil, "Parent post is not a thread";
-    elseif not is_thread and parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
-      return nil, "Parent thread is locked";
+    elseif not is_thread then
+      if not parent_tbl then
+        return nil, "Parent thread does not exist";
+      elseif parent_tbl["Parent"] then
+        return nil, "Parent post is not a thread";
+      elseif parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
+        return nil, "Parent thread is locked";
+      elseif parent_tbl["Cycle"] ~= 1 and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
+        return nil, "Thread full";
+      end
+    elseif is_thread then
+      if board_tbl["TPHLimit"] > 0
+         and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
+        return nil, "Maximum thread creation rate exceeded";
+      elseif #comment < board_tbl["ThreadMinLength"] then
+        return nil, "Thread text too short";
+      end
     elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
       return nil, "Board is locked";
-    elseif is_thread and board_tbl["TPHLimit"] > 0
-           and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
-      return nil, "Maximum thread creation rate exceeded";
     elseif board_tbl["PPHLimit"] > 0
            and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
       return nil, "Maximum post creation rate exceeded";
-    elseif is_thread and #comment < board_tbl["ThreadMinLength"] then
-      return nil, "Thread text too short";
     elseif #comment > board_tbl["PostMaxLength"] then
       return nil, "Post text too long";
     elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
@@ -706,9 +712,6 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Email too long";
     elseif #subject > 64 then
       return nil, "Subject too long";
-    elseif not is_thread and parent_tbl["Cycle"] ~= 1
-           and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
-      return nil, "Thread full";
     elseif (not files or #files == 0) and #comment == 0 then
       return nil, "Post is blank";
     elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
