@@ -979,7 +979,7 @@ end
 -- WEBRING FUNCTIONS
 --
 
-function pico.webring.tbl()
+function pico.webring.tbl(compatible)
   local tbl = {}
   tbl["name"] = pico.global.get("sitename");
   tbl["url"] = pico.global.get("url");
@@ -991,7 +991,10 @@ function pico.webring.tbl()
   tbl["blacklist"] = {};
   tbl["boards"] = {};
 
-  hosts = db:q("SELECT * FROM Webring");
+  local sql = "SELECT Endpoint, Type FROM Webring";
+  sql = compatible and (sql .. " WHERE Compatible") or sql;
+  hosts = db:q(sql);
+
   for i = 1, #hosts do
     local host = hosts[i];
     local type = host["Type"];
@@ -1020,7 +1023,7 @@ function pico.webring.tbl()
   return tbl;
 end
 
-function pico.webring.add(endpoint, type)
+function pico.webring.add(endpoint, type, compatible)
   local auth, msg = permit("admin");
   if not auth then return auth, msg end;
 
@@ -1036,7 +1039,8 @@ function pico.webring.add(endpoint, type)
     return false, "Endpoint is already stored";
   end
 
-  db:q("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type)
+  db:q("INSERT INTO Webring (Endpoint, Type, Compatible) VALUES (?, ?, ?)",
+      endpoint, type, compatible and true or false);
   log(false, nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
 
   return true, "Endpoint successfully added";
