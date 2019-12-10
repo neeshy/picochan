@@ -1,13 +1,13 @@
 body {
-    background-color: #111;
-    color: #DDD;
+    background-color: #EEE;
+    color: #333;
     font-family: monospace;
     margin: 0;
     padding: 0 1.3ch 1.3ch 1.3ch;
 }
 
 a, a:visited {
-    color: #5CF;
+    color: #666;
     text-decoration: none;
 }
 
@@ -22,7 +22,7 @@ nav#topbar {
     top: 0;
     padding-top: 0.25ch;
     padding-bottom: 0.25ch;
-    background-color: #222;
+    background-color: #9988EE;
     border-bottom: 1px solid #000;
 }
 
@@ -37,11 +37,13 @@ nav#topbar>ul>li {
     margin-left: 1.5ch;
 }
 
-nav#topbar>ul>li.system {
+nav#topbar>ul>li.system>a {
+    color: #EEE;
     font-weight: bold;
 }
 
-nav#topbar>ul>li.board {
+nav#topbar>ul>li.board>a {
+    color: #DDD;
     font-weight: normal;
 }
 
@@ -73,7 +75,7 @@ div#announce {
 
 div.container {
     margin: auto;
-    background-color: #222;
+    background-color: #DDD;
     border: 1px solid #000;
     padding: 10px;
 }
@@ -87,7 +89,7 @@ div.container.wide {
 }
 
 h2.barheader {
-    background-color: #333;
+    background-color: #BBB;
     margin-left: -10px;
     margin-right: -10px;
     padding-left: 10px;
@@ -117,11 +119,11 @@ table {
 th {
     text-align: left;
     font-weight: bold;
-    background-color: #444;
+    background-color: #BBB;
 }
 
 tr:nth-child(odd) {
-    background-color: #333;
+    background-color: #EEE;
 }
 
 th, td {
@@ -135,7 +137,7 @@ fieldset {
 }
 
 form label {
-    background-color: #333;
+    background-color: #BBB;
     text-align: left;
     display: inline-block;
     width: 18ch;
@@ -183,7 +185,7 @@ form#postform {
     position: fixed;
     top: calc(3.5ch + 1px);
     right: 1.3ch;
-    background-color: #222;
+    background-color: #DDD;
     border: 1px solid #000;
     padding: 5px;
     max-width: 90%;
@@ -258,10 +260,10 @@ div.catalog-thread {
     margin-right: 1.3ch;
     margin-bottom: 8px;
     border: 1px solid #000;
-    background-color: #222;
+    background-color: #DDD;
     text-align: center;
     overflow: auto;
-    scrollbar-color: #444 #333;
+    scrollbar-color: #666 #BBB;
     scrollbar-width: thin;
 }
 
@@ -289,7 +291,7 @@ div.post-container {
 }
 
 div.post {
-    background-color: #222;
+    background-color: #DDD;
     padding: 1.3ch;
     margin-top: 1.3ch;
     border: 1px solid #000;
@@ -304,7 +306,7 @@ div.thread {
 }
 
 div.post-container:target div.post {
-    background-color: #333;
+    background-color: #BBB;
 }
 
 div.post-header span.post-thread-link {
@@ -322,7 +324,7 @@ div.post-header span.post-name {
 }
 
 div.post-header span.post-number a {
-    color: #DDD;
+    color: #666;
     text-decoration: none;
 }
 
@@ -404,7 +406,7 @@ div.post-comment {
 }
 
 div.post-comment a {
-    color: #F33;
+    color: #D00;
     text-decoration: underline;
 }
 
