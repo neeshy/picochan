@@ -71,7 +71,7 @@ function html.begin(...)
 
   local boards = pico.board.list();
   for i = 1, #boards do
-    printf("<li class='board'><a href='/%s' title='%s'>/%s/</a></li>",
+    printf("<li class='board'><a href='/%s/' title='%s'>/%s/</a></li>",
            boards[i]["Name"], boards[i]["Title"], boards[i]["Name"]);
   end
 
@@ -236,7 +236,7 @@ function html.picofmt(post_tbl, disable_refs)
 
   local function handle_xbrefs(board, number)
     if not tonumber(number) then
-      return string.format("<a class='reference' href='/%s'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
+      return string.format("<a class='reference' href='/%s/'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
     end
 
     local ref_post_tbl = pico.post.tbl(board, number, true);
@@ -477,7 +477,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("</a>");
     printf("<div class='catalog-thread-info'>");
-    printf("<a href='/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
+    printf("<a href='/%s/'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
     html.threadflags(post_tbl);
     printf("</div>");
 
@@ -1090,7 +1090,7 @@ handlers["/Log"] = function(page)
   for i = 1, #log_tbl do
     local entry = log_tbl[i];
     html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
-                     entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/%s'>/%s/</a>", entry["Board"], entry["Board"]),
+                     entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/%s/'>/%s/</a>", entry["Board"], entry["Board"]),
                      html.date(entry["Date"]),
                      html.striphtml(entry["Description"]));
   end
@@ -1175,7 +1175,7 @@ handlers["/Boards"] = function()
     g_pph1h = g_pph1h + pph1h;
     g_total = g_total + total;
 
-    html.table.entry(string.format("<a href='/%s' title='%s'>/%s/</a>", board, title, board),
+    html.table.entry(string.format("<a href='/%s/' title='%s'>/%s/</a>", board, title, board),
                      title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
   end
 
