@@ -36,8 +36,8 @@ function html.begin(...)
   printf("<html>");
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
-  printf(    "<link rel='stylesheet' type='text/css' href='/static/picochan.css' />");
-  printf(    "<link rel='shortcut icon' type='image/png' href='/static/favicon.png' />");
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/picochan.css' />");
+  printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />");
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
   printf(  "</head>");
@@ -350,10 +350,10 @@ function html.renderpostfiles(post_tbl)
 
       printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "");
       printf("<div class='post-file-info'>");
-      printf("<a href='/media/%s' title='Open file in new tab' target='_blank'>%s...%s</a><br />%s%s",
+      printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s...%s</a><br />%s%s",
              filename, filename:sub(1, #file_tbl == 1 and 64 or 24), extension,
              html.formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
-      printf(" <a href='/media/%s' title='Download file' download>(dl)</a>", filename);
+      printf(" <a href='/Media/%s' title='Download file' download>(dl)</a>", filename);
 
       if pico.account.current and ((not pico.account.current["Board"])
                                    or (pico.account.current["Board"] == post_tbl["Board"])) then
@@ -372,28 +372,28 @@ function html.renderpostfiles(post_tbl)
       printf("</div>");
 
       if extension == "svg" then
-        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
       elseif class == "image" then
-        printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/media/thumb/%s'] + div.post-file-fullsize::after " ..
-               "{background-image: url('/media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
+        printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/Media/thumb/%s'] + div.post-file-fullsize::after " ..
+               "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                filename, filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
-        printf("<img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' />",
+        printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
                filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif extension == "pdf" then
-        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 200, file["Height"] or 200));
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 200, file["Height"] or 200));
       elseif extension == "epub" then
-        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
       elseif extension == "txt" then
-        printf("<a href='/media/%s' target='_blank'><img class='post-file-thumbnail' src='/static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename);
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename);
       elseif class == "video" then
-        printf("<video class='post-video' controls loop preload='none' src='/media/%s' poster='/media/thumb/%s'></video>", filename, filename);
+        printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename);
       elseif class == "audio" then
-        printf("<audio class='post-audio' controls loop preload='none' src='/media/%s'></audio>", filename);
+        printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename);
       end
 
       printf("</div>");
@@ -455,13 +455,13 @@ function html.rendercatalog(catalog_tbl)
       local class = pico.file.class(extension);
 
       if class == "image" or class == "video" or extension == "pdf" then
-        printf("<img alt='***' src='/media/icon/%s' />", post_tbl["File"]);
+        printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
       elseif class == "audio" then
-        printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
+        printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
       elseif extension == "epub" then
-        printf("<img alt='***' src='/static/epub.png' width=100 height=70 />");
+        printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
       elseif extension == "txt" then
-        printf("<img alt='***' src='/static/txt.png' width=100 height=70 />");
+        printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
       end
     else
       printf("***");

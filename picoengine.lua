@@ -533,32 +533,32 @@ function pico.file.add(path)
     return filename, "File already existed and was not changed";
   end
 
-  local newf = assert(io.open("media/" .. filename, "w"));
+  local newf = assert(io.open("Media/" .. filename, "w"));
   assert(newf:write(data));
   newf:close();
 
   local width, height;
   if class == "video" then
-    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "gm convert -strip - -filter Box -thumbnail 200x200 JPEG:media/thumb/" .. filename);
-    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
+    os.execute("exec ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
+               "gm convert -strip - -filter Box -thumbnail 200x200 JPEG:Media/thumb/" .. filename);
+    os.execute("exec ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
                "gm convert -flatten -strip - -filter Box -quality 60 " ..
-               "-thumbnail 100x70 JPEG:media/icon/" .. filename);
+               "-thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    local p = io.popen("ffprobe -hide_banner media/" .. filename ..
+    local p = io.popen("ffprobe -hide_banner Media/" .. filename ..
                        " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
     local dimensions = string.tokenize(p:read("*a"), "x");
     p:close();
 
     width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
   elseif class == "image" or extension == "pdf" then
-    os.execute("exec gm convert -strip media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
+    os.execute("exec gm convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
                " -filter Box -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
-               "media/thumb/" .. filename);
-    os.execute("exec gm convert -background '#222' -flatten -strip media/" .. filename ..
-               "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:media/icon/" .. filename);
+               "Media/thumb/" .. filename);
+    os.execute("exec gm convert -background '#222' -flatten -strip Media/" .. filename ..
+               "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    local p = io.popen("gm identify -format '%w %h' media/" .. filename .. "[0]", "r");
+    local p = io.popen("gm identify -format '%w %h' Media/" .. filename .. "[0]", "r");
     local dimensions = string.tokenize(p:read("*a"));
     p:close();
 
@@ -584,9 +584,9 @@ function pico.file.delete(hash, reason)
   end
 
   db:q("DELETE FROM Files WHERE Name = ?", hash);
-  os.remove("media/" .. hash);
-  os.remove("media/icon/" .. hash);
-  os.remove("media/thumb/" .. hash);
+  os.remove("Media/" .. hash);
+  os.remove("Media/icon/" .. hash);
+  os.remove("Media/thumb/" .. hash);
 
   log(false, nil, "Deleted file %s from all boards for reason: %s", hash, reason);
   return true, "File deleted successfully";
