@@ -25,6 +25,7 @@ openbsd.unveil("./Media/", "rwxc");
 openbsd.unveil("/tmp/", "rwc");
 openbsd.unveil("/usr/local/", "x");
 openbsd.unveil("/bin/sh", "x");
+openbsd.unveil(nil, nil);
 openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
 
 local outputbuf = {};
