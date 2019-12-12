@@ -1344,8 +1344,15 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   local thread_tbl, msg = pico.post.thread(board_tbl["Name"], post);
 
   if not thread_tbl then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Thread Not Found", "Cannot display thread: %s", msg);
+    local post_tbl = pico.post.tbl(board_tbl["Name"], post);
+    if not post_tbl then
+      cgi.headers["Status"] = "404 Not Found";
+      html.error("Thread Not Found", "Cannot display thread: %s", msg);
+    else
+      cgi.headers["Status"] = "301 Moved Permanently";
+      cgi.headers["Location"] = string.format("/%s/%d#%d", board_tbl["Name"], post_tbl["Parent"], post_tbl["Number"]);
+      cgi.finalize();
+    end
   end
 
   html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[0]["Subject"] and #thread_tbl[0]["Subject"] > 0)
