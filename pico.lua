@@ -340,20 +340,23 @@ end
 
 function html.renderpostfiles(post_tbl)
   local file_tbl = post_tbl["Files"];
+  local truncate = #file_tbl == 1 and 64 or 24;
 
   if file_tbl then
     for i = 1, #file_tbl do
       local file = file_tbl[i];
       local filename = file["Name"];
+      local downloadname = file["DownloadName"];
+      downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename;
       local extension = pico.file.extension(filename);
       local class = pico.file.class(extension);
 
       printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "");
       printf("<div class='post-file-info'>");
-      printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s...%s</a><br />%s%s",
-             filename, filename:sub(1, #file_tbl == 1 and 64 or 24), extension,
+      printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
+             filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
              html.formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
-      printf(" <a href='/Media/%s' title='Download file' download>(dl)</a>", filename);
+      printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
 
       if pico.account.current and ((not pico.account.current["Board"])
                                    or (pico.account.current["Board"] == post_tbl["Board"])) then
@@ -1198,11 +1201,12 @@ handlers["/Boards"] = function()
 end;
 
 handlers["/Post"] = function()
-  local file_hashes = {};
+  local files = {};
 
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, 5 do
-    if POST["file" .. i .. "_name"] and POST["file" .. i .. "_name"] ~= "" then
+    local name = POST["file" .. i .. "_name"];
+    if name and name ~= "" then
       local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
 
       if not hash then
@@ -1210,7 +1214,7 @@ handlers["/Post"] = function()
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
       end
 
-      file_hashes[#file_hashes + 1] = hash;
+      files[#files + 1] = {Name = name, Hash = hash};
     end
   end
 
@@ -1218,7 +1222,7 @@ handlers["/Post"] = function()
   local number, msg = pico.post.create(
     POST["board"], POST["parent"],
     POST["name"], POST["email"], POST["subject"],
-    POST["comment"], file_hashes,
+    POST["comment"], files,
     POST["captchaid"], POST["captcha"]
   );
 

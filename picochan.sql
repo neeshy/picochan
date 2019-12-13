@@ -60,6 +60,7 @@ CREATE TABLE FileRefs (
   Board			TEXT		NOT NULL,
   Number		INTEGER		NOT NULL,
   File			TEXT		NOT NULL,
+  Name			TEXT		NOT NULL,
   Sequence		INTEGER		NOT NULL,
 
   PRIMARY KEY (Board, Number, Sequence),
