@@ -591,7 +591,7 @@ function pico.file.delete(hash, reason)
 end
 
 function pico.file.list(board, number)
-  return db:q("SELECT Files.* From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+  return db:q("SELECT Files.*, FileRefs.Name AS DownloadName From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
               "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC",
               board, number);
 end
@@ -639,7 +639,7 @@ function pico.post.thread(board, number)
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
                        "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                        "WHERE Board = ? AND Number = ?", board, number);
-  local stmt = db:prepare("SELECT Files.* From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
                           "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
   db:q("BEGIN TRANSACTION");
 
@@ -727,8 +727,8 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
   if files ~= nil then
     for i = 1, #files do
-      if files[i] ~= "" then
-        db:q("INSERT INTO FileRefs VALUES (?, ?, ?, ?)", board, number, files[i], i);
+      if files[i]["Hash"] and files[i]["Hash"] ~= "" then
+        db:q("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], i);
       end
     end
   end
