@@ -418,8 +418,8 @@ function html.renderpostfiles(post_tbl)
 
       if class == "image" then
         printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/Media/thumb/%s'] + div.post-file-fullsize::after " ..
-               "{background-image: url('/Media/%s'); width: %dpx; height: %dpx;}</style>",
-               filename, filename, file["Width"] or 0, file["Height"] or 0);
+               "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
+               filename, filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
