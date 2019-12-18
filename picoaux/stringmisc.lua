@@ -30,13 +30,22 @@ function string.tokenize(input, delimiter)
   delimiter = delimiter or " ";
 
   if delimiter == "" then
-    return { input:match((input:gsub(".", "(.)"))) };
-  elseif input == nil then
+    return nil
+  end
+  if input == nil then
     return {};
   end
 
-  for match in (input .. delimiter):gmatch("(.-)" .. delimiter) do
-    result[#result + 1] = match;
+  local pos = 1;
+  while true do
+    local first, last = input:find(delimiter, pos, true);
+    if first then
+      result[#result + 1] = input:sub(pos, first - 1);
+      pos = last + 1;
+    else
+      result[#result + 1] = input:sub(pos);
+      break
+    end
   end
 
   return result;
