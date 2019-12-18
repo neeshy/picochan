@@ -481,7 +481,7 @@ end
 
 -- return a file's extension based on its name
 function pico.file.extension(hash)
-  return hash:match("%.(.-)$");
+  return hash:match("%.([^.]-)$");
 end
 
 -- return a file's media type based on its extension
