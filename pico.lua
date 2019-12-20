@@ -511,7 +511,7 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>");
 end
 
-function html.renderindex(index_tbl, board, page)
+function html.renderindex(index_tbl, board, page, prev, next)
   overboard = board == "Overboard";
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>");
@@ -534,8 +534,12 @@ function html.renderindex(index_tbl, board, page)
 
   printf("<div class='page-switcher'>");
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-  printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1);
-  printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1);
+  if prev then
+    printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1);
+  end
+  if next then
+    printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1);
+  end
   printf("</div>");
 end
 
@@ -1135,15 +1139,32 @@ handlers["/Log"] = function(page)
   html.container.begin("wide");
 
   page = tonumber(page) or 1;
-  page = (page < 1) and 1 or page;
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local log_tbl = pico.log.retrieve(page);
+  if #log_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  prev = page > 1
+  next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0;
 
   printf("<div class='page-switcher'>");
-  printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
-  printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+  if prev then
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+  else
+    printf("[Prev]");
+  end
+  if next then
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+  end
   printf("</div>");
   html.table.begin("Account", "Board", "Date", "Description");
 
-  local log_tbl = pico.log.retrieve(page);
   for i = 1, #log_tbl do
     local entry = log_tbl[i];
     html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
@@ -1154,8 +1175,14 @@ handlers["/Log"] = function(page)
 
   html.table.finish();
   printf("<div class='page-switcher'>");
-  printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
-  printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+  if prev then
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+  else
+    printf("[Prev]");
+  end
+  if next then
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+  end
   printf("</div>");
   html.cfinish();
 end;
@@ -1322,8 +1349,20 @@ handlers["/Overboard/catalog"] = handlers["/Overboard"];
 handlers["/Overboard/index"] = function(page)
   overboard_header();
   page = tonumber(page) or 1;
-  page = (page > 0) and page or 1;
-  html.renderindex(pico.board.index(nil, page), "Overboard", page);
+
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local index_tbl = pico.board.index(nil, page);
+  if #index_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  html.renderindex(index_tbl, "Overboard", page, page > 1,
+    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(nil, page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1336,7 +1375,16 @@ handlers["/Recent"] = function(page)
   printf("<a href=''>[Update]</a><hr class='recent-page-separator' />");
 
   page = tonumber(page) or 1;
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
   local recent_tbl = pico.post.recent(page);
+  if #recent_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
 
   for i = 1, #recent_tbl do
     html.renderpost(recent_tbl[i], true);
@@ -1346,8 +1394,12 @@ handlers["/Recent"] = function(page)
   printf("<hr />");
   printf("<div class='page-switcher'>");
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-  printf("<a class='page-switcher-prev' href='/Recent/%d'>[Prev]</a>", page - 1);
-  printf("<a class='page-switcher-next' href='/Recent/%d'>[Next]</a>", page + 1);
+  if page > 1 then
+    printf("<a class='page-switcher-prev' href='/Recent/%d'>[Prev]</a>", page - 1);
+  end
+  if #recent_tbl == pico.global.get("recentpagesize") and #pico.post.recent(page + 1) ~= 0 then
+    printf("<a class='page-switcher-next' href='/Recent/%d'>[Next]</a>", page + 1);
+  end
   printf("</div>");
   html.finish();
 end;
@@ -1383,8 +1435,20 @@ handlers["/([%l%d]+)/index"] = function(board, page)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
   page = tonumber(page) or 1;
-  page = (page > 0) and page or 1;
-  html.renderindex(pico.board.index(board_tbl["Name"], page), board_tbl["Name"], page);
+
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local index_tbl = pico.board.index(board_tbl["Name"], page);
+  if #index_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  html.renderindex(index_tbl, board_tbl["Name"], page, page > 1,
+    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(board_tbl["Name"], page + 1) ~= 0);
   html.finish();
 end;
 
