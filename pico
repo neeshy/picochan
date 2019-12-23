@@ -223,8 +223,16 @@ function html.picofmt(post_tbl, disable_refs)
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
     else
-      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;%d</a>",
-                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
+      ref_post_tbl["Files"] = pico.file.list(post_tbl["Board"], number);
+      -- XXX: Ugly hack
+      local tmp = cgi.outputbuf;
+      cgi.outputbuf = {};
+      html.renderpost(ref_post_tbl, false, true);
+      local ref_post = table.concat(cgi.outputbuf);
+      cgi.outputbuf = tmp;
+      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;%d</a>" ..
+                           "<div class='tooltip'>%s</div>",
+                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number, ref_post);
     end
   end
 
@@ -337,7 +345,7 @@ function html.threadflags(post_tbl)
   end
 end
 
-function html.renderpostfiles(post_tbl)
+function html.renderpostfiles(post_tbl, is_ref)
   local function formatfilesize(size)
     if size > (1024 * 1024) then
       return string.format("%.2f MiB", (size / 1024 / 1024));
@@ -383,24 +391,27 @@ function html.renderpostfiles(post_tbl)
       printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
              filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
              formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
-      printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
 
-      if pico.account.current and ((not pico.account.current["Board"])
-                                   or (pico.account.current["Board"] == post_tbl["Board"])) then
-        printf(" <span class='mod-links'>");
-        printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
-        printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
-        printf("<a href='/Mod/post/unspoiler/%s/%d/%s' title='Unspoiler File'>[O]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
+      if not is_ref then
+        printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
 
-        if not pico.account.current["Board"] then
-          printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
-                 filename);
+        if pico.account.current and ((not pico.account.current["Board"])
+                                     or (pico.account.current["Board"] == post_tbl["Board"])) then
+          printf(" <span class='mod-links'>");
+          printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
+                 post_tbl["Board"], post_tbl["Number"], filename);
+          printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
+                 post_tbl["Board"], post_tbl["Number"], filename);
+          printf("<a href='/Mod/post/unspoiler/%s/%d/%s' title='Unspoiler File'>[O]</a>",
+                 post_tbl["Board"], post_tbl["Number"], filename);
+
+          if not pico.account.current["Board"] then
+            printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
+                   filename);
+          end
+
+          printf("</span>");
         end
-
-        printf("</span>");
       end
 
       printf("</div>");
@@ -408,13 +419,15 @@ function html.renderpostfiles(post_tbl)
       if extension == "svg" then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
       elseif class == "image" then
-        printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize::after " ..
-               "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
-               post_tbl["Board"], post_tbl["Number"], i,
-               filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
+        if not is_ref then
+          printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize::after " ..
+                 "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
+                 post_tbl["Board"], post_tbl["Number"], i,
+                 filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
 
-        printf("<label>");
-        printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i);
+          printf("<label>");
+          printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i);
+        end
         if spoiler then
           printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' />");
         else
@@ -442,10 +455,13 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl, is_sep)
-  printf("<div id='%s%d' class='post-container'>",
-         is_sep and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
-  printf("<div class='post%s'>", (is_sep or post_tbl["Parent"]) and "" or " thread");
+function html.renderpost(post_tbl, is_sep, is_ref)
+  printf("<div ");
+  if not is_ref then
+    printf("id='%s%d' ", is_sep and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
+  end
+  printf("class='post-container'>");
+  printf("<div class='post%s'>", (is_sep or is_ref or post_tbl["Parent"]) and "" or " thread");
   printf("<div class='post-header'>");
 
   if is_sep then
@@ -479,17 +495,23 @@ function html.renderpost(post_tbl, is_sep)
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
-  html.modlinks(post_tbl);
 
-  local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
-  for i = 1, #reflist do
-    printf("<a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
-           post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
+  if not is_ref then
+    html.modlinks(post_tbl);
+
+    local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
+    for i = 1, #reflist do
+      printf("<a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
+             post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
+      printf("<div class='tooltip'>");
+      html.renderpost(pico.post.tbl(post_tbl["Board"], reflist[i]), false, true);
+      printf("</div>");
+    end
   end
 
   printf("</div>");
-  html.renderpostfiles(post_tbl);
-  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
+  html.renderpostfiles(post_tbl, is_ref);
+  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl, is_ref));
   printf("</div></div>");
 end
 
