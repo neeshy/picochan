@@ -436,3 +436,14 @@ span#thread-reply {
 div.page-switcher a.page-switcher-next {
     float: right;
 }
+
+div.tooltip {
+    display: none;
+}
+
+a.referrer:hover + div.tooltip, a.reference:hover + div.tooltip {
+    display: block;
+    position: fixed;
+    bottom: 1.3ch;
+    right: 1.3ch;
+}

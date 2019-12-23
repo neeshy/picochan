@@ -276,7 +276,16 @@ function html.picofmt(post_tbl, disable_refs)
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
     elseif ref_post_tbl["Parent"] == post_tbl["Parent"] or ref_post_tbl["Number"] == post_tbl["Parent"] then
-      return string.format("<a class='reference' href='#%d'>&gt;&gt;%d</a>", number, number);
+      ref_post_tbl["Files"] = pico.file.list(post_tbl["Board"], number);
+      -- XXX: Ugly hack
+      ref_post_tbl["Parent"] = ref_post_tbl["Parent"] or ref_post_tbl["Number"];
+      local tmp = outputbuf;
+      outputbuf = {};
+      html.renderpost(ref_post_tbl, true);
+      local ref_post = table.concat(outputbuf);
+      outputbuf = tmp;
+      return string.format("<a class='reference' href='#%d'>&gt;&gt;%d</a>" ..
+                           "<div class='tooltip'>%s</div>", number, number, ref_post);
     else
       return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;%d</a>",
                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
@@ -444,8 +453,12 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl)
-  printf("<div id='%d' class='post-container'>", post_tbl["Number"]);
+function html.renderpost(post_tbl, is_ref)
+  printf("<div ");
+  if not is_ref then
+    printf("id='%d' ", post_tbl["Number"]);
+  end
+  printf("class='post-container'>");
   printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
 
@@ -470,30 +483,35 @@ function html.renderpost(post_tbl)
 
   html.threadflags(post_tbl);
 
-  if pico.account.current and (not pico.account.current["Board"]
-      or pico.account.current["Board"] == post_tbl["Board"]) then
-    printf("<span class='mod-links'>");
-    printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", post_tbl["Board"], post_tbl["Number"]);
+  if not is_ref then
+    if pico.account.current and (not pico.account.current["Board"]
+        or pico.account.current["Board"] == post_tbl["Board"]) then
+      printf("<span class='mod-links'>");
+      printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", post_tbl["Board"], post_tbl["Number"]);
 
-    if not post_tbl["Parent"] then
-      printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", post_tbl["Board"], post_tbl["Number"]);
-      printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", post_tbl["Board"], post_tbl["Number"]);
-      printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", post_tbl["Board"], post_tbl["Number"]);
-      printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", post_tbl["Board"], post_tbl["Number"]);
-      printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", post_tbl["Board"], post_tbl["Number"]);
+      if not post_tbl["Parent"] then
+        printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", post_tbl["Board"], post_tbl["Number"]);
+        printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", post_tbl["Board"], post_tbl["Number"]);
+        printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", post_tbl["Board"], post_tbl["Number"]);
+        printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", post_tbl["Board"], post_tbl["Number"]);
+        printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", post_tbl["Board"], post_tbl["Number"]);
+      end
+
+      printf("</span>");
     end
 
-    printf("</span>");
-  end
-
-  local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
-  for i = 1, #reflist do
-    printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a> ", reflist[i], reflist[i]);
+    local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
+    for i = 1, #reflist do
+      printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a> ", reflist[i], reflist[i]);
+      printf("<div class='tooltip'>");
+      html.renderpost(pico.post.tbl(post_tbl["Board"], reflist[i]), true);
+      printf("</div>");
+    end
   end
 
   printf("</div>");
   html.renderpostfiles(post_tbl);
-  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
+  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl, is_ref));
   printf("</div></div>");
 end
 
