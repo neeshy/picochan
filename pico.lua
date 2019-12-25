@@ -6,6 +6,7 @@ local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
 local json = require("picoaux.json");
 local request = require("picoaux.request");
+local date = require("picoaux.date");
 
 local html = {};
       html.table = {};
@@ -1131,6 +1132,8 @@ handlers["/Boards"] = function()
             board["path"] = html.striphtml(site_boards[j]["path"]) or "";
             board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or "";
             board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or "";
+            board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"]);
+            board["last"] = board["last"] and html.date(board["last"], true) or "";
 
             boards[#boards + 1] = board;
           end
@@ -1151,7 +1154,7 @@ handlers["/Boards"] = function()
   if #webring_boards ~= 0 then
     html.container.barheader("Local Boards");
   end
-  html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts");
+  html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts", "Last Activity");
 
   local g_tpw7d = 0;
   local g_tpd1d = 0;
@@ -1159,6 +1162,7 @@ handlers["/Boards"] = function()
   local g_ppd1d = 0;
   local g_pph1h = 0;
   local g_total = 0;
+  local g_last = nil;
   local board_list_tbl = pico.board.list();
   for i = 1, #board_list_tbl do
     local board = board_list_tbl[i]["Name"];
@@ -1170,6 +1174,7 @@ handlers["/Boards"] = function()
     local ppd1d = pico.board.stats.postrate(board, 24, 1);
     local pph1h = pico.board.stats.postrate(board, 1, 1);
     local total = pico.board.stats.totalposts(board);
+    local last = pico.board.stats.lastbumpdate(board);
 
     g_tpw7d = g_tpw7d + tpw7d;
     g_tpd1d = g_tpd1d + tpd1d;
@@ -1177,22 +1182,27 @@ handlers["/Boards"] = function()
     g_ppd1d = g_ppd1d + ppd1d;
     g_pph1h = g_pph1h + pph1h;
     g_total = g_total + total;
+    if not g_last then
+      g_last = last;
+    elseif last then
+      g_last = math.max(g_last, last);
+    end
 
     html.table.entry(string.format("<a href='/%s/' title='%s'>/%s/</a>", board, title, board),
-                     title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total);
+                     title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total, last and html.date(last, true) or "");
   end
 
-  html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
+  html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total, g_last and html.date(g_last, true) or "");
   html.table.finish();
 
   if #webring_boards ~= 0 then
     html.container.barheader("Webring Boards");
-    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts");
+    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts", "Last Activity");
     for i = 1, #webring_boards do
       local board = webring_boards[i];
       html.table.entry(string.format("<a href='%s' title='%s'>%s/%s/</a>",
                        board["path"], board["title"], board["site_name"], board["name"]),
-                       board["title"], board["subtitle"], board["pph"], board["total"]);
+                       board["title"], board["subtitle"], board["pph"], board["total"], board["last"]);
     end
   end
 
