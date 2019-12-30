@@ -28,6 +28,7 @@ if jit.os == "BSD" then
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
 end
 
+local refpostcache = {};
 local sitename = pico.global.get("sitename");
 pico.account.register_login(COOKIE["session_key"]);
 
@@ -456,6 +457,25 @@ function html.renderpostfiles(post_tbl, is_ref)
 end
 
 function html.renderpost(post_tbl, is_sep, is_ref)
+  local cachebuf;
+  local temp;
+  if is_ref then
+    if refpostcache[post_tbl["Board"]] and
+        refpostcache[post_tbl["Board"]][post_tbl["Number"]] then
+      printf("%s", refpostcache[post_tbl["Board"]][post_tbl["Number"]]);
+      return;
+    else
+      cachebuf = {};
+      -- XXX: Another ugly hack
+      temp = printf;
+      function printf(...)
+        local s = string.format(...);
+        cgi.outputbuf[#cgi.outputbuf + 1] = s;
+        cachebuf[#cachebuf + 1] = s;
+      end
+    end
+  end
+
   printf("<div ");
   if not is_ref then
     printf("id='%s%d' ", is_sep and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
@@ -513,6 +533,14 @@ function html.renderpost(post_tbl, is_sep, is_ref)
   html.renderpostfiles(post_tbl, is_ref);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl, is_ref));
   printf("</div></div>");
+
+  if is_ref then
+    printf = temp;
+    if not refpostcache[post_tbl["Board"]] then
+      refpostcache[post_tbl["Board"]] = {};
+    end
+    refpostcache[post_tbl["Board"]][post_tbl["Number"]] = table.concat(cachebuf);
+  end
 end
 
 function html.rendercatalog(catalog_tbl)
