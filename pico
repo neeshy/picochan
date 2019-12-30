@@ -998,12 +998,12 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
     html.redheader("Moderation Logs");
     html.container.begin("wide");
 
-    local page = tonumber(GET["page"] or 1);
+    local page = tonumber(cgi.pathinfo[2]) or 1;
     page = (page < 1) and 1 or page;
 
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.table.begin("Account", "Board", "Date", "Description");
 
@@ -1019,8 +1019,8 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
     html.table.finish();
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.cfinish();
   elseif cgi.pathinfo[1] == "Stats" then
