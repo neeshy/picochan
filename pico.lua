@@ -292,16 +292,6 @@ function html.picofmt(post_tbl, disable_refs)
   return s;
 end
 
-function html.formatfilesize(size)
-  if size > (1024 * 1024) then
-    return string.format("%.2f MiB", (size / 1024 / 1024));
-  elseif size > 1024 then
-    return string.format("%.2f KiB", (size / 1024));
-  else
-    return string.format("%d B", size);
-  end
-end
-
 function html.modlinks(post_tbl)
   local board = post_tbl["Board"];
   local number = post_tbl["Number"];
@@ -340,6 +330,16 @@ function html.threadflags(post_tbl)
 end
 
 function html.renderpostfiles(post_tbl)
+  local function formatfilesize(size)
+    if size > (1024 * 1024) then
+      return string.format("%.2f MiB", (size / 1024 / 1024));
+    elseif size > 1024 then
+      return string.format("%.2f KiB", (size / 1024));
+    else
+      return string.format("%d B", size);
+    end
+  end
+
   local file_tbl = post_tbl["Files"];
   local truncate = #file_tbl == 1 and 64 or 24;
 
@@ -356,7 +356,7 @@ function html.renderpostfiles(post_tbl)
       printf("<div class='post-file-info'>");
       printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
              filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
-             html.formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
+             formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
       printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
 
       if pico.account.current and ((not pico.account.current["Board"])
