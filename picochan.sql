@@ -118,14 +118,14 @@ BEGIN
 END;
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
-  WHEN NEW.Parent IS NOT NULL AND NEW.Email NOT LIKE '%sage%'
+  WHEN NEW.Parent IS NOT NULL AND NEW.Email != 'sage'
    AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
        <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent AND Autosage = FALSE;
 END;
 
-CREATE TRIGGER user_autosage AFTER INSERT ON Posts WHEN NEW.Parent IS NULL AND NEW.Email LIKE '%sage%'
+CREATE TRIGGER user_autosage AFTER INSERT ON Posts WHEN NEW.Parent IS NULL AND NEW.Email = 'sage'
 BEGIN
   UPDATE Posts SET Autosage = TRUE WHERE ROWID = NEW.ROWID;
 END;
