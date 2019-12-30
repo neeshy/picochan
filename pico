@@ -340,40 +340,6 @@ function html.picofmt(post_tbl, disable_refs)
   return s;
 end
 
-function html.formatfilesize(size)
-  if size > (1024 * 1024) then
-    return string.format("%.2f MiB", (size / 1024 / 1024));
-  elseif size > 1024 then
-    return string.format("%.2f KiB", (size / 1024));
-  else
-    return string.format("%d B", size);
-  end
-end
-
-function html.modlinks(post_tbl)
-  local board = post_tbl["Board"];
-  local number = post_tbl["Number"];
-
-  if (not pico.account.current)
-     or (pico.account.current["Board"]
-         and pico.account.current["Board"] ~= board) then
-    return;
-  end
-
-  printf("<span class='mod-links'>");
-  printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number);
-
-  if not post_tbl["Parent"] then
-    printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", board, number);
-    printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", board, number);
-    printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", board, number);
-    printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", board, number);
-    printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", board, number);
-  end
-
-  printf("</span>");
-end
-
 function html.threadflags(post_tbl)
   if (post_tbl["Sticky"] == 1 or post_tbl["Lock"] == 1
       or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
@@ -388,6 +354,16 @@ function html.threadflags(post_tbl)
 end
 
 function html.renderpostfiles(post_tbl)
+  local function formatfilesize(size)
+    if size > (1024 * 1024) then
+      return string.format("%.2f MiB", (size / 1024 / 1024));
+    elseif size > 1024 then
+      return string.format("%.2f KiB", (size / 1024));
+    else
+      return string.format("%d B", size);
+    end
+  end
+
   local function findthumbsize(w, h)
     local tw, th;
 
@@ -418,7 +394,7 @@ function html.renderpostfiles(post_tbl)
       printf("<div class='post-file-info'>");
       printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s...%s</a><br />%s%s",
              filename, filename:sub(1, #file_tbl == 1 and 64 or 24), extension,
-             html.formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
+             formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
       printf(" <a href='/Media/%s' title='Download file' download>(dl)</a>", filename);
 
       if pico.account.current and ((not pico.account.current["Board"])
@@ -488,7 +464,22 @@ function html.renderpost(post_tbl)
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
-  html.modlinks(post_tbl);
+
+  if pico.account.current and (not pico.account.current["Board"]
+      or pico.account.current["Board"] == post_tbl["Board"]) then
+    printf("<span class='mod-links'>");
+    printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", post_tbl["Board"], post_tbl["Number"]);
+
+    if not post_tbl["Parent"] then
+      printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", post_tbl["Board"], post_tbl["Number"]);
+      printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", post_tbl["Board"], post_tbl["Number"]);
+      printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", post_tbl["Board"], post_tbl["Number"]);
+      printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", post_tbl["Board"], post_tbl["Number"]);
+      printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", post_tbl["Board"], post_tbl["Number"]);
+    end
+
+    printf("</span>");
+  end
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
@@ -501,41 +492,44 @@ function html.renderpost(post_tbl)
   printf("</div></div>");
 end
 
-function html.rendercatalog(post_tbl)
-  local board = post_tbl["Board"];
-  local number = post_tbl["Number"];
+function html.rendercatalog(catalog_tbl)
+  for i = 1, #catalog_tbl do
+    local post_tbl = catalog_tbl[i];
+    local board = post_tbl["Board"];
+    local number = post_tbl["Number"];
 
-  printf("<div class='catalog-thread'>");
-  printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
+    printf("<div class='catalog-thread'>");
+    printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
 
-  if post_tbl["File"] then
-    local extension = pico.file.extension(post_tbl["File"]);
-    local class = pico.file.class(extension);
+    if post_tbl["File"] then
+      local extension = pico.file.extension(post_tbl["File"]);
+      local class = pico.file.class(extension);
 
-    if class == "image" or class == "video" or extension == "pdf" then
-      printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
-    elseif class == "audio" then
-      printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
-    elseif extension == "epub" then
-      printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
-    elseif extension == "txt" then
-      printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
+      if class == "image" or class == "video" or extension == "pdf" then
+        printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
+      elseif class == "audio" then
+        printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
+      elseif extension == "epub" then
+        printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
+      elseif extension == "txt" then
+        printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
+      end
+    else
+      printf("***");
     end
-  else
-    printf("***");
+
+    printf("</a>");
+    printf("<div class='catalog-thread-info'>");
+    printf("<a href='/%s/'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
+    html.threadflags(post_tbl);
+    printf("</div>");
+
+    printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
+    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
+    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
+
+    printf("</div>");
   end
-
-  printf("</a>");
-  printf("<div class='catalog-thread-info'>");
-  printf("<a href='/%s/'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
-  html.threadflags(post_tbl);
-  printf("</div>");
-
-  printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
-  printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
-  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
-
-  printf("</div>");
 end
 
 function html.brc(title, redheader)
@@ -1101,12 +1095,7 @@ elseif cgi.pathinfo[1] == "Overboard" then
   html.redheader("%s Overboard", sitename);
   html.announce();
   printf("<a href=''>[Update]</a><hr /><div class='catalog-container'>");
-
-  local overboard_tbl = pico.board.overboard();
-  for i = 1, #overboard_tbl do
-    html.rendercatalog(overboard_tbl[i]);
-  end
-
+  html.rendercatalog(pico.board.overboard());
   printf("</div>");
   html.finish();
 elseif cgi.pathinfo[1] == "Recent" then
@@ -1150,12 +1139,7 @@ else
 
     if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" then
       printf("<div class='catalog-container'>");
-      local catalog_tbl = pico.board.catalog(board_tbl["Name"]);
-
-      for i = 1, #catalog_tbl do
-        html.rendercatalog(catalog_tbl[i]);
-      end
-
+      html.rendercatalog(pico.board.catalog(board_tbl["Name"]));
       printf("</div>");
     elseif cgi.pathinfo[2] == "index" then
       local page = tonumber(cgi.pathinfo[3]) or 1;
