@@ -100,6 +100,7 @@ function html.begin(...)
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
   printf(    "<link rel='stylesheet' type='text/css' href='/static/picochan.css' />");
+  printf(    "<link rel='shortcut icon' type='image/png' href='/static/favicon.png' />");
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
   printf(  "</head>");
@@ -324,6 +325,7 @@ function html.picofmt(post_tbl, disable_refs)
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
   s = s:gsub("__([^\r\n]-)__", "<u>%1</u>");
+  s = s:gsub("==([^%s])==", "<span class='redtext'>%1</span>");
   s = s:gsub("==([^%s][^\r\n]-[^%s])==", "<span class='redtext'>%1</span>");
   s = s:gsub("%*%*([^\r\n]-)%*%*", "<span class='spoiler'>%1</span>");
   s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
@@ -513,6 +515,8 @@ function html.rendercatalog(board_tbl, post_tbl)
       printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
     elseif extension == "epub" then
       printf("<img alt='***' src='/static/epub.png' width=100 height=70 />");
+    elseif extension == "txt" then
+      printf("<img alt='***' src='/static/txt.png' width=100 height=70 />");
     end
   else
     printf("***");
@@ -1006,7 +1010,7 @@ elseif cgi.pathinfo[1] == "System" then
       local entry = log_tbl[i];
 
       html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
-                       entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/%s'>/%s/</a>", entry["Board"], entry["Board"]),
+                       entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/pico/%s'>/%s/</a>", entry["Board"], entry["Board"]),
                        html.date(entry["Date"]),
                        html.striphtml(entry["Description"]));
     end
