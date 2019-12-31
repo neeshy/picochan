@@ -355,7 +355,7 @@ function pico.board.configure(board_tbl)
 end
 
 function pico.board.index(name, page)
-  if not pico.board.exists(name) then
+  if name and not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
 
@@ -364,10 +364,14 @@ function pico.board.index(name, page)
   local windowsize = pico.global.get("indexwindowsize");
 
   local index_tbl = {};
-  local thread_ops = db:q("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                         "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
-                         "WHERE Board = ? AND Parent IS NULL ORDER BY Sticky DESC, LastBumpDate DESC LIMIT ? OFFSET ?",
-                         name, pagesize, (page - 1) * pagesize);
+  local sql = "SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
+              "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts WHERE " ..
+              (name and "Board = ? AND " or "") ..
+              "Parent IS NULL ORDER BY " ..
+              (name and "Sticky DESC, " or "") ..
+              "LastBumpDate DESC LIMIT ? OFFSET ?";
+  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
+                           or db:q(sql, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
     index_tbl[i] = {};
