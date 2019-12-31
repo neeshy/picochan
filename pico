@@ -19,6 +19,7 @@ local html = {};
 --
 
 -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
+local openbsd = require("picoaux.openbsd");
 openbsd.unveil("./picochan.db", "rw");
 openbsd.unveil("./picochan.db-journal", "rwc");
 openbsd.unveil("./media/", "rwxc");
@@ -290,7 +291,7 @@ function html.picofmt(post_tbl, disable_refs)
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
     else
-      return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>", 
+      return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>",
                             ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, board, number);
     end
   end
@@ -347,8 +348,8 @@ function html.formatfilesize(size)
   end
 end
 
-function html.modlinks(board_tbl, post_tbl)
-  local board = board_tbl["Name"];
+function html.modlinks(post_tbl)
+  local board = post_tbl["Board"];
   local number = post_tbl["Number"];
 
   if (not pico.account.current)
@@ -384,7 +385,7 @@ function html.threadflags(post_tbl)
   end
 end
 
-function html.renderpostfiles(board_tbl, post_tbl)
+function html.renderpostfiles(post_tbl)
   local function findthumbsize(w, h)
     local tw, th;
 
@@ -419,10 +420,10 @@ function html.renderpostfiles(board_tbl, post_tbl)
       printf(" <a href='/media/%s' title='Download file' download>(dl)</a>", filename);
 
       if pico.account.current and ((not pico.account.current["Board"])
-                                   or (pico.account.current["Board"] == board_tbl["Name"])) then
+                                   or (pico.account.current["Board"] == post_tbl["Board"])) then
         printf(" <span class='mod-links'>");
         printf("<a href='/pico/System/mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
-               board_tbl["Name"], post_tbl["Number"], filename);
+               post_tbl["Board"], post_tbl["Number"], filename);
 
         if not pico.account.current["Board"] then
           printf("<a href='/pico/System/mod/file/delete/%s' title='Delete File'>[F]</a>",
@@ -434,10 +435,10 @@ function html.renderpostfiles(board_tbl, post_tbl)
 
       printf("</div>");
 
-      if class == "image" or extension == "pdf" then
+      if class == "image" then
         printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/media/thumb/%s'] + div.post-file-fullsize::after " ..
-               "{background-image: url('/media/%s'); width: %dpx; height: %dpx;}</style>",
-               filename, filename, file["Width"] or 0, file["Height"] or 0);
+               "{background-image: url('/media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
+               filename, filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
 
         printf("<label>");
         printf("<input type='checkbox' hidden />");
@@ -445,10 +446,12 @@ function html.renderpostfiles(board_tbl, post_tbl)
                filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
+      elseif extension == "pdf" then
+        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
       elseif extension == "epub" then
         printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
       elseif extension == "txt" then
-        printf("<a href='/media/%s' target='_blank'><img class='post-file-thumbnail' src='/static/txt.png' width=100 height=70 alt='[TEXT]' /></a>", filename);
+        printf("<a href='/media/%s' target='_blank'><img class='post-file-thumbnail' src='/static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename);
       elseif class == "video" then
         printf("<video class='post-video' controls loop preload='none' src='/media/%s' poster='/media/thumb/%s'></video>", filename, filename);
       elseif class == "audio" then
@@ -460,7 +463,7 @@ function html.renderpostfiles(board_tbl, post_tbl)
   end
 end
 
-function html.renderpost(board_tbl, post_tbl)
+function html.renderpost(post_tbl)
   printf("<div id='%d' class='post-container'>", post_tbl["Number"]);
   printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
@@ -481,56 +484,63 @@ function html.renderpost(board_tbl, post_tbl)
   printf("</span>");
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
   printf("<span class='post-number'><a href='/pico/%s/%d#%d'>No.</a><a href='/pico/%s/%d#postform'>%d</a></span>",
-         board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
-         board_tbl["Name"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
+         post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
+         post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
-  html.modlinks(board_tbl, post_tbl);
+  html.modlinks(post_tbl);
 
-  local reflist = pico.post.refs(board_tbl["Name"], post_tbl["Number"]);
+  local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
     printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a> ", reflist[i], reflist[i]);
   end
 
   printf("</div>");
-  html.renderpostfiles(board_tbl, post_tbl);
+  html.renderpostfiles(post_tbl);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
   printf("</div></div>");
 end
 
-function html.rendercatalog(board_tbl, post_tbl)
-  local board = board_tbl and board_tbl["Name"] or post_tbl["Board"];
-  local number = post_tbl["Number"];
+function html.rendercatalog(catalog_tbl)
+  printf("<div class='catalog-container'>");
 
-  printf("<div class='catalog-thread'>");
-  printf("<a class='catalog-thread-link' href='/pico/%s/%d'>", board, number);
+  for i = 1, #catalog_tbl do
+    local post_tbl = catalog_tbl[i];
+    local board = post_tbl["Board"];
+    local number = post_tbl["Number"];
 
-  if post_tbl["File"] then
-    local extension = pico.file.extension(post_tbl["File"]);
-    local class = pico.file.class(extension);
+    printf("<div class='catalog-thread'>");
+    printf("<a class='catalog-thread-link' href='/pico/%s/%d'>", board, number);
 
-    if class == "image" or class == "video" or extension == "pdf" then
-      printf("<img alt='***' src='/media/icon/%s' />", post_tbl["File"]);
-    elseif class == "audio" then
-      printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
-    elseif extension == "epub" then
-      printf("<img alt='***' src='/static/epub.png' width=100 height=70 />");
-    elseif extension == "txt" then
-      printf("<img alt='***' src='/static/txt.png' width=100 height=70 />");
+    if post_tbl["File"] then
+      local extension = pico.file.extension(post_tbl["File"]);
+      local class = pico.file.class(extension);
+
+      if class == "image" or class == "video" or extension == "pdf" then
+        printf("<img alt='***' src='/media/icon/%s' />", post_tbl["File"]);
+      elseif class == "audio" then
+        printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
+      elseif extension == "epub" then
+        printf("<img alt='***' src='/static/epub.png' width=100 height=70 />");
+      elseif extension == "txt" then
+        printf("<img alt='***' src='/static/txt.png' width=100 height=70 />");
+      end
+    else
+      printf("***");
     end
-  else
-    printf("***");
+
+    printf("</a>");
+    printf("<div class='catalog-thread-info'>");
+    printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
+    html.threadflags(post_tbl);
+    printf("</div>");
+
+    printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
+    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
+    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
+
+    printf("</div>");
   end
-
-  printf("</a>");
-  printf("<div class='catalog-thread-info'>");
-  printf("<a href='/pico/%s'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
-  html.threadflags(post_tbl);
-  printf("</div>");
-
-  printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
-  printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
-  printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
 
   printf("</div>");
 end
@@ -939,7 +949,7 @@ elseif cgi.pathinfo[1] == "System" then
 
       printf("You are about to <b>%s</b>%s the following post:", cgi.pathinfo[4],
              cgi.pathinfo[4] == "unlink" and " " .. cgi.pathinfo[7] .. " from" or "");
-      html.renderpost(board_tbl, post_tbl);
+      html.renderpost(post_tbl);
 
       if cgi.pathinfo[4] == "move" then
         html.form.mod_move_thread();
@@ -996,19 +1006,18 @@ elseif cgi.pathinfo[1] == "System" then
     html.redheader("Moderation Logs");
     html.container.begin("wide");
 
-    local page = tonumber(GET["page"] or 1);
+    local page = tonumber(cgi.pathinfo[3] or 1);
     page = (page < 1) and 1 or page;
 
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/pico/System/log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/pico/System/log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.table.begin("Account", "Board", "Date", "Description");
 
     local log_tbl = pico.log.retrieve(page);
     for i = 1, #log_tbl do
       local entry = log_tbl[i];
-
       html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
                        entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/pico/%s'>/%s/</a>", entry["Board"], entry["Board"]),
                        html.date(entry["Date"]),
@@ -1017,8 +1026,8 @@ elseif cgi.pathinfo[1] == "System" then
 
     html.table.finish();
     printf("<div class='page-switcher'>");
-    printf("<a class='page-switcher-prev' href='?page=%d'>[Prev]</a>", page - 1);
-    printf("<a class='page-switcher-next' href='?page=%d'>[Next]</a>", page + 1);
+    printf("<a class='page-switcher-prev' href='/pico/System/log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-next' href='/pico/System/log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.cfinish();
   elseif cgi.pathinfo[2] == "stats" then
@@ -1099,14 +1108,8 @@ elseif cgi.pathinfo[1] == "Overboard" then
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
   html.announce();
-  printf("<a href=''>[Update]</a><hr /><div class='catalog-container'>");
-
-  local overboard_tbl = pico.board.overboard();
-  for i = 1, #overboard_tbl do
-    html.rendercatalog(nil, overboard_tbl[i]);
-  end
-
-  printf("</div>");
+  printf("<a href=''>[Update]</a><hr />");
+  html.rendercatalog(pico.board.overboard());
   html.finish();
 elseif cgi.pathinfo[1] == "Recent" then
   html.begin("recent posts");
@@ -1116,14 +1119,9 @@ elseif cgi.pathinfo[1] == "Recent" then
 
   local page = tonumber(cgi.pathinfo[2]) or 1;
   local recent_tbl = pico.post.recent(page);
-  local board_tbls = {};
 
   for i = 1, #recent_tbl do
-    if not board_tbls[recent_tbl[i]["Board"]] then
-      board_tbls[recent_tbl[i]["Board"]] = pico.board.tbl(recent_tbl[i]["Board"]);
-    end
-
-    html.renderpost(board_tbls[recent_tbl[i]["Board"]], recent_tbl[i]);
+    html.renderpost(recent_tbl[i]);
     printf("<hr />");
   end
 
@@ -1153,14 +1151,7 @@ else
     printf("<hr />");
 
     if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" then
-      printf("<div class='catalog-container'>");
-      local catalog_tbl = pico.board.catalog(board_tbl["Name"]);
-
-      for i = 1, #catalog_tbl do
-        html.rendercatalog(board_tbl, catalog_tbl[i]);
-      end
-
-      printf("</div>");
+      html.rendercatalog(pico.board.catalog(board_tbl["Name"]));
     elseif cgi.pathinfo[2] == "index" then
       local page = tonumber(cgi.pathinfo[3]) or 1;
       page = (page > 0) and page or 1;
@@ -1168,7 +1159,7 @@ else
 
       for i = 1, #index_tbl do
         printf("<div class='index-thread'>");
-        html.renderpost(board_tbl, index_tbl[i][0]);
+        html.renderpost(index_tbl[i][0]);
 
         printf("<span class='index-thread-summary'>");
         if index_tbl[i]["RepliesOmitted"] > 0 then
@@ -1212,7 +1203,7 @@ else
     printf("<hr />");
 
     for i = 0, #thread_tbl do
-      html.renderpost(board_tbl, thread_tbl[i]);
+      html.renderpost(thread_tbl[i]);
     end
 
     printf("<hr />");

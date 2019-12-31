@@ -242,7 +242,7 @@ end
 
 --
 -- GLOBAL CONFIGURATION FUNCTIONS
--- 
+--
 
 -- retrieve value of globalconfig variable or empty string if it doesn't exist
 function pico.global.get(name)
@@ -400,7 +400,7 @@ function pico.board.catalog(name)
     return nil, "Board does not exist";
   end
 
-  return db:q("SELECT Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
+  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
              "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
@@ -441,11 +441,7 @@ end
 --
 
 -- return a file's extension based on its contents
-local function identify_file(path)
-  local fd = assert(io.open(path, "r"));
-  local data = fd:read(128);
-  fd:close();
-
+local function identify_file(data)
   if data == nil or #data == 0 then
     return nil;
   end
@@ -489,7 +485,7 @@ end
 
 -- return a file's extension based on its name
 function pico.file.extension(hash)
-  return hash:match("%.(.-)$");
+  return hash:match("%.([^.]-)$");
 end
 
 -- return a file's media type based on its extension
@@ -518,17 +514,22 @@ end
 function pico.file.add(path)
   local f = assert(io.open(path, "r"));
   local size = assert(f:seek("end"));
-  local extension = identify_file(path);
-  local class = pico.file.class(extension);
-  assert(f:seek("set"));
 
   if size > max_filesize then
+    f:close()
     return nil, "File too large";
-  elseif not extension then
+  end
+
+  assert(f:seek("set"));
+  local data = assert(f:read("*a"));
+  f:close()
+
+  local extension = identify_file(data);
+  if not extension then
     return nil, "Could not identify file type";
   end
 
-  local data = assert(f:read("*a"));
+  local class = pico.file.class(extension);
   local hash = sha.hash("sha512", data);
   local filename = hash .. "." .. extension;
 
@@ -540,31 +541,29 @@ function pico.file.add(path)
   assert(newf:write(data));
   newf:close();
 
+  local width, height;
   if class == "video" then
     os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
                "gm convert -strip - -filter Box -thumbnail 200x200 JPEG:media/thumb/" .. filename);
     os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
                "gm convert -flatten -strip - -filter Box -quality 60 " ..
                "-thumbnail 100x70 JPEG:media/icon/" .. filename);
+
+    local p = io.popen("ffprobe -hide_banner media/" .. filename ..
+                       " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
+    local dimensions = string.tokenize(p:read("*a"), "x");
+    p:close();
+
+    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
   elseif class == "image" or extension == "pdf" then
     os.execute("exec gm convert -strip media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
                " -filter Box -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
                "media/thumb/" .. filename);
     os.execute("exec gm convert -background '#222' -flatten -strip media/" .. filename ..
                "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:media/icon/" .. filename);
-  end
 
-  local width, height;
-  if class == "image" or extension == "pdf" then
     local p = io.popen("gm identify -format '%w %h' media/" .. filename .. "[0]", "r");
     local dimensions = string.tokenize(p:read("*a"));
-    p:close();
-
-    width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
-  elseif class == "video" then
-    local p = io.popen("ffprobe -hide_banner media/" .. filename ..
-                       " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
-    local dimensions = string.tokenize(p:read("*a"), "x");
     p:close();
 
     width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);
@@ -588,7 +587,7 @@ function pico.file.delete(hash, reason)
     return false, "File does not exist";
   end
 
-  db:q("DELETE FROM Files WHERE Name = ?", hash);  
+  db:q("DELETE FROM Files WHERE Name = ?", hash);
   os.remove("media/" .. hash);
   os.remove("media/icon/" .. hash);
   os.remove("media/thumb/" .. hash);
@@ -950,7 +949,7 @@ function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{};
 
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + math.random(-5, 5));
+    xx[i] = ((48 * i - 168) + openbsd.arc4random(-5, 5));
     yy[i] = openbsd.arc4random(-15, 15);
     rr[i] = openbsd.arc4random(-30, 30);
     ss[i] = openbsd.arc4random(-30, 30);

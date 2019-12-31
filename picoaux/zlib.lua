@@ -8,9 +8,6 @@ local ffi = require("ffi");
 local zlib = {};
 
 ffi.cdef[[
-  void *malloc(size_t size);
-  void free(void *ptr);
-
   typedef void *(*z_alloc_func)(void* opaque, unsigned items, unsigned size);
   typedef void (*z_free_func)(void* opaque, void *address );
 

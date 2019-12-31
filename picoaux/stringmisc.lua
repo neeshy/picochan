@@ -30,11 +30,13 @@ function string.tokenize(input, delimiter)
   local result = {};
   delimiter = delimiter or " ";
 
-  if input == nil then
+  if delimiter == "" then
+    return { input:match((input:gsub(".", "(.)"))) };
+  elseif input == nil then
     return {};
   end
 
-  for match in (input .. delimiter):gmatch("(.-)" .. delimiter) do
+  for match in (input .. delimiter):gmatch("(.-)%" .. delimiter) do
     result[#result + 1] = match;
   end
 
