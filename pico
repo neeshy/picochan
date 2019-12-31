@@ -19,7 +19,6 @@ local html = {};
 --
 
 -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
-local openbsd = require("picoaux.openbsd");
 openbsd.unveil("./picochan.db", "rw");
 openbsd.unveil("./picochan.db-journal", "rwc");
 openbsd.unveil("./media/", "rwxc");
@@ -1006,7 +1005,7 @@ elseif cgi.pathinfo[1] == "System" then
     html.redheader("Moderation Logs");
     html.container.begin("wide");
 
-    local page = tonumber(cgi.pathinfo[3] or 1);
+    local page = tonumber(cgi.pathinfo[3]) or 1;
     page = (page < 1) and 1 or page;
 
     printf("<div class='page-switcher'>");
@@ -1170,7 +1169,7 @@ else
         printf("</span>");
 
         for j = 1, #index_tbl[i] do
-          html.renderpost(board_tbl, index_tbl[i][j]);
+          html.renderpost(index_tbl[i][j]);
         end
 
         printf("</div><hr />");
