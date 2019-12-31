@@ -495,6 +495,34 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>");
 end
 
+function html.renderindex(index_tbl, board, page)
+  overboard = board == "Overboard";
+  for i = 1, #index_tbl do
+    printf("<div class='index-thread'>");
+    html.renderpost(index_tbl[i][0], overboard);
+
+    printf("<span class='index-thread-summary'>");
+    if index_tbl[i]["RepliesOmitted"] > 0 then
+      printf("%d replies omitted. ", index_tbl[i]["RepliesOmitted"]);
+    end
+
+    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][0]["Board"], index_tbl[i][0]["Number"]);
+    printf("</span>");
+
+    for j = 1, #index_tbl[i] do
+      html.renderpost(index_tbl[i][j], overboard);
+    end
+
+    printf("</div><hr />");
+  end
+
+  printf("<div class='page-switcher'>");
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+  printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1);
+  printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1);
+  printf("</div>");
+end
+
 function html.brc(title, redheader)
   html.begin(title);
   html.redheader(redheader);
@@ -1250,14 +1278,30 @@ handlers["/Post"] = function()
   end
 end;
 
-handlers["/Overboard"] = function()
+local function overboard_header()
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
   html.announce();
-  printf("<a href=''>[Update]</a><hr />");
+  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href=''>[Update]</a><hr />");
+end
+
+handlers["/Overboard"] = function()
+  overboard_header();
   html.rendercatalog(pico.board.overboard());
   html.finish();
 end;
+
+handlers["/Overboard/catalog"] = handlers["/Overboard"];
+
+handlers["/Overboard/index"] = function(page)
+  overboard_header();
+  page = tonumber(page) or 1;
+  page = (page > 0) and page or 1;
+  html.renderindex(pico.board.index(nil, page), "Overboard", page);
+  html.finish();
+end;
+
+handlers["/Overboard/index/(%d+)"] = handlers["/Overboard/index"];
 
 handlers["/Recent"] = function(page)
   html.begin("recent posts");
@@ -1296,9 +1340,8 @@ local function board_header(board_tbl)
   html.announce();
   printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
   html.form.postform(board_tbl, nil);
-  printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href=''>[Update]</a>",
+  printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href=''>[Update]</a><hr />",
          board_tbl["Name"], board_tbl["Name"]);
-  printf("<hr />");
 end
 
 handlers["/([%l%d]+)/?"] = function(board)
@@ -1315,33 +1358,7 @@ handlers["/([%l%d]+)/index"] = function(board, page)
   board_header(board_tbl);
   page = tonumber(page) or 1;
   page = (page > 0) and page or 1;
-  local index_tbl = pico.board.index(board_tbl["Name"], page);
-
-  for i = 1, #index_tbl do
-    printf("<div class='index-thread'>");
-    html.renderpost(index_tbl[i][0]);
-
-    printf("<span class='index-thread-summary'>");
-    if index_tbl[i]["RepliesOmitted"] > 0 then
-      printf("%d replies omitted. ", index_tbl[i]["RepliesOmitted"]);
-    end
-
-    printf("Click <a href='/%s/%d'>here</a> to view full thread.", board_tbl["Name"], index_tbl[i][0]["Number"]);
-    printf("</span>");
-
-    for j = 1, #index_tbl[i] do
-      html.renderpost(index_tbl[i][j]);
-    end
-
-    printf("</div><hr />");
-  end
-
-  printf("<div class='page-switcher'>");
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-  printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board_tbl["Name"], page - 1);
-  printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board_tbl["Name"], page + 1);
-  printf("</div>");
-
+  html.renderindex(pico.board.index(board_tbl["Name"], page), board_tbl["Name"], page);
   html.finish();
 end;
 
