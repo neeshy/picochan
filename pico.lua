@@ -1311,7 +1311,7 @@ handlers["/Post"] = function()
 
   -- step 2. create the post itself
   local number, msg = pico.post.create(
-    POST["board"], POST["parent"],
+    POST["board"], tonumber(POST["parent"]),
     POST["name"], POST["email"], POST["subject"],
     POST["comment"], files,
     POST["captchaid"], POST["captcha"]
