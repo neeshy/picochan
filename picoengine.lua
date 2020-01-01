@@ -395,14 +395,14 @@ function pico.board.catalog(name)
     return nil, "Board does not exist";
   end
 
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
+  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
              "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
 end
 
 function pico.board.overboard()
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
+  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler " ..
              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
              "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
@@ -592,7 +592,8 @@ function pico.file.delete(hash, reason)
 end
 
 function pico.file.list(board, number)
-  return db:q("SELECT Files.*, FileRefs.Name AS DownloadName From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+  return db:q("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
+              "FROM FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
               "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC",
               board, number);
 end
@@ -636,7 +637,8 @@ function pico.post.thread(board, number)
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
                        "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                        "WHERE Board = ? AND Number = ?", board, number);
-  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
+                          "FROM FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
                           "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
   db:e("BEGIN TRANSACTION");
 
@@ -722,7 +724,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   if files ~= nil then
     for i = 1, #files do
       if files[i]["Hash"] and files[i]["Hash"] ~= "" then
-        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], i);
+        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], files[i]["Spoiler"], i);
       end
     end
   end
@@ -822,7 +824,7 @@ function pico.post.unlink(board, number, file, reason)
   if not auth then return auth, msg end;
 
   if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
-                 board, number, file) then
+              board, number, file) then
     return false, "No such file in that particular post";
   end
 
@@ -830,6 +832,22 @@ function pico.post.unlink(board, number, file, reason)
   log(false, board, "Unlinked file %s from /%s/%d for reason: %s",
       file, board, number, reason);
   return true, "File unlinked successfully";
+end
+
+function pico.post.spoiler(board, number, file, spoil, reason)
+  local auth, msg = permit("admin gvol bo lvol", "post", board);
+  if not auth then return auth, msg end;
+
+  if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
+              board, number, file) then
+    return false, "No such file in that particular post";
+  end
+
+  db:q("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
+       spoil and 1 or 0, board, number, file);
+  log(false, board, "%s file %s from /%s/%d for reason: %s",
+      spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
+  return true, "File " .. (spoil and "spoilered" or "unspoilered") .. " sucessfully";
 end
 
 -- toggle sticky, lock, autosage, or cycle
