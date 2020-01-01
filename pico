@@ -298,15 +298,30 @@ function html.picofmt(post_tbl, disable_refs)
   local function handle_url(previous, url)
     local balance_tbl = {
       ["("] = ")",
-      ["<"] = "<",
-      ["{"] = "{",
+      ["<"] = ">",
+      ["{"] = "}",
       ["["] = "]"
     };
     url = html.unstriphtml(url);
+    prev = html.unstriphtml(previous):sub(-1);
+    local balance = balance_tbl[prev];
     local append = "";
-    if balance_tbl[previous] then
-      append = url:match("%" .. balance_tbl[previous] .. "$") or "";
-      url = url:gsub("%" .. balance_tbl[previous] .. "$", "");
+    if balance then
+      local i = 1;
+      local count = 1;
+      for c in url:gmatch(".") do
+        if c == prev then
+          count = count + 1;
+        elseif c == balance then
+          if count == 1 then
+            append = url:sub(i);
+            url = url:sub(1, i - 1);
+            break;
+          end
+          count = count - 1;
+        end
+        i = i + 1;
+      end
     end
     url = html.striphtml(url);
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
@@ -320,7 +335,7 @@ function html.picofmt(post_tbl, disable_refs)
     s = s:gsub("&gt;&gt;(%d+)", handle_refs);
   end
 
-  s = s:gsub("(.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+)", handle_url);
+  s = s:gsub("(.?.?.?.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#]+)", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
