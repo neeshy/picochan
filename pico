@@ -1096,7 +1096,7 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
     -- step 2. create the post itself
     local number, msg = pico.post.create(
-      POST["board"], POST["parent"],
+      POST["board"], tonumber(POST["parent"]),
       POST["name"], POST["email"], POST["subject"],
       POST["comment"], file_hashes,
       POST["captchaid"], POST["captcha"]
