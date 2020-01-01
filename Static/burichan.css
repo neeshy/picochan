@@ -162,7 +162,6 @@ form input[type=checkbox] {
     margin-right: 5px;
     margin-bottom: 5px;
     border: 1px solid #000;
-    width: 25ch;
 }
 
 form button, form input[type=submit] {

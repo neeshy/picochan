@@ -61,6 +61,7 @@ CREATE TABLE FileRefs (
   Number		INTEGER		NOT NULL,
   File			TEXT		NOT NULL,
   Name			TEXT		NOT NULL,
+  Spoiler		BOOLEAN		NOT NULL,
   Sequence		INTEGER		NOT NULL,
 
   PRIMARY KEY (Board, Number, Sequence),

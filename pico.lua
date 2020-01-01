@@ -349,6 +349,7 @@ function html.renderpostfiles(post_tbl)
       local filename = file["Name"];
       local downloadname = file["DownloadName"];
       downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename;
+      local spoiler = file["Spoiler"] == 1;
       local extension = pico.file.extension(filename);
       local class = pico.file.class(extension);
 
@@ -364,6 +365,10 @@ function html.renderpostfiles(post_tbl)
         printf(" <span class='mod-links'>");
         printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
                post_tbl["Board"], post_tbl["Number"], filename);
+        printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
+               post_tbl["Board"], post_tbl["Number"], filename);
+        printf("<a href='/Mod/post/unspoiler/%s/%d/%s' title='Unspoiler File'>[O]</a>",
+               post_tbl["Board"], post_tbl["Number"], filename);
 
         if not pico.account.current["Board"] then
           printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
@@ -378,16 +383,23 @@ function html.renderpostfiles(post_tbl)
       if extension == "svg" then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
       elseif class == "image" then
-        printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/Media/thumb/%s'] + div.post-file-fullsize::after " ..
+        printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize::after " ..
                "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
-               filename, filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
+               post_tbl["Board"], post_tbl["Number"], i,
+               filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
 
         printf("<label>");
-        printf("<input type='checkbox' hidden />");
-        printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
-               filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200));
+        printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i);
+        if spoiler then
+          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' />");
+        else
+          printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
+                 filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200));
+        end
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
+      elseif spoiler then
+        printf("<a href='/Media/%s'><image class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
       elseif extension == "pdf" then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>",
                filename, filename, thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200));
@@ -458,22 +470,26 @@ function html.rendercatalog(catalog_tbl)
     printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
 
     if post_tbl["File"] then
-      local extension = pico.file.extension(post_tbl["File"]);
-      local class = pico.file.class(extension);
+      if post_tbl["Spoiler"] == 1 then
+        printf("<img alt='***' src='/Static/spoiler.png' width=100 height=70 />");
+      else
+        local extension = pico.file.extension(post_tbl["File"]);
+        local class = pico.file.class(extension);
 
-      if class == "image" or class == "video" or extension == "pdf" then
-        if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
-          printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
-                 post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70));
-        else
-          printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
+        if class == "image" or class == "video" or extension == "pdf" then
+          if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
+            printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
+                   post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70));
+          else
+            printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
+          end
+        elseif class == "audio" then
+          printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
+        elseif extension == "epub" then
+          printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
+        elseif extension == "txt" then
+          printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
         end
-      elseif class == "audio" then
-        printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
-      elseif extension == "epub" then
-        printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
-      elseif extension == "txt" then
-        printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
       end
     else
       printf("***");
@@ -550,7 +566,9 @@ function html.form.postform(board_tbl, parent)
   printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"]);
 
   for i = 1, board_tbl["PostMaxFiles"] do
-    printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />%s", i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "");
+    printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />" ..
+           "<label for='file%d_spoiler'>Spoiler</label><input id='file%d_spoiler' name='file%d_spoiler' type='checkbox' value=1 />%s",
+           i, i, i, i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "");
   end
 
   if parent == nil and board_tbl["ThreadCaptcha"] == 1
@@ -1014,6 +1032,10 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
       result, msg = pico.post.delete(board, post, POST["reason"]);
     elseif operation == "unlink" then
       result, msg = pico.post.unlink(board, post, file, POST["reason"]);
+    elseif operation == "spoiler" then
+      result, msg = pico.post.spoiler(board, post, file, true, POST["reason"]);
+    elseif operation == "unspoiler" then
+      result, msg = pico.post.spoiler(board, post, file, false, POST["reason"]);
     elseif operation == "move" then
       result, msg = pico.post.movethread(board, post, POST["destination"], POST["reason"]);
     else
@@ -1038,7 +1060,8 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   end
 
   printf("You are about to <b>%s</b>%s the following post:", operation,
-         operation == "unlink" and " " .. file .. " from" or "");
+         (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
+         " " .. file .. " from" or "");
   html.renderpost(post_tbl);
 
   if operation == "move" then
@@ -1051,6 +1074,8 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
 end;
 
 handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(spoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(unspoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
 handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
 handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
 handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
@@ -1245,14 +1270,15 @@ handlers["/Post"] = function()
   for i = 1, 5 do
     local name = POST["file" .. i .. "_name"];
     if name and name ~= "" then
-      local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
+      local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
 
+      local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
       if not hash then
         cgi.headers["Status"] = "400 Bad Request";
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
       end
 
-      files[#files + 1] = {Name = name, Hash = hash};
+      files[#files + 1] = {Name = name, Hash = hash, Spoiler = spoiler};
     end
   end
 
