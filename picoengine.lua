@@ -743,7 +743,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       db:q("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
           "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
-          board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, tonumber(parent));
+          board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
     end
   end
 
