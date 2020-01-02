@@ -293,7 +293,7 @@ function html.picofmt(post_tbl, disable_refs)
       return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
     else
       return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>",
-                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, board, number);
+                           board, ref_post_tbl["Parent"] or number, number, board, number);
     end
   end
 
