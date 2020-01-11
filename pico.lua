@@ -434,10 +434,10 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl, overboard)
+function html.renderpost(post_tbl, overboard, separate)
   printf("<div%s class='post-container'>",
          overboard and "" or string.format(" id='%d'", post_tbl["Number"]));
-  printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
+  printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread");
   printf("<div class='post-header'>");
 
   if post_tbl["Subject"] ~= "" then
@@ -1082,7 +1082,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   printf("You are about to <b>%s</b>%s the following post:", operation,
          (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
          " " .. file .. " from" or "");
-  html.renderpost(post_tbl, true);
+  html.renderpost(post_tbl, true, true);
 
   if operation == "move" then
     html.form.mod_move_thread();
@@ -1403,7 +1403,7 @@ handlers["/Recent"] = function(page)
   end
 
   for i = 1, #recent_tbl do
-    html.renderpost(recent_tbl[i], true);
+    html.renderpost(recent_tbl[i], true, true);
     printf("<hr class='invisible-separator'>");
   end
 
