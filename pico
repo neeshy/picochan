@@ -465,7 +465,7 @@ end
 function html.renderpost(post_tbl, is_sep)
   printf("<div id='%s%d' class='post-container'>",
          is_sep and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
-  printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
+  printf("<div class='post%s'>", (is_sep or post_tbl["Parent"]) and "" or " thread");
   printf("<div class='post-header'>");
 
   if post_tbl["Subject"] ~= "" then
