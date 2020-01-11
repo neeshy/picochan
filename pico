@@ -462,8 +462,9 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl)
-  printf("<div id='%d' class='post-container'>", post_tbl["Number"]);
+function html.renderpost(post_tbl, is_sep)
+  printf("<div id='%s%d' class='post-container'>",
+         is_sep and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
   printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
 
@@ -1119,7 +1120,7 @@ elseif cgi.pathinfo[1] == "Recent" then
   local recent_tbl = pico.post.recent(page);
 
   for i = 1, #recent_tbl do
-    html.renderpost(recent_tbl[i]);
+    html.renderpost(recent_tbl[i], true);
     printf("<hr />");
   end
 
