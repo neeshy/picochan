@@ -440,6 +440,17 @@ function html.renderpost(post_tbl, overboard, separate)
   printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread");
   printf("<div class='post-header'>");
 
+  if separate then
+    printf("<span class='post-thread-link'>");
+    if post_tbl["Parent"] then
+      printf("<a href='/%s/%d'>/%s/%d</a>",
+             post_tbl["Board"], post_tbl["Parent"], post_tbl["Board"], post_tbl["Parent"]);
+    else
+      printf("<a href='/%s/'>/%s/</a>", post_tbl["Board"], post_tbl["Board"]);
+    end
+    printf("</span>-&gt; ");
+  end
+
   if post_tbl["Subject"] ~= "" then
     printf("<span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]));
   end
