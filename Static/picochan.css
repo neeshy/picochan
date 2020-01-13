@@ -296,6 +296,10 @@ div.post-container:target div.post {
     background-color: #333;
 }
 
+div.post-header span.post-thread-link {
+    font-weight: bold;
+}
+
 div.post-header span.post-subject {
     font-weight: bold;
     color: #28F;
