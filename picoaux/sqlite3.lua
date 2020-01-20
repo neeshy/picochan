@@ -117,7 +117,7 @@ function metatable_db:prepare(sql)
   return setmetatable({db = self.db, stmt = stmt}, metatable_stmt);
 end
 
--- The following three functions are quick convenience functions which accept
+-- The following six functions are quick convenience functions which accept
 -- variable arguments. These functions call error() upon failure.
 
 -- Return a table of rows.
@@ -142,6 +142,27 @@ function metatable_db:q(sql, ...)
   return rows;
 end
 
+-- Return a table of the first column of each row
+function metatable_db:q1(sql, ...)
+  local stmt, errmsg = self:prepare(sql);
+  if not stmt then
+    error(errmsg, 2);
+  end
+
+  local ret = stmt:bind_values(...);
+  if ret ~= sqlite.OK then
+    error(self:errmsg(), 2);
+  end
+
+  local values = {};
+  while stmt:step() == sqlite.ROW do
+    values[#values + 1] = stmt:get_value(1);
+  end
+
+  stmt:finalize();
+  return values;
+end
+
 -- Return the first row, or nil if there are none.
 -- e.g. t["Name"], t["Address"]
 function metatable_db:r(sql, ...)
@@ -156,17 +177,39 @@ function metatable_db:r(sql, ...)
   end
 
   ret = stmt:step();
-  if ret ~= sqlite.ROW and ret ~= sqlite.DONE then
+  local row;
+  if ret == sqlite.ROW then
+    row = stmt:get_named_values();
+  elseif ret ~= sqlite.DONE then
     error(self:errmsg(), 2);
   end
 
-  if stmt:columns() == 0 then
-    return nil;
-  end
-
-  local row = stmt:get_named_values();
   stmt:finalize();
   return row;
+end
+
+-- Return the first column of the first row, or nil if there are none.
+function metatable_db:r1(sql, ...)
+  local stmt, errmsg = self:prepare(sql);
+  if not stmt then
+    error(errmsg, 2);
+  end
+
+  local ret = stmt:bind_values(...);
+  if ret ~= sqlite.OK then
+    error(self:errmsg(), 2);
+  end
+
+  ret = stmt:step();
+  local value;
+  if ret == sqlite.ROW then
+    value = stmt:get_value(1);
+  elseif ret ~= sqlite.DONE then
+    error(self:errmsg(), 2);
+  end
+
+  stmt:finalize();
+  return value;
 end
 
 -- Return a boolean: true if result rows were produced by the SQL statement
@@ -187,11 +230,32 @@ function metatable_db:b(sql, ...)
   ret = stmt:step();
   stmt:finalize();
 
-  if ret ~= sqlite.ROW and ret ~= sqlite.DONE then
+  if ret == sqlite.ROW then
+    return true;
+  elseif ret == sqlite.DONE then
+    return false;
+  else
+    error(self:errmsg(), 2);
+  end
+end
+
+-- Return nothing
+function metatable_db:e(sql, ...)
+  local stmt, errmsg = self:prepare(sql);
+  if not stmt then
+    error(errmsg, 2);
+  end
+
+  local ret = stmt:bind_values(...);
+  if ret ~= sqlite.OK then
     error(self:errmsg(), 2);
   end
 
-  return ret == sqlite.ROW;
+  ret = stmt:step();
+  if ret ~= sqlite.ROW and ret ~= sqlite.DONE then
+    error(self:errmsg(), 2);
+  end
+  stmt:finalize();
 end
 
 --
@@ -207,14 +271,15 @@ local coltypes_bind = {
 
 function metatable_stmt:bind(column, value)
   assert(type(column) == "number", "incorrect datatype for parameter 'column'");
-  assert(coltypes_bind[type(value)], "incorrect datatype for parameter 'value'");
+  local type = type(value);
+  assert(coltypes_bind[type], "incorrect datatype for parameter 'value'");
 
-  if type(value) == "string" then
-    return coltypes_bind[type(value)](self.stmt, column, value, #value, ffi.cast("void *", 0));
+  if type == "string" then
+    return coltypes_bind[type](self.stmt, column, value, #value, ffi.cast("void *", 0));
   elseif value == nil then
-    return coltypes_bind[type(value)](self.stmt, column);
+    return coltypes_bind[type](self.stmt, column);
   else
-    return coltypes_bind[type(value)](self.stmt, column, value);
+    return coltypes_bind[type](self.stmt, column, value);
   end
 end
 
@@ -236,30 +301,20 @@ function metatable_stmt:columns()
   return ffi.sqlite3.sqlite3_data_count(self.stmt);
 end
 
-local coltypes_column = {
-  [ffi.sqlite3.SQLITE_INTEGER] = "number",
-  [ffi.sqlite3.SQLITE_FLOAT] = "number",
-  [ffi.sqlite3.SQLITE_TEXT] = "string",
-  [ffi.sqlite3.SQLITE_BLOB] = "string",
-  [ffi.sqlite3.SQLITE_NULL] = "nil"
-};
-
-function metatable_stmt:get_type(column)
-  return coltypes_column[ffi.sqlite3.sqlite3_column_type(self.stmt, column - 1)];
-end
-
 function metatable_stmt:get_name(column)
   return ffi.string(ffi.sqlite3.sqlite3_column_name(self.stmt, column - 1));
 end
 
 function metatable_stmt:get_value(column)
-  local type = self:get_type(column);
+  local type = ffi.sqlite3.sqlite3_column_type(self.stmt, column - 1);
 
-  if type == "string" then
-    return ffi.string(ffi.sqlite3.sqlite3_column_text(self.stmt, column - 1));
-  elseif type == "number" then
+  if type == ffi.sqlite3.SQLITE_INTEGER or
+     type == ffi.sqlite3.SQLITE_FLOAT then
     return ffi.sqlite3.sqlite3_column_double(self.stmt, column - 1);
-  elseif type == "nil" then
+  elseif type == ffi.sqlite3.SQLITE_TEXT or
+         type == ffi.sqlite3.SQLITE_BLOB then
+    return ffi.string(ffi.sqlite3.sqlite3_column_text(self.stmt, column - 1));
+  elseif type == ffi.sqlite3.SQLITE_NULL then
     return nil;
   end
 end
