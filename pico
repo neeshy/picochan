@@ -813,6 +813,12 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
       html.list.finish();
       html.cfinish();
     elseif cgi.pathinfo[2] == "login" then
+      if pico.account.current then
+        cgi.headers["Status"] = "303 See Other";
+        cgi.headers["Location"] = "/Mod";
+        cgi.finalize();
+      end
+
       html.brc("login", "Moderator Login");
 
       if POST["username"] and POST["password"] then
