@@ -19,10 +19,10 @@ local pico = {};
 
 local db, errcode, errmsg = sqlite3.open("picochan.db", sqlite3.OPEN_READWRITE);
 assert(db, errmsg);
-db:q("PRAGMA busy_timeout = 10000");
-db:q("PRAGMA foreign_keys = ON");
-db:q("PRAGMA recursive_triggers = ON");
-db:q("PRAGMA secure_delete = ON");
+db:e("PRAGMA busy_timeout = 10000");
+db:e("PRAGMA foreign_keys = ON");
+db:e("PRAGMA recursive_triggers = ON");
+db:e("PRAGMA secure_delete = ON");
 
 local max_filesize = 16777216; -- 16 MiB. Users should not change.
 
@@ -32,7 +32,7 @@ local max_filesize = 16777216; -- 16 MiB. Users should not change.
 
 local function checkcaptcha(id, text)
   if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
-    db:q("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id);
+    db:e("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id);
     return true;
   else
     return false;
@@ -44,7 +44,7 @@ end
 -- the system or by a logged-in account.
 local function log(system_action, board, ...)
   local account = system_action and nil or pico.account.current["Name"];
-  db:q("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
+  db:e("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
       account or 'SYSTEM', board or 'GLOBAL', string.format(...));
 end
 
@@ -96,12 +96,12 @@ local function permit(permclass, targettype, targarg)
       return true;
     end
 
-    local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", targarg);
+    local board = db:r1("SELECT Board FROM Accounts WHERE Name = ?", targarg);
 
     if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
       return false, "Action not permitted (account type not authorized)";
     elseif pico.account.current["Type"] == "bo" then
-      if account_tbl["Board"] == pico.account.current["Board"] then
+      if board == pico.account.current["Board"] then
         return true;
       else
         return false, "Action not permitted (attempt to modify account outside assigned board)";
@@ -157,7 +157,7 @@ function pico.account.create(name, password, type, board)
     board = nil;
   end
 
-  db:q("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
+  db:e("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
       name, type, board, crypto.bcrypt.digest(password, pico.global.get("bcryptrounds")));
   log(false, board, "Created new %s account '%s'", type, name);
   return true, "Account created successfully";
@@ -172,7 +172,7 @@ function pico.account.delete(name, reason)
     return false, "Account does not exist";
   end
 
-  db:q("DELETE FROM Accounts WHERE Name = ?", name);
+  db:e("DELETE FROM Accounts WHERE Name = ?", name);
   log(false, account_tbl["Board"], "Deleted a %s account '%s' for reason: %s",
                   account_tbl["Type"], account_tbl["Name"], reason);
   return true, "Account deleted successfully";
@@ -190,7 +190,7 @@ function pico.account.changepass(name, password)
     return false, "Account password does not meet requirements";
   end
 
-  db:q("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
+  db:e("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
        crypto.bcrypt.digest(password, pico.global.get("bcryptrounds")), name);
   log(false, account_tbl["Board"], "Changed password of account '%s'", name);
   return true, "Account password changed successfully";
@@ -200,12 +200,12 @@ end
 -- mod-only actions.
 function pico.account.login(name, password)
   if not db:b("SELECT TRUE FROM Accounts WHERE Name = ?", name)
-  or not crypto.bcrypt.verify(password, db:r("SELECT PwHash FROM Accounts WHERE Name = ?", name)["PwHash"]) then
+  or not crypto.bcrypt.verify(password, db:r1("SELECT PwHash FROM Accounts WHERE Name = ?", name)) then
     return nil, "Invalid username or password";
   end
 
   local key = string.random(16, "a-zA-Z0-9");
-  db:q("INSERT INTO Sessions (Key, Account) VALUES (?, ?)", key, name);
+  db:e("INSERT INTO Sessions (Key, Account) VALUES (?, ?)", key, name);
 
   pico.account.register_login(key);
   return key;
@@ -220,7 +220,7 @@ function pico.account.register_login(key)
 
   pico.account.current = db:r("SELECT * FROM Accounts WHERE Name = (SELECT Account FROM Sessions " ..
                               "WHERE Key = ? AND ExpireDate > STRFTIME('%s', 'now'))", key);
-  db:q("UPDATE Sessions SET ExpireDate = STRFTIME('%s', 'now') + 86400 WHERE Key = ?", key);
+  db:e("UPDATE Sessions SET ExpireDate = STRFTIME('%s', 'now') + 86400 WHERE Key = ?", key);
 end
 
 function pico.account.logout()
@@ -228,7 +228,7 @@ function pico.account.logout()
     return false, "No account logged in";
   end
 
-  db:q("DELETE FROM Sessions WHERE Key = ?", key);
+  db:e("DELETE FROM Sessions WHERE Key = ?", key);
   return true, "Account logged out successfully";
 end
 
@@ -242,8 +242,7 @@ end
 
 -- retrieve value of globalconfig variable or empty string if it doesn't exist
 function pico.global.get(name)
-  local row = db:r("SELECT Value FROM GlobalConfig WHERE Name = ?", name);
-  return row and row["Value"] or "";
+  return db:r1("SELECT Value FROM GlobalConfig WHERE Name = ?", name) or "";
 end
 
 -- setting a globalconfig variable to nil removes it.
@@ -251,10 +250,10 @@ function pico.global.set(name, value)
   local auth, msg = permit("admin");
   if not auth then return auth, msg end;
 
-  db:q("DELETE FROM GlobalConfig WHERE Name = ?", name);
+  db:e("DELETE FROM GlobalConfig WHERE Name = ?", name);
 
   if value ~= nil then
-    db:q("INSERT INTO GlobalConfig VALUES (?, ?)", name, value);
+    db:e("INSERT INTO GlobalConfig VALUES (?, ?)", name, value);
   end
 
   log(false, nil, "Edited global configuration variable '%s'", name);
@@ -294,7 +293,7 @@ function pico.board.create(name, title, subtitle)
     return false, "Invalid board subtitle";
   end
 
-  db:q("INSERT INTO Boards (Name, Title, Subtitle) VALUES (?, ?, ?)",
+  db:e("INSERT INTO Boards (Name, Title, Subtitle) VALUES (?, ?, ?)",
       name, title, subtitle);
   log(false, nil, "Created a new board: /%s/ - %s", name, title);
   return true, "Board created successfully";
@@ -308,7 +307,7 @@ function pico.board.delete(name, reason)
     return false, "Board does not exist";
   end
 
-  db:q("DELETE FROM Boards WHERE Name = ?", name);
+  db:e("DELETE FROM Boards WHERE Name = ?", name);
   log(false, nil, "Deleted board /%s/ for reason: %s", name, reason);
   return true, "Board deleted successfully";
 end
@@ -335,7 +334,7 @@ function pico.board.configure(board_tbl)
     return false, "Board does not exist";
   end
 
-  db:q("UPDATE Boards SET Title = ?, Subtitle = ?, Lock = ?, DisplayOverboard = ?, " ..
+  db:e("UPDATE Boards SET Title = ?, Subtitle = ?, Lock = ?, DisplayOverboard = ?, " ..
       "PostMaxFiles = ?, ThreadMinLength = ?, PostMaxLength = ?, PostMaxNewlines = ?, " ..
       "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
       "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
@@ -429,7 +428,7 @@ function pico.board.stats.postrate(board, interval, intervals)
 end
 
 function pico.board.stats.totalposts(board)
-  return db:r("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
+  return db:r1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board);
 end
 
 --
@@ -569,7 +568,7 @@ function pico.file.add(path)
     width, height = nil;
   end
 
-  db:q("INSERT INTO Files VALUES (?, ?, ?, ?)", filename, size, width, height);
+  db:e("INSERT INTO Files VALUES (?, ?, ?, ?)", filename, size, width, height);
   return filename, "File added successfully";
 end
 
@@ -583,7 +582,7 @@ function pico.file.delete(hash, reason)
     return false, "File does not exist";
   end
 
-  db:q("DELETE FROM Files WHERE Name = ?", hash);
+  db:e("DELETE FROM Files WHERE Name = ?", hash);
   os.remove("Media/" .. hash);
   os.remove("Media/icon/" .. hash);
   os.remove("Media/thumb/" .. hash);
@@ -622,11 +621,7 @@ end
 
 -- Return list of posts which >>reply to the specified post.
 function pico.post.refs(board, number)
-  local list = db:q("SELECT Referrer FROM Refs WHERE Board = ? AND Referee = ?", board, number);
-  for i = 1, #list do
-    list[i] = list[i]["Referrer"];
-  end
-  return list;
+  return db:q1("SELECT Referrer FROM Refs WHERE Board = ? AND Referee = ?", board, number);
 end
 
 -- Return entire thread (parent + all replies + all file info) as a table
@@ -643,7 +638,7 @@ function pico.post.thread(board, number)
                        "WHERE Board = ? AND Number = ?", board, number);
   local stmt = db:prepare("SELECT Files.* From FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
                           "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
-  db:q("BEGIN TRANSACTION");
+  db:e("BEGIN TRANSACTION");
 
   for i = 0, #thread_tbl do
     local post_tbl = thread_tbl[i];
@@ -655,7 +650,7 @@ function pico.post.thread(board, number)
     stmt:reset();
   end
 
-  db:q("END TRANSACTION");
+  db:e("END TRANSACTION");
   stmt:finalize();
   return thread_tbl;
 end
@@ -719,15 +714,15 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     end
   end
 
-  db:q("BEGIN TRANSACTION");
-  db:q("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Comment) " ..
+  db:e("BEGIN TRANSACTION");
+  db:e("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Comment) " ..
       "VALUES (?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, comment);
-  local number = db:r("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
+  local number = db:r1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board);
 
   if files ~= nil then
     for i = 1, #files do
       if files[i] ~= "" then
-        db:q("INSERT INTO FileRefs VALUES (?, ?, ?, ?)", board, number, files[i], i);
+        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?)", board, number, files[i], i);
       end
     end
   end
@@ -740,14 +735,14 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     -- 3. Ensure that the post being referred to is in the same thread as the referee.
     -- 4. Ensure that the post being referred to is not the same as the referrer.
     if ref ~= number then
-      db:q("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
+      db:e("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
           "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
           board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
     end
   end
 
-  db:q("END TRANSACTION");
+  db:e("END TRANSACTION");
   return number;
 end
 
@@ -759,7 +754,7 @@ function pico.post.delete(board, number, reason)
     return false, "Post does not exist";
   end
 
-  db:q("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
   log(false, board, "Deleted post /%s/%d for reason: %s", board, number, reason);
   return true, "Post deleted successfully";
 end
@@ -806,7 +801,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   for i = 1, #exclist do genspec(exclist[i], sql, sqlp) end;
   sql[#sql + 1] = ")";
 
-  db:q(table.concat(sql, " "), unpack(sqlp));
+  db:e(table.concat(sql, " "), unpack(sqlp));
   log(false, board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
   return true, "Posts deleted successfully";
 end
@@ -816,7 +811,7 @@ function pico.post.pattdelete(pattern, reason)
   if not auth then return auth, msg end;
   if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end;
 
-  db:q("DELETE FROM Posts WHERE Comment LIKE ?", "%" .. pattern .. "%");
+  db:e("DELETE FROM Posts WHERE Comment LIKE ?", "%" .. pattern .. "%");
   log(false, board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason);
   return true, "Posts deleted successfully";
 end
@@ -831,7 +826,7 @@ function pico.post.unlink(board, number, file, reason)
     return false, "No such file in that particular post";
   end
 
-  db:q("DELETE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?", board, number, file);
+  db:e("DELETE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?", board, number, file);
   log(false, board, "Unlinked file %s from /%s/%d for reason: %s",
       file, board, number, reason);
   return true, "File unlinked successfully";
@@ -847,13 +842,13 @@ function pico.post.toggle(attribute, board, number, reason)
   end
 
   if attribute == "sticky" then
-    db:q("UPDATE Posts SET Sticky = NOT Sticky WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Posts SET Sticky = NOT Sticky WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "lock" then
-    db:q("UPDATE Posts SET Lock = NOT Lock WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Posts SET Lock = NOT Lock WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "autosage" then
-    db:q("UPDATE Posts SET Autosage = NOT Autosage WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Posts SET Autosage = NOT Autosage WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "cycle" then
-    db:q("UPDATE Posts SET Cycle = NOT Cycle WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Posts SET Cycle = NOT Cycle WHERE Board = ? AND Number = ?", board, number);
   else
     return false, "Invalid attribute";
   end
@@ -904,7 +899,7 @@ function pico.post.movethread(board, number, newboard, reason)
     end
   end
 
-  db:q("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
   log(false, nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
   return true, "Thread moved successfully";
 end
@@ -963,7 +958,7 @@ function pico.captcha.create()
   p:close();
 
   local captcha_id = string.random(16);
-  db:q("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc));
+  db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc));
 
   return captcha_id, string.base64(captcha_data);
 end
