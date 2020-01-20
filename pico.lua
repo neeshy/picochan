@@ -868,6 +868,12 @@ handlers["/Mod"] = function()
 end;
 
 handlers["/Mod/login"] = function()
+  if pico.account.current then
+    cgi.headers["Status"] = "303 See Other";
+    cgi.headers["Location"] = "/Mod";
+    cgi.finalize();
+  end
+
   html.brc("login", "Moderator Login");
 
   if POST["username"] and POST["password"] then
