@@ -304,10 +304,24 @@ function html.picofmt(post_tbl, disable_refs)
     };
     url = html.unstriphtml(url);
     prev = html.unstriphtml(previous):sub(-1);
+    local balance = balance_tbl[prev];
     local append = "";
-    if balance_tbl[prev] then
-      append = url:match("%" .. balance_tbl[prev] .. "$") or "";
-      url = url:gsub("%" .. balance_tbl[prev] .. "$", "");
+    if balance then
+      local i = 1;
+      local count = 1;
+      for c in url:gmatch(".") do
+        if c == prev then
+          count = count + 1;
+        elseif c == balance then
+          if count == 1 then
+            append = url:sub(i);
+            url = url:sub(1, i - 1);
+            break;
+          end
+          count = count - 1;
+        end
+        i = i + 1;
+      end
     end
     url = html.striphtml(url);
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
