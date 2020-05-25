@@ -1169,7 +1169,7 @@ else
         printf("</span>");
 
         for j = 1, #index_tbl[i] do
-          html.renderpost(board_tbl, index_tbl[i][j]);
+          html.renderpost(index_tbl[i][j]);
         end
 
         printf("</div><hr />");
