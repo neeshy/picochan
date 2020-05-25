@@ -326,10 +326,12 @@ div.post-header span {
 div.post-file {
     display: inline-block;
     margin: 0 1.3ch 1.3ch 0;
+    overflow-wrap: anywhere;
 }
 
 div.post-file-single {
     display: inline;
+    overflow-wrap: anywhere;
 }
 
 div.post-file-info {
