@@ -1,0 +1,339 @@
+---> INTRODUCTION <---
+
+Picochan is imageboard software.
+
+Key features which differentiate picochan from mainstream imageboard software
+like vichan and friends:
+
+  - No javascript of any type is used anywhere. In fact, CSP is used to block
+    execution of any and all javascript, which makes XSS attacks impossible.
+    Despite this, many "javascript" features such as floating reply box,
+    working mobile view, inline image expansion etc. are present
+  - High speed and small code size
+  - High security due to the use of pledge() and unveil()
+  - Highly transparent moderation logs which include a reason for all
+    moderation actions such as deleting a post, autosaging a thread etc.
+
+For reference, this software is loosely based upon nanochan, but most of it
+is rewritten. Several key improvements exist in picochan which do not exist in
+nanochan:
+
+  - Support for multiple files per post has been introduced
+  - Support for inline image expansion has been introduced
+  - Support for cross-board links where the post linked to is not a thread has
+    been introduced
+  - Support for intra-board links where the post linked to is not in the
+    current thread has been introduced
+  - Redirects are now done through HTTP 303 rather than HTML meta http-equiv
+  - More board settings have been introduced
+  - Database structure is significantly improved. This increases speed by a
+    large amount (orders of magnitude), especially with large boards or long
+    threads
+  - Backend and frontend are separate. This improves code simplicity a little
+    and also allows for more frontends (e.g. json) in the future
+  - LuaJIT is used for the backend (and thus the frontend), and the software's
+    speed is further improved
+
+Other more minor changes:
+
+  - Theme has been changed to dark. CSS was modified.
+  - Site name can be changed through the administration interface and is
+    no longer hard-coded.
+  - Opening the post box using the keyboard shortcut no longer jumps you
+    back up to the top of the page.
+  - Posts do not include redundant <br> elements.
+  - Formatting has been improved slightly.
+
+The nanochan-1.0 source code can be found at /nanochan-1.0.tar.gz
+(this is not the same version as which Nanochan currently runs, though: it
+is merely the last version that I have on hand)
+
+Installation instructions can be found at /install.txt
+
+The latest release of picochan is picochan-2.6.
+
+---> picochan-2.6 <---
+It can be downloaded from /picochan-2.6.tar.gz
+
+This version contains one minor bugfix.
+
+  - Fixed a bug in which the index page was not shown due to accidentally
+    passing a board table to html.renderpost().
+
+---> picochan-2.5 <---
+It can be downloaded from /picochan-2.5.tar.gz
+
+This version contains minor improvements.
+
+  - Duplicate require() of openbsd aux-lib removed
+  - CSS fixes to stop overflow of file names on mobile devices
+
+---> picochan-2.4 <---
+It can be downloaded from /picochan-2.4.tar.gz
+
+This version contains a number of fixes and improvements from neeshy
+<neeshy@tfwno.gf>. Other patches which he provided, but were not applied for
+various reasons can be found in /patches-2.3.tar.gz
+
+  - File processing code has been shortened.
+  - Trailing whitespace in source code has been removed.
+  - An inconsistency in the random number generation for captchas has been
+    corrected.
+  - Fixed behavior of string.tokenize() when the delimiter is '.'
+  - Fixed file extension code to work correctly with multiple extensions.
+  - Log pages now use a pathinfo parameter rather than a GET parameter, to
+    improve consistency with other parts of picochan.
+  - Spurious board_tbl parameters have been removed throughout the code.
+  - Catalog rendering function has been streamlined.
+  - Erroneous PDF "inline expansion" has been removed and replaced with normal
+    click-to-view behavior.
+  - Inline image expansion has been modified to greatly improve the space used
+    by the expanded image.
+
+---> picochan-2.3 <---
+It can be downloaded from /picochan-2.3.tar.gz
+
+This version contains a small number of minor improvements.
+
+  - Formatting bugs involving a redtext containing one character have been
+    fixed.
+  - A favicon has been added. In the future, this favicon will be made
+    configurable.
+  - A bug involving threads started with a text file has been fixed.
+  - Incorrect board links in mod logs have been repaired.
+
+---> picochan-2.2 <---
+It can be downloaded from /picochan-2.2.tar.gz
+
+This version contains a small number of minor improvements.
+
+  - URLs encased in brackets () <> [] {} are now rendered correctly.
+  - The spurious "iomisc" auxiliary library has been removed, since its
+    functionality is no longer needed.
+
+---> picochan-2.1 <---
+It can be downloaded from /picochan-2.1.tar.gz
+
+In this version, a number of small new features and improvements have been
+added.
+
+  - Text file support has been added.
+  - Minor UI improvement: clicking on a post No. link no longer allows the
+    header to obscure the start of the post.
+  - Minor UI bugfix: EPUB icons now correctly point to the file to be
+    downloaded when displayed beside a post.
+  - Multidelete and pattern-delete has been added to the moderation tools.
+    This allows moderators to delete large amounts of spam in a short time.
+    Note that they are extremely powerful and have the capacity to cause
+    massive destruction if not used carefully, so they have been restricted
+    to administrators and board owners.
+  - Captcha expiry time has been changed to 20 minutes.
+
+---> picochan-2.0 <---
+It can be downloaded from /picochan-2.0.tar.gz
+
+In this version, a number of small architectural improvements have been made.
+Most notably, thread view has been sped up to twice its original speed, and
+this factor is greater when there are many files in the thread. Minor bugs
+have been corrected. This is a milestone release.
+
+  - Temporary files are no longer created to store the output of the HTML
+    frontend. Instead, the output is stored in memory. This reduces I/O and
+    filesystem usage, although speed is not impacted that much.
+  - The processing of references has been disabled in catalog and overboard
+    views. This prevents people from making threads with huge numbers of
+    references to slow down catalog view, and it also speeds up catalog view
+    by a small amount.
+  - A bug regarding global variable configuration has been corrected.
+  - The bcrypt_rounds parameter for bcrypt is now configurable through the
+    database rather than requiring a source code modification.
+  - The SQLite application_id and user_version fields are now used. The value
+    for application_id is 37564 and, for picochan-2.0, the value for
+    user_version is 1. This value will be incremented every version where
+    there are changes to the database schema.
+  - Miscellaneous string and io extensions have been moved into the picochan
+    auxiliary library.
+  - The SQLite secure_delete feature is now enabled. In practice, this will
+    mean that posts which contain links to e.g. child pornography will not
+    remain in the database after they have been deleted.
+  - Seek operations on files have now been wrapped in assertions.
+  - Board and thread locks are now enforced through the use of the permit()
+    function rather than through manual checks.
+  - The captcha has been adjusted to make it more difficult for software to
+    find the answer.
+  - Inline image expansion is now limited to the width and height of the
+    user's viewport. Previously, the expanded image overflowed off the edge
+    of the screen, which was not user-friendly.
+
+---> picochan-1.9 <---
+It can be downloaded from /picochan-1.9.tar.gz
+
+In this version, a big change has been made. Picochan has been converted to
+use LuaJIT instead of Lua 5.3, which increases the speed of certain lua-
+intensive sections of the code, most notably the file displaying code. It
+also no longer depends on any external Lua libraries, since all such libraries
+were rewritten specifically for picochan using the LuaJIT FFI. Brotli page
+compression has been re-introduced as promised, and security was bumped up
+greatly through the use of OpenBSD pledge() and unveil() functions. Besides
+that major improvement, lots of small changes and minor features have been
+introduced as well:
+
+  - A potential bug has been proactively corrected in the html.table.begin()
+    and html.table.entry() functions. In previous versions, if a nil value
+    were passed as part of the varargs, the function would stop reading
+    successive values. Now, all values are read.
+  - The LibreSSL library is no longer used for random number generation.
+    Instead, the arc4random() system call specific to OpenBSD (which is
+    provided in the openbsd auxlib) is used.
+  - The permissions system for mod actions has been totally reworked. Instead
+    of writing out manual if-else statements for each use case, a new permit()
+    function is used to check permissions. It returns more specific error
+    messages and was mainly intended to reduce the incidence of permissions-
+    related bugs, which would be classed as severe.
+  - Support for WebP images has been introduced. This is a very minor change,
+    but is useful because WebP offers greatly reduced file sizes for the same
+    image quality.
+
+Installation instructions for versions of picochan prior to 1.9 can be found
+at /install-pre19.txt
+
+---> picochan-1.8 <---
+It can be downloaded from /picochan-1.8.tar.gz
+
+In this version, the last major feature before the 2.0 point release has been
+added: thread moving, a feature by which the moderators with global
+jurisdiction (admins and gvols) can move threads across boards.
+Picochan will now go into feature freeze until 2.0; only bug-fixes and
+improvements will be made.
+
+Many major and minor improvements have also been made in this release, which
+include significant performance improvements in some areas:
+  - The file hashing algorithm has been changed to SHA-512 as opposed to the
+    old SHA-256. This change was made to improve posting speeds, since SHA-512
+    is significantly faster on 64-bit computers (i.e. the vast majority).
+  - Reply counts for threads are now stored in the database as opposed to
+    being counted (through the SQL COUNT() function). This has slashed catalog
+    and overboard generation times by around 40-50%, and probably some small
+    improvements to everything else which used to use COUNT() (e.g. database
+    triggers, thread view, index view).
+  - A bug related to thread bumping was corrected.
+  - A bug related to thread sliding was corrected.
+  - An index was added to the database to slightly speed up captcha
+    verification.
+  - pico.file.list() in the backend was sped up by around 30% through the use
+    of transactions and individual statements.
+
+---> picochan-1.7 <---
+It can be downloaded from /picochan-1.7.tar.gz
+
+In this version, another major feature has been added. There is a recent posts
+page now available, showing the newest posts site-wide. This is mainly
+intended for moderator use, but normal users may also use it.
+
+Minor improvements this release:
+  - The useless per-board accesskey feature has been removed.
+  - Clicking on a post "No." link from anywhere brings you to that post in its
+    parent thread.
+  - Log page size is no longer hardcoded and is now a global configuration
+    variable.
+
+---> picochan-1.6 <---
+It can be downloaded from /picochan-1.6.tar.gz
+
+In this version, a major new feature has been added. The index view is now
+available in addition to the catalog view. Catalog view remains the default
+view for a board.
+
+Minor improvements have been made:
+  - Certain form fields in the mod tools receive focus automatically upon page
+    load. For example, the "reason" field in a post deletion form is
+    automatically focused.
+  - The database column "MaxPostImages" has been renamed to "MaxPostFiles"
+    since it applies not only to images but to videos, audios etc.
+  - The OP of a thread is now displayed without a border and a background
+    color. This is consistent with the behavior of other imageboard software
+    and additionally provides more of a distinction between the OP and the
+    replies.
+  - Bugs related to global variable configuration have been corrected.
+  - A bug related to an unsanitized format string for the front page has been
+    corrected.
+  - Default values for board settings have been changed to more conservative
+    ones, now that the software has been confirmed to work well with large
+    amounts of data.
+  - The empty nanochan.db file is no longer bundled with the distribution. It
+    should instead be created using the nanochan.sql schema. This decision was
+    made to slightly reduce the distribution file size and reduce the work
+    required to package each release.
+
+---> picochan-1.5 <---
+It can be downloaded from /picochan-1.5.tar.gz
+
+In this version, brotli compression support has been removed (hopefully only
+temporarily) because the brotli module that was being used was unmaintained
+and does not compile on OpenBSD despite considerable tinkering. Hopefully, a
+new brotli module (perhaps using bindings to google's C library) can be found
+or written.
+
+This is not a huge deal because tor browser doesn't support brotli without
+editing about:config. However, it is still intended that brotli support be
+re-added in the future.
+
+Other changes:
+  - Small formatting engine fixes
+  - Final database refinements
+
+---> picochan-1.4 <---
+It can be downloaded from /picochan-1.4.tar.gz
+
+This version contains major improvements.
+
+  - Database has been optimized. Speed has been improved greatly by the usage
+    of indexes. Generation time for catalogs, threads, stats, and logs will
+    be much better for large numbers of posts.
+  - Bugs related to cyclical threads and thread sliding have been corrected.
+    Before, cyclical threads did not work, and threads did not slide off the
+    catalog.
+
+This version also contains minor improvements.
+
+  - Formatting has been restricted to a single line. This means that sequences
+    of characters which are not likely to be intentional formatting are no
+    longer considered formatting.
+
+---> picochan-1.3 <---
+It can be downloaded from /picochan-1.3.tar.gz
+
+This version contains bugfixes.
+
+  - A database bug causing references to malfunction was fixed.
+  - A backend bug causing cross-board references to malfunction was fixed.
+  - A backend bug causing posts' files to be out of order was fixed.
+  - Formatting bugs have been fixed.
+
+---> picochan-1.2 <---
+It can be downloaded from /picochan-1.2.tar.gz
+
+This version, again, contains a small number of minor improvements.
+
+  - Front page has been implemented.
+  - Bugs (including security bugs) have been fixed.
+
+This is the first version I would seriously consider using in production,
+since the other versions are incomplete and/or were not tested thoroughly.
+
+---> picochan-1.1 <---
+It can be downloaded from /picochan-1.1.tar.gz
+
+This version contains a small number of minor improvements.
+
+  - Inline image expansion has been added. It uses only CSS to work, not
+    JavaScript.
+  - The image download link has been converted to a view link, and a new
+    image download link has been created.
+
+---> picochan-1.0 <---
+It can be downloaded from /picochan-1.0.tar.gz
+
+This version is quite rough around the edges. All core functionality has been
+implemented but probably has lots of bugs. Also, the front page is currently
+blank and won't show anything, because it's not implemented.
