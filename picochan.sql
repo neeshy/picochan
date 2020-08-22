@@ -243,9 +243,9 @@ CREATE INDEX captchas_expiredate ON Captchas (ExpireDate);
 CREATE INDEX boards_displayoverboard ON Boards (DisplayOverboard);
 
 -- This is a default account. You should use this only for setup purposes.
--- The setup account should be DELETED after use.
--- The initial password is 'password'.
-INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$2b$14$7zJicITlut7XR.LQ3trgNOmNDBCispQWgYfxVpexfA3.A/XCl1oYK');
+-- The setup account should be DELETED after you make your main admin account.
+-- The initial username is 'setup' and the password is 'password'.
+INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$argon2id$v=19$m=65536,t=16,p=4$dnFMZDFSRkhMWXFKdGV4TA$B3+O7QbPE/e42Js3sr4ldhtPP4ibRpas1KZquqidMDysu4NdvdX3EA2/X9rdb2LjzB/UDj8dwfKWQxLbcgVZFg');
 INSERT INTO GlobalConfig VALUES ('sitename', 'Picochan');
 INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
@@ -253,4 +253,3 @@ INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
-INSERT INTO GlobalConfig VALUES ('bcryptrounds', 14);

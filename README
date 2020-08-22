@@ -10,7 +10,6 @@ like vichan and friends:
     Despite this, many "javascript" features such as floating reply box,
     working mobile view, inline image expansion etc. are present
   - High speed and small code size
-  - High security due to the use of pledge() and unveil()
   - Highly transparent moderation logs which include a reason for all
     moderation actions such as deleting a post, autosaging a thread etc.
 
@@ -50,7 +49,18 @@ is merely the last version that I have on hand)
 
 Installation instructions can be found at /install.txt
 
-The latest release of picochan is picochan-2.6.
+The latest release of picochan is picochan-2.7.
+
+---> picochan-2.7 <---
+It can be downloaded from /picochan-2.7.tar.gz
+
+This version contains a significant overhaul. Picochan has been ported to Linux
+and compatible operating systems and no longer depends on OpenBSD.
+
+  - bcrypt password hashing function has been replaced with argon2
+  - auxiliary library bindings were modified to invoke arc4random through
+    libbsd, as is necessary on linux
+  - installation instructions have been updated
 
 ---> picochan-2.6 <---
 It can be downloaded from /picochan-2.6.tar.gz

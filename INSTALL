@@ -1,30 +1,43 @@
 ---> INSTALLATION INSTRUCTIONS <---
 
-THESE INSTALLATION INSTRUCTIONS ARE FOR PICOCHAN 1.9 OR ABOVE. TO FIND THE
-INSTRUCTIONS FOR OLD VERSIONS, SEE THE FILE /install-pre19.txt
+THESE INSTALLATION INSTRUCTIONS ARE FOR PICOCHAN 2.7 OR ABOVE. TO FIND THE
+INSTRUCTIONS FOR OLD VERSIONS, SEE THE FILES /install-pre19.txt and
+/install-pre27.txt
 
 Picochan is very easy to install. Its dependencies are:
 
   DEPENDENCY        TESTED VERSION   DISTRIBUTION URL
   ----------------------------------------------------------------------------
-  OpenBSD           6.6              https://openbsd.org
-  haserl            0.9.35           http://haserl.sourceforge.net
-  luajit            2.0.5            https://luajit.org
-  sqlite            3.27.2           https://sqlite.org
   brotli            1.0.7            https://brotli.org
-  ffmpeg            4.1.3            https://ffmpeg.org
-  graphicsmagick    1.3.31           http://graphicsmagick.org
+  argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
+  sqlite            3.32.3           https://sqlite.org
+  luajit            2.0.5            https://luajit.org
+  graphicsmagick    1.3.35           http://graphicsmagick.org
+  ffmpeg            4.2.4            https://ffmpeg.org
+  haserl            0.9.35           http://haserl.sourceforge.net
 
-On a freshly installed OpenBSD 6.6 system, Picochan was made to work by
-first installing the following packages through pkg_add:
+On a freshly installed Gentoo system, Picochan was made to work by first
+installing the following packages through portage. The relevant USE flags are
+also given (your results may vary if you do not follow the USE flags listed,
+for example, thumbnails for AV1-encoded videos may not be generated if you
+do not enable the dav1d USE-flag for ffmpeg).
 
-  luajit sqlite3 brotli ffmpeg GraphicsMagick
+  app-arch/brotli
+  app-crypt/argon2
+  dev-db/sqlite
+  dev-lang/luajit           USE="lua52compat"
+  media-gfx/graphicsmagick  USE="jpeg png webp svg openmp threads bzip2 zlib"
+  media-video/ffmpeg        USE="dav1d vpx x265 gpl"
 
-Finally, you must download, compile and install haserl.
+Additionally, you must also install haserl which is not available through the
+gentoo repositories. Fortunately, on Linux it is easy and quick to compile by
+yourself.
 
 ---> HASERL <---
 
-When compiling haserl, make sure to use the following configure options:
+Download the source tarball through the distribution URL provided.
+When compiling haserl, make sure to use the following configure options. A
+failure to use these options will most likely result in picochan not working.
 
   --enable-luashell
   --disable-luacshell

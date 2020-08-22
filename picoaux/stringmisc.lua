@@ -1,7 +1,7 @@
 -- Miscellaneous string functions.
 -- These string functions go into the global 'string' table.
 
-local openbsd = require("picoaux.openbsd");
+local bsd = require("picoaux.bsd");
 
 function string.random(length, pattern)
   local length = length or 64;
@@ -18,7 +18,7 @@ function string.random(length, pattern)
   dict = ascii:gsub("[^" .. pattern .. "]", "");
 
   while string.len(result) < length do
-    local randidx = openbsd.arc4random(1, string.len(dict));
+    local randidx = bsd.arc4random(1, string.len(dict));
     local randbyte = dict:byte(randidx);
     result = result .. string.char(randbyte);
   end
