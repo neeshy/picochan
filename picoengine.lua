@@ -544,9 +544,9 @@ function pico.file.add(path)
 
   local width, height;
   if class == "video" then
-    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
+    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
                "gm convert -strip - -filter Box -thumbnail 200x200 JPEG:media/thumb/" .. filename);
-    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:01.000 -vframes 1 -f image2 - |" ..
+    os.execute("exec ffmpeg -i media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
                "gm convert -flatten -strip - -filter Box -quality 60 " ..
                "-thumbnail 100x70 JPEG:media/icon/" .. filename);
 
