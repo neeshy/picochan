@@ -721,7 +721,7 @@ end
 
 cgi.headers["Content-Type"] = "text/html; charset=utf-8";
 cgi.headers["Cache-Control"] = "no-cache";
-cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self';";
+cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self'; prefetch-src 'self';";
 cgi.headers["Referrer-Policy"] = "no-referrer";
 cgi.headers["X-DNS-Prefetch-Control"] = "off";
 cgi.headers["X-Frame-Options"] = "deny";
