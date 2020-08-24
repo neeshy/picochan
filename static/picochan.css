@@ -182,11 +182,12 @@ form textarea {
 form#postform {
     float: right;
     position: fixed;
-    top: calc(2.5ch + 1.3ch + 1px);
+    top: calc(3.5ch + 1px);
     right: 1.3ch;
     background-color: #222;
     border: 1px solid #000;
     padding: 5px;
+    max-width: 90%;
     display: none;
 }
 
@@ -204,7 +205,8 @@ form#postform label {
 }
 
 form#postform textarea {
-    width: calc(100% - 7ch - 30px);
+    width: calc(100% - 7ch - 20px);
+    max-width: calc(100% - 7ch - 20px);
     margin: 0;
 }
 
