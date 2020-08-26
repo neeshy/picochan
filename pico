@@ -96,7 +96,7 @@ function html.begin(...)
   printf(  "</head>");
   printf(  "<body>");
   printf(    "<nav id='topbar'><ul>");
-  printf(      "<li class='system'><a href='/pico' accesskey='`'>main</a></li>");
+  printf(      "<li class='system'><a href='/pico/' accesskey='`'>main</a></li>");
   printf(      "<li class='system'><a href='/pico/System/mod' accesskey='1'>mod</a></li>");
   printf(      "<li class='system'><a href='/pico/System/log' accesskey='2'>log</a></li>");
   printf(      "<li class='system'><a href='/pico/System/stats' accesskey='3'>stats</a></li>");
