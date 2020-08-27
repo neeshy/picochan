@@ -237,6 +237,10 @@ hr {
     clear: both;
 }
 
+hr.recent-page-separator {
+    margin-bottom: 0;
+}
+
 div.catalog-container {
     text-align: center;
 }
