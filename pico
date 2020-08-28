@@ -1110,6 +1110,7 @@ elseif cgi.pathinfo[1] == "Recent" then
 
   for i = 1, #recent_tbl do
     html.renderpost(recent_tbl[i]);
+    printf("<hr class='invisible-separator'>");
   end
 
   printf("<hr />");

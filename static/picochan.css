@@ -241,6 +241,12 @@ hr.recent-page-separator {
     margin-bottom: 0;
 }
 
+hr.invisible-separator {
+    visibility: hidden;
+    padding:0;
+    margin:0;
+}
+
 div.catalog-container {
     text-align: center;
 }
