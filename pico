@@ -424,7 +424,9 @@ function html.renderpostfiles(post_tbl)
 
       printf("</div>");
 
-      if class == "image" then
+      if extension == "svg" then
+        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
+      elseif class == "image" then
         printf("<style>input[type='checkbox']:checked + img.post-file-thumbnail[src='/media/thumb/%s'] + div.post-file-fullsize::after " ..
                "{background-image: url('/media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                filename, filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
@@ -436,7 +438,7 @@ function html.renderpostfiles(post_tbl)
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif extension == "pdf" then
-        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
+        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 200, file["Height"] or 200));
       elseif extension == "epub" then
         printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
       elseif extension == "txt" then
