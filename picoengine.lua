@@ -25,7 +25,7 @@ db:q("PRAGMA foreign_keys = ON");
 db:q("PRAGMA recursive_triggers = ON");
 db:q("PRAGMA secure_delete = ON");
 
-local max_filesize = 16777216; -- 16 MiB. Users should not change.
+local max_filesize = 268435456; -- 256 MiB
 
 --
 -- MISCELLANEOUS FUNCTIONS
