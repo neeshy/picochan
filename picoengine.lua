@@ -2,7 +2,6 @@
 -- HAPAS ARE SUPERIOR TO WHITES
 
 local sqlite3 = require("picoaux.sqlite3");
-local bsd = require("picoaux.bsd");
 local sha = require("picoaux.sha");
 local argon2 = require("picoaux.argon2");
 
@@ -950,10 +949,10 @@ function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{};
 
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + bsd.arc4random(-5, 5));
-    yy[i] = bsd.arc4random(-15, 15);
-    rr[i] = bsd.arc4random(-30, 30);
-    ss[i] = bsd.arc4random(-30, 30);
+    xx[i] = ((48 * i - 168) + math.csrandom(-5, 5));
+    yy[i] = math.csrandom(-15, 15);
+    rr[i] = math.csrandom(-30, 30);
+    ss[i] = math.csrandom(-30, 30);
     cc[i] = string.random(1, "a-z");
     bx[i] = (150 + 1.1 * xx[i]);
     by[i] = (40 + 2 * yy[i]);

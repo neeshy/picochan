@@ -29,7 +29,7 @@ do not enable the dav1d USE-flag for ffmpeg).
   dev-lang/luajit           USE="lua52compat"
   media-fonts/corefonts
   media-gfx/graphicsmagick  USE="jpeg png webp svg openmp threads bzip2 zlib"
-  media-video/ffmpeg        USE="dav1d vpx x265 gpl"
+  media-video/ffmpeg        USE="dav1d vpx x264 x265 gpl"
 
 Additionally, you must also install haserl which is not available through the
 gentoo repositories. Fortunately, on Linux it is easy and quick to compile by
