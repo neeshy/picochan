@@ -2,11 +2,9 @@
 <% -- Picochan CGI/HTML Frontend
 -- HAPAS ARE SUPERIOR TO WHITES
 
-local brotli = require("picoaux.brotli");
-local zlib = require("picoaux.zlib");
+local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
 
-local cgi = {};
 local html = {};
       html.table = {};
       html.list = {};
@@ -17,65 +15,14 @@ local html = {};
 -- INITIALIZATION
 --
 
-local outputbuf = {};
 local sitename = pico.global.get("sitename");
 
 local function printf(...)
-  outputbuf[#outputbuf + 1] = string.format(...);
-end
-
-local function httpencodinglist(s)
-  local ret = {};
-  local list = string.tokenize(s:gsub(" ", ""):gsub(";q=%n-\\.?%n-", ""), ",");
-
-  for i = 1, #list do
-    ret[list[i]] = true;
-  end
-
-  return ret;
+  cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...);
 end
 
 pico.account.register_login(COOKIE["session_key"]);
-
-cgi.headers = {};
-cgi.pathinfo = ENV["PATH_INFO"] and string.tokenize(ENV["PATH_INFO"]:gsub("^/", ""), "/") or {};
-cgi.encodings = ENV["HTTP_ACCEPT_ENCODING"] and httpencodinglist(ENV["HTTP_ACCEPT_ENCODING"]) or {};
-
---
--- CGI FUNCTIONS
---
-
-function cgi.write_headers()
-  for k, v in pairs(cgi.headers) do
-    io.write(k, ": ", v, "\n");
-  end
-
-  io.write("\n");
-end
-
-function cgi.finalize()
-  local outputbuf = table.concat(outputbuf);
-
-  if cgi.encodings["br"] then
-    cgi.headers["Content-Encoding"] = "br";
-    cgi.write_headers();
-    io.write(brotli.compress(outputbuf, 2, "text"));
-  elseif cgi.encodings["gzip"] then
-    cgi.headers["Content-Encoding"] = "gzip";
-    cgi.write_headers();
-    io.write(zlib.compress(outputbuf, 1, 31, 9));
-  elseif cgi.encodings["deflate"] then
-    cgi.headers["Content-Encoding"] = "deflate";
-    cgi.write_headers();
-    io.write(zlib.compress(outputbuf, 1, -15, 9));
-  else
-    cgi.headers["Content-Encoding"] = "identity";
-    cgi.write_headers();
-    io.write(outputbuf);
-  end
-
-  os.exit(0);
-end
+cgi.initialize();
 
 --
 -- HTML FUNCTIONS
