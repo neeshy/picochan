@@ -41,8 +41,8 @@ CREATE TABLE Posts (
   ReplyCount            INTEGER							DEFAULT NULL	CHECK(ReplyCount IS NULL OR ReplyCount >= 0),
 
   PRIMARY KEY (Board, Number),
-  FOREIGN KEY (Board) REFERENCES Boards(Name),
-  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number)
+  FOREIGN KEY (Board) REFERENCES Boards(Name) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE Refs (
@@ -51,8 +51,8 @@ CREATE TABLE Refs (
   Referrer              INTEGER         NOT NULL,
 
   PRIMARY KEY (Board, Referee, Referrer),
-  FOREIGN KEY (Board, Referee) REFERENCES Posts (Board, Number),
-  FOREIGN KEY (Board, Referrer) REFERENCES Posts (Board, Number),
+  FOREIGN KEY (Board, Referee) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (Board, Referrer) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
   CHECK(Referee != Referrer)
 ) WITHOUT ROWID;
 
@@ -63,8 +63,8 @@ CREATE TABLE FileRefs (
   Sequence		INTEGER		NOT NULL,
 
   PRIMARY KEY (Board, Number, Sequence),
-  FOREIGN KEY (Board, Number) REFERENCES Posts (Board, Number),
-  FOREIGN KEY (File) REFERENCES Files (Name)
+  FOREIGN KEY (Board, Number) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (File) REFERENCES Files (Name) ON UPDATE CASCADE ON DELETE CASCADE
 ) WITHOUT ROWID;
 
 CREATE TABLE Files (
@@ -87,7 +87,7 @@ CREATE TABLE Accounts (
   Board                 TEXT,
   PwHash                TEXT            NOT NULL,
 
-  FOREIGN KEY (Board) REFERENCES Boards (Name),
+  FOREIGN KEY (Board) REFERENCES Boards (Name) ON UPDATE CASCADE ON DELETE CASCADE,
   CHECK((Type IN ('admin', 'gvol') AND Board IS NULL) OR (Type IN ('bo', 'lvol') AND Board IS NOT NULL))
 ) WITHOUT ROWID;
 
@@ -96,7 +96,7 @@ CREATE TABLE Sessions (
   Account               TEXT            NOT NULL        UNIQUE,
   ExpireDate            DATETIME        NOT NULL				DEFAULT 0,
 
-  FOREIGN KEY (Account) REFERENCES Accounts (Name)
+  FOREIGN KEY (Account) REFERENCES Accounts (Name) ON UPDATE CASCADE ON DELETE CASCADE
 ) WITHOUT ROWID;
 
 CREATE TABLE Logs (
@@ -112,11 +112,6 @@ CREATE TABLE Captchas (
   ExpireDate		DATETIME	NOT NULL				DEFAULT 0
 ) WITHOUT ROWID;
 
-CREATE TRIGGER delete_child_posts BEFORE DELETE ON Posts WHEN OLD.Parent IS NULL
-BEGIN
-  DELETE FROM Posts WHERE Board = OLD.Board AND Parent = OLD.Number;
-END;
-
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL AND NEW.Email NOT LIKE '%sage%'
    AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
@@ -128,12 +123,6 @@ END;
 CREATE TRIGGER user_autosage AFTER INSERT ON Posts WHEN NEW.Parent IS NULL AND NEW.Email LIKE '%sage%'
 BEGIN
   UPDATE Posts SET Autosage = TRUE WHERE ROWID = NEW.ROWID;
-END;
-
-CREATE TRIGGER cleanup_deleted_board BEFORE DELETE ON Boards
-BEGIN
-  DELETE FROM Posts WHERE Board = OLD.Name;
-  DELETE FROM Accounts WHERE Board = OLD.Name;
 END;
 
 CREATE TRIGGER increment_post_number AFTER INSERT ON Posts
@@ -195,31 +184,15 @@ BEGIN
         AND LastBumpDate = (SELECT MIN(LastBumpDate) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL);
 END;
 
-CREATE TRIGGER remove_old_refs BEFORE DELETE ON Posts
-BEGIN
-  DELETE FROM Refs WHERE Board = OLD.Board AND (Referee = OLD.Number OR Referrer = OLD.Number);
-  DELETE FROM FileRefs WHERE Board = OLD.Board AND Number = OLD.Number;
-END;
-
 CREATE TRIGGER decrement_replycount BEFORE DELETE ON Posts
   WHEN OLD.Parent IS NOT NULL
 BEGIN
   UPDATE Posts SET ReplyCount = ReplyCount - 1 WHERE Board = OLD.Board AND Number = OLD.Parent;
 END;
 
-CREATE TRIGGER remove_file_refs BEFORE DELETE ON Files
-BEGIN
-  DELETE FROM FileRefs WHERE File = OLD.Name;
-END;
-
 CREATE TRIGGER delete_old_sessions BEFORE INSERT ON Sessions
 BEGIN
   DELETE FROM Sessions WHERE Account = NEW.Account;
-END;
-
-CREATE TRIGGER delete_sessions BEFORE DELETE ON Accounts
-BEGIN
-  DELETE FROM Sessions WHERE Account = OLD.Name;
 END;
 
 CREATE TRIGGER set_session_expiry AFTER INSERT ON Sessions
