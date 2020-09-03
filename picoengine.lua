@@ -162,7 +162,7 @@ function pico.account.create(name, password, type, board)
   end
 
   db:q("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
-      name, type, board, argon2.digest(password));
+       name, type, board, argon2.digest(password));
   log(false, board, "Created new %s account '%s'", type, name);
   return true, "Account created successfully";
 end
@@ -299,7 +299,7 @@ function pico.board.create(name, title, subtitle)
   end
 
   db:q("INSERT INTO Boards (Name, Title, Subtitle) VALUES (?, ?, ?)",
-      name, title, subtitle);
+       name, title, subtitle);
   log(false, nil, "Created a new board: /%s/ - %s", name, title);
   return true, "Board created successfully";
 end
@@ -340,20 +340,20 @@ function pico.board.configure(board_tbl)
   end
 
   db:q("UPDATE Boards SET Title = ?, Subtitle = ?, Lock = ?, DisplayOverboard = ?, " ..
-      "PostMaxFiles = ?, ThreadMinLength = ?, PostMaxLength = ?, PostMaxNewlines = ?, " ..
-      "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
-      "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
-      "BumpLimit = ?, PostLimit = ?, ThreadLimit = ? WHERE Name = ?",
-      board_tbl["Title"],		board_tbl["Subtitle"],
-      board_tbl["Lock"] or 0,		board_tbl["DisplayOverboard"] or 0,
-      board_tbl["PostMaxFiles"],	board_tbl["ThreadMinLength"],	
-      board_tbl["PostMaxLength"],	board_tbl["PostMaxNewlines"],
-      board_tbl["PostMaxDblNewlines"],	board_tbl["TPHLimit"],
-      board_tbl["PPHLimit"],		board_tbl["ThreadCaptcha"] or 0,
-      board_tbl["PostCaptcha"] or 0,	board_tbl["CaptchaTriggerTPH"],
-      board_tbl["CaptchaTriggerPPH"],	board_tbl["BumpLimit"],
-      board_tbl["PostLimit"],		board_tbl["ThreadLimit"],
-      board_tbl["Name"]);
+       "PostMaxFiles = ?, ThreadMinLength = ?, PostMaxLength = ?, PostMaxNewlines = ?, " ..
+       "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
+       "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
+       "BumpLimit = ?, PostLimit = ?, ThreadLimit = ? WHERE Name = ?",
+       board_tbl["Title"],		board_tbl["Subtitle"],
+       board_tbl["Lock"] or 0,		board_tbl["DisplayOverboard"] or 0,
+       board_tbl["PostMaxFiles"],	board_tbl["ThreadMinLength"],	
+       board_tbl["PostMaxLength"],	board_tbl["PostMaxNewlines"],
+       board_tbl["PostMaxDblNewlines"],	board_tbl["TPHLimit"],
+       board_tbl["PPHLimit"],		board_tbl["ThreadCaptcha"] or 0,
+       board_tbl["PostCaptcha"] or 0,	board_tbl["CaptchaTriggerTPH"],
+       board_tbl["CaptchaTriggerPPH"],	board_tbl["BumpLimit"],
+       board_tbl["PostLimit"],		board_tbl["ThreadLimit"],
+       board_tbl["Name"]);
 
   log(false, board_tbl["Name"], "Modified board configuration");
   return true, "Board configured successfully";
@@ -370,9 +370,9 @@ function pico.board.index(name, page)
 
   local index_tbl = {};
   local thread_ops = db:q("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                         "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
-                         "WHERE Board = ? AND Parent IS NULL ORDER BY Sticky DESC, LastBumpDate DESC LIMIT ? OFFSET ?",
-                         name, pagesize, (page - 1) * pagesize);
+                          "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
+                          "WHERE Board = ? AND Parent IS NULL ORDER BY Sticky DESC, LastBumpDate DESC LIMIT ? OFFSET ?",
+                          name, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
     index_tbl[i] = {};
@@ -380,8 +380,8 @@ function pico.board.index(name, page)
     index_tbl[i]["RepliesOmitted"] = thread_ops[i]["ReplyCount"] - windowsize;
 
     local tmp_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
-                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?",
-                        thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
+                         "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?",
+                         thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
 
     while #tmp_tbl > 0 do
       index_tbl[i][#index_tbl[i] + 1] = table.remove(tmp_tbl);
@@ -401,17 +401,17 @@ function pico.board.catalog(name)
   end
 
   return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
-             "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
-             "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
-             "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
+              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
+              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
+              "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
 end
 
 function pico.board.overboard()
   return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
-             "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
-             "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
-             "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
-             "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");
+              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
+              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
+              "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
+              "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");
 end
 
 -- for this and the following stats functions, set board to nil (where applicable)
@@ -742,7 +742,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
   db:q("BEGIN TRANSACTION");
   db:q("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Comment) " ..
-      "VALUES (?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, comment);
+       "VALUES (?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, comment);
   local number = db:r("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board)["MaxPostNumber"];
 
   if files ~= nil then
@@ -762,9 +762,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     -- 4. Ensure that the post being referred to is not the same as the referrer.
     if ref ~= number then
       db:q("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
-          "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
-          "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
-          board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, tonumber(parent));
+           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
+           "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
+           board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, tonumber(parent));
     end
   end
 
