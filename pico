@@ -16,13 +16,13 @@ local html = {};
 --
 
 local sitename = pico.global.get("sitename");
+pico.account.register_login(COOKIE["session_key"]);
+
+cgi.initialize();
 
 local function printf(...)
   cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...);
 end
-
-pico.account.register_login(COOKIE["session_key"]);
-cgi.initialize();
 
 --
 -- HTML FUNCTIONS
