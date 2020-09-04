@@ -339,15 +339,15 @@ function pico.board.configure(board_tbl)
        "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
        "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
        "BumpLimit = ?, PostLimit = ?, ThreadLimit = ? WHERE Name = ?",
-       board_tbl["Title"],		board_tbl["Subtitle"],
-       board_tbl["Lock"] or 0,		board_tbl["DisplayOverboard"] or 0,
-       board_tbl["PostMaxFiles"],	board_tbl["ThreadMinLength"],	
-       board_tbl["PostMaxLength"],	board_tbl["PostMaxNewlines"],
-       board_tbl["PostMaxDblNewlines"],	board_tbl["TPHLimit"],
-       board_tbl["PPHLimit"],		board_tbl["ThreadCaptcha"] or 0,
-       board_tbl["PostCaptcha"] or 0,	board_tbl["CaptchaTriggerTPH"],
-       board_tbl["CaptchaTriggerPPH"],	board_tbl["BumpLimit"],
-       board_tbl["PostLimit"],		board_tbl["ThreadLimit"],
+       board_tbl["Title"],              board_tbl["Subtitle"],
+       board_tbl["Lock"] or 0,          board_tbl["DisplayOverboard"] or 0,
+       board_tbl["PostMaxFiles"],       board_tbl["ThreadMinLength"],
+       board_tbl["PostMaxLength"],      board_tbl["PostMaxNewlines"],
+       board_tbl["PostMaxDblNewlines"], board_tbl["TPHLimit"],
+       board_tbl["PPHLimit"],           board_tbl["ThreadCaptcha"] or 0,
+       board_tbl["PostCaptcha"] or 0,   board_tbl["CaptchaTriggerTPH"],
+       board_tbl["CaptchaTriggerPPH"],  board_tbl["BumpLimit"],
+       board_tbl["PostLimit"],          board_tbl["ThreadLimit"],
        board_tbl["Name"]);
 
   log(false, board_tbl["Name"], "Modified board configuration");
