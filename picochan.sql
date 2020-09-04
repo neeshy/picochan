@@ -2,43 +2,43 @@ PRAGMA application_id = 37564;
 PRAGMA user_version = 1;
 
 CREATE TABLE Boards (
-  Name			TEXT		NOT NULL	UNIQUE	PRIMARY KEY			CHECK(LENGTH(Name) BETWEEN 1 AND 8),
-  Title			TEXT		NOT NULL	UNIQUE					CHECK(LENGTH(Title) BETWEEN 1 AND 32),
-  Subtitle		TEXT		NOT NULL						CHECK(LENGTH(Subtitle) <= 64),
-  MaxPostNumber		INTEGER		NOT NULL				DEFAULT 0	CHECK(MaxPostNumber >= 0),
-  Lock			BOOLEAN		NOT NULL				DEFAULT FALSE,
-  DisplayOverboard	BOOLEAN		NOT NULL				DEFAULT TRUE,
-  PostMaxFiles		INTEGER		NOT NULL				DEFAULT 5	CHECK(PostMaxFiles BETWEEN 0 AND 5),
-  ThreadMinLength	INTEGER		NOT NULL				DEFAULT 1,
-  PostMaxLength		INTEGER		NOT NULL				DEFAULT 8192	CHECK(PostMaxLength <= 32768),
-  PostMaxNewlines	INTEGER		NOT NULL				DEFAULT 64	CHECK(PostMaxNewlines <= 1024),
-  PostMaxDblNewlines	INTEGER		NOT NULL				DEFAULT 16	CHECK(PostMaxDblNewlines <= 512),
-  TPHLimit		INTEGER		NOT NULL				DEFAULT -1,
-  PPHLimit		INTEGER		NOT NULL				DEFAULT -1,
-  ThreadCaptcha		BOOLEAN		NOT NULL				DEFAULT FALSE,
-  PostCaptcha		BOOLEAN		NOT NULL				DEFAULT FALSE,
-  CaptchaTriggerTPH	INTEGER		NOT NULL				DEFAULT -1,
-  CaptchaTriggerPPH	INTEGER		NOT NULL				DEFAULT -1,
-  BumpLimit		INTEGER		NOT NULL				DEFAULT 200	CHECK(BumpLimit BETWEEN 0 AND 1000),
-  PostLimit		INTEGER		NOT NULL				DEFAULT 250	CHECK(PostLimit BETWEEN 0 AND 1000),
-  ThreadLimit		INTEGER		NOT NULL				DEFAULT 500	CHECK(ThreadLimit BETWEEN 1 AND 1000)
+  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 1 AND 8),
+  Title                 TEXT            NOT NULL        UNIQUE                                  CHECK(LENGTH(Title) BETWEEN 1 AND 32),
+  Subtitle              TEXT            NOT NULL                                                CHECK(LENGTH(Subtitle) <= 64),
+  MaxPostNumber         INTEGER         NOT NULL                                DEFAULT 0       CHECK(MaxPostNumber >= 0),
+  Lock                  BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  DisplayOverboard      BOOLEAN         NOT NULL                                DEFAULT TRUE,
+  PostMaxFiles          INTEGER         NOT NULL                                DEFAULT 5       CHECK(PostMaxFiles BETWEEN 0 AND 5),
+  ThreadMinLength       INTEGER         NOT NULL                                DEFAULT 1,
+  PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength <= 32768),
+  PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines <= 1024),
+  PostMaxDblNewlines    INTEGER         NOT NULL                                DEFAULT 16      CHECK(PostMaxDblNewlines <= 512),
+  TPHLimit              INTEGER         NOT NULL                                DEFAULT -1,
+  PPHLimit              INTEGER         NOT NULL                                DEFAULT -1,
+  ThreadCaptcha         BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  PostCaptcha           BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  CaptchaTriggerTPH     INTEGER         NOT NULL                                DEFAULT -1,
+  CaptchaTriggerPPH     INTEGER         NOT NULL                                DEFAULT -1,
+  BumpLimit             INTEGER         NOT NULL                                DEFAULT 200     CHECK(BumpLimit BETWEEN 0 AND 1000),
+  PostLimit             INTEGER         NOT NULL                                DEFAULT 250     CHECK(PostLimit BETWEEN 0 AND 1000),
+  ThreadLimit           INTEGER         NOT NULL                                DEFAULT 500     CHECK(ThreadLimit BETWEEN 1 AND 1000)
 ) WITHOUT ROWID;
 
 CREATE TABLE Posts (
-  Board			TEXT		NOT NULL,
-  Number		INTEGER							DEFAULT NULL,
-  Parent		INTEGER							DEFAULT NULL,
-  Date			DATETIME	NOT NULL				DEFAULT 0,
-  LastBumpDate		DATETIME	NOT NULL				DEFAULT 0	CHECK(LastBumpDate >= Date),
-  Name			TEXT		NOT NULL				DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
-  Email			TEXT		NOT NULL				DEFAULT ''	CHECK(LENGTH(Email) <= 64),
-  Subject		TEXT		NOT NULL				DEFAULT ''	CHECK(LENGTH(Subject) <= 64),
-  Comment		TEXT		NOT NULL				DEFAULT ''	CHECK(LENGTH(Comment) <= 32768),
-  Sticky		BOOLEAN		NOT NULL				DEFAULT FALSE,
-  Lock			BOOLEAN		NOT NULL				DEFAULT FALSE,
-  Autosage		BOOLEAN		NOT NULL				DEFAULT FALSE,
-  Cycle			BOOLEAN		NOT NULL				DEFAULT FALSE,
-  ReplyCount            INTEGER							DEFAULT NULL	CHECK(ReplyCount IS NULL OR ReplyCount >= 0),
+  Board                 TEXT            NOT NULL,
+  Number                INTEGER                                                 DEFAULT NULL,
+  Parent                INTEGER                                                 DEFAULT NULL,
+  Date                  DATETIME        NOT NULL                                DEFAULT 0,
+  LastBumpDate          DATETIME        NOT NULL                                DEFAULT 0       CHECK(LastBumpDate >= Date),
+  Name                  TEXT            NOT NULL                                DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
+  Email                 TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Email) <= 64),
+  Subject               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Subject) <= 64),
+  Comment               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Comment) <= 32768),
+  Sticky                BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  Lock                  BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  Autosage              BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  Cycle                 BOOLEAN         NOT NULL                                DEFAULT FALSE,
+  ReplyCount            INTEGER                                                 DEFAULT NULL    CHECK(ReplyCount IS NULL OR ReplyCount >= 0),
 
   PRIMARY KEY (Board, Number),
   FOREIGN KEY (Board) REFERENCES Boards(Name) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -57,12 +57,12 @@ CREATE TABLE Refs (
 ) WITHOUT ROWID;
 
 CREATE TABLE FileRefs (
-  Board			TEXT		NOT NULL,
-  Number		INTEGER		NOT NULL,
-  File			TEXT		NOT NULL,
-  Name			TEXT		NOT NULL,
-  Spoiler		BOOLEAN		NOT NULL,
-  Sequence		INTEGER		NOT NULL,
+  Board                 TEXT            NOT NULL,
+  Number                INTEGER         NOT NULL,
+  File                  TEXT            NOT NULL,
+  Name                  TEXT            NOT NULL,
+  Spoiler               BOOLEAN         NOT NULL,
+  Sequence              INTEGER         NOT NULL,
 
   PRIMARY KEY (Board, Number, Sequence),
   FOREIGN KEY (Board, Number) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -70,8 +70,8 @@ CREATE TABLE FileRefs (
 ) WITHOUT ROWID;
 
 CREATE TABLE Files (
-  Name			TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 130 AND 133),
-  Size			INTEGER		NOT NULL						CHECK(Size BETWEEN 1 AND 16777216),
+  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 130 AND 133),
+  Size                  INTEGER         NOT NULL                                                CHECK(Size BETWEEN 1 AND 16777216),
   Width                 INTEGER                                                 DEFAULT NULL,
   Height                INTEGER                                                 DEFAULT NULL,
 
@@ -94,24 +94,24 @@ CREATE TABLE Accounts (
 ) WITHOUT ROWID;
 
 CREATE TABLE Sessions (
-  Key                   TEXT            NOT NULL        UNIQUE  PRIMARY KEY			CHECK(LENGTH(Key) = 16),
+  Key                   TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Key) = 16),
   Account               TEXT            NOT NULL        UNIQUE,
-  ExpireDate            DATETIME        NOT NULL				DEFAULT 0,
+  ExpireDate            DATETIME        NOT NULL                                DEFAULT 0,
 
   FOREIGN KEY (Account) REFERENCES Accounts (Name) ON UPDATE CASCADE ON DELETE CASCADE
 ) WITHOUT ROWID;
 
 CREATE TABLE Logs (
-  Account               TEXT            NOT NULL				DEFAULT 'SYSTEM',
-  Board                 TEXT            NOT NULL				DEFAULT 'GLOBAL',
-  Date                  DATETIME        NOT NULL				DEFAULT 0,
+  Account               TEXT            NOT NULL                                DEFAULT 'SYSTEM',
+  Board                 TEXT            NOT NULL                                DEFAULT 'GLOBAL',
+  Date                  DATETIME        NOT NULL                                DEFAULT 0,
   Description           TEXT            NOT NULL                                                CHECK(LENGTH(Description) > 0)
 );
 
 CREATE TABLE Captchas (
-  Id			TEXT		NOT NULL	UNIQUE	PRIMARY KEY			CHECK(LENGTH(Id) = 16),
-  Text			TEXT		NOT NULL						CHECK(LENGTH(Text) = 6),
-  ExpireDate		DATETIME	NOT NULL				DEFAULT 0
+  Id                    TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Id) = 16),
+  Text                  TEXT            NOT NULL                                                CHECK(LENGTH(Text) = 6),
+  ExpireDate            DATETIME        NOT NULL                                DEFAULT 0
 ) WITHOUT ROWID;
 
 CREATE TABLE Webring (
