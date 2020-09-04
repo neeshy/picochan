@@ -27,7 +27,6 @@ end
 function cgi.initialize()
   cgi.outputbuf = {};
   cgi.headers = {};
-  cgi.pathinfo = ENV["PATH_INFO"] and string.tokenize(ENV["PATH_INFO"]:gsub("^/", ""), "/") or {};
   cgi.encodings = ENV["HTTP_ACCEPT_ENCODING"] and httpencodinglist(ENV["HTTP_ACCEPT_ENCODING"]) or {};
 end
 

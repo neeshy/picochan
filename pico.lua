@@ -668,21 +668,27 @@ cgi.headers["Referrer-Policy"] = "no-referrer";
 cgi.headers["X-DNS-Prefetch-Control"] = "off";
 cgi.headers["X-Frame-Options"] = "deny";
 
-if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
+local handlers = {}
+
+local function account_check()
+  if not pico.account.current then
+    cgi.headers["Status"] = "303 See Other";
+    cgi.headers["Location"] = "/Mod/login";
+    cgi.finalize();
+  end
+end
+
+handlers["/"] = function()
   html.begin("welcome");
   html.redheader("Welcome to %s", sitename);
   html.container.begin();
   printf("%s", pico.global.get("frontpage") or "");
   html.container.finish();
   html.finish();
-  elseif cgi.pathinfo[1] == "Mod" then
-    if not pico.account.current and cgi.pathinfo[2] ~= "login" then
-      cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/Mod/login";
-      cgi.finalize();
-    end
+end;
 
-    if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" then
+handlers["/Mod"] = function()
+      account_check();
       html.brc("dashboard", "Moderation Dashboard");
       printf("You are logged in as <b>%s</b>. Your account type is <b>%s</b>.",
              pico.account.current["Name"], pico.account.current["Type"]);
@@ -715,7 +721,9 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
       html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
       html.list.finish();
       html.cfinish();
-    elseif cgi.pathinfo[2] == "login" then
+end;
+
+handlers["/Mod/login"] = function()
       html.brc("login", "Moderator Login");
 
       if POST["username"] and POST["password"] then
@@ -733,13 +741,19 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
       html.form.mod_login();
       html.cfinish();
-    elseif cgi.pathinfo[2] == "logout" then
+end;
+
+handlers["/Mod/logout"] = function()
+      account_check();
       pico.account.logout();
       cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
       cgi.headers["Status"] = "303 See Other";
       cgi.headers["Location"] = "/Overboard";
       cgi.finalize();
-    elseif cgi.pathinfo[2] == "global" then
+end;
+
+handlers["/Mod/global/([%l%d]+)"] = function(varname)
+      account_check();
       html.brc("change global configuration", "Change global configuration");
 
       if POST["name"] then
@@ -753,10 +767,12 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
         printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
       end
 
-      html.form.globalconfig(cgi.pathinfo[3]);
+      html.form.globalconfig(varname);
       html.cfinish();
-    elseif cgi.pathinfo[2] == "account" then
-      if cgi.pathinfo[3] == "create" then
+end;
+
+handlers["/Mod/account/create"] = function()
+        account_check();
         html.brc("create account", "Create account");
 
         if POST["name"] ~= nil and POST["name"] ~= "" then
@@ -765,7 +781,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.account_create();
         html.cfinish();
-      elseif cgi.pathinfo[3] == "delete" then
+end;
+
+handlers["/Mod/account/delete"] = function()
+        account_check();
         html.brc("delete account", "Delete account");
 
         if POST["name"] and POST["reason"] then
@@ -775,7 +794,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.account_delete();
         html.cfinish();
-      elseif cgi.pathinfo[3] == "config" then
+end;
+
+handlers["/Mod/account/config"] = function()
+        account_check();
         html.brc("configure account", "Configure account");
 
         if POST["name"] and POST["password"] then
@@ -784,9 +806,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.account_config();
         html.cfinish();
-      end
-    elseif cgi.pathinfo[2] == "board" then
-      if cgi.pathinfo[3] == "create" then
+end;
+
+handlers["/Mod/board/create"] = function()
+        account_check();
         html.brc("create board", "Create board");
 
         if POST["name"] and POST["title"] and POST["subtitle"] then
@@ -796,7 +819,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.board_create();
         html.cfinish();
-      elseif cgi.pathinfo[3] == "delete" then
+end;
+
+handlers["/Mod/board/delete"] = function()
+        account_check();
         html.brc("delete board", "Delete board");
 
         if POST["name"] and POST["reason"] then
@@ -806,7 +832,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.board_delete();
         html.cfinish();
-      elseif cgi.pathinfo[3] == "config" then
+end;
+
+handlers["/Mod/board/config"] = function()
+        account_check();
         html.brc("configure board", "Configure board");
 
         if POST["Name"] == nil or POST["Name"] == "" then
@@ -824,24 +853,16 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
         end
 
         html.cfinish();
-      end
-    elseif cgi.pathinfo[2] == "post" then
-      if not (cgi.pathinfo[3] == "delete"
-              or cgi.pathinfo[3] == "unlink"
-              or cgi.pathinfo[3] == "move"
-              or cgi.pathinfo[3] == "sticky"
-              or cgi.pathinfo[3] == "lock"
-              or cgi.pathinfo[3] == "autosage"
-              or cgi.pathinfo[3] == "cycle") then
-        html.error("Invalid action", "Action is invalid");
-      end
+end;
 
-      html.begin("%s post", cgi.pathinfo[3]);
+handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post, file)
+      account_check();
+      html.begin("%s post", operation);
       html.redheader("Modify or Delete a Post");
       html.container.begin();
 
-      local board_tbl = pico.board.tbl(cgi.pathinfo[4]);
-      local post_tbl, msg = pico.post.tbl(cgi.pathinfo[4], cgi.pathinfo[5]);
+      local board_tbl = pico.board.tbl(board);
+      local post_tbl, msg = pico.post.tbl(board, post);
       if not post_tbl then
         html.error("Action failed", "Cannot find post: %s", msg);
       end
@@ -849,14 +870,14 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
       if POST["reason"] and POST["reason"] ~= "" then
         local result, msg;
 
-        if cgi.pathinfo[3] == "delete" then
-          result, msg = pico.post.delete(cgi.pathinfo[4], cgi.pathinfo[5], POST["reason"]);
-        elseif cgi.pathinfo[3] == "unlink" then
-          result, msg = pico.post.unlink(cgi.pathinfo[4], cgi.pathinfo[5], cgi.pathinfo[6], POST["reason"]);
-        elseif cgi.pathinfo[3] == "move" then
-          result, msg = pico.post.movethread(cgi.pathinfo[4], cgi.pathinfo[5], POST["destination"], POST["reason"]);
+        if operation == "delete" then
+          result, msg = pico.post.delete(board, post, POST["reason"]);
+        elseif operation == "unlink" then
+          result, msg = pico.post.unlink(board, post, file, POST["reason"]);
+        elseif operation == "move" then
+          result, msg = pico.post.movethread(board, post, POST["destination"], POST["reason"]);
         else
-          result, msg = pico.post.toggle(cgi.pathinfo[3], cgi.pathinfo[4], cgi.pathinfo[5], POST["reason"]);
+          result, msg = pico.post.toggle(operation, board, post, POST["reason"]);
         end
 
         if not result then
@@ -864,7 +885,7 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
         else
           cgi.headers["Status"] = "303 See Other";
 
-          if cgi.pathinfo[3] == "move" then
+          if operation == "move" then
             cgi.headers["Location"] = "/" .. POST["destination"];
           else
             cgi.headers["Location"] =
@@ -873,22 +894,31 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
           end
 
           cgi.finalize();
-        end;
+        end
       end
 
-      printf("You are about to <b>%s</b>%s the following post:", cgi.pathinfo[3],
-             cgi.pathinfo[3] == "unlink" and " " .. cgi.pathinfo[6] .. " from" or "");
+      printf("You are about to <b>%s</b>%s the following post:", operation,
+             operation == "unlink" and " " .. file .. " from" or "");
       html.renderpost(post_tbl);
 
-      if cgi.pathinfo[3] == "move" then
+      if operation == "move" then
         html.form.mod_move_thread();
       else
         html.form.mod_action_reason();
       end
 
       html.cfinish();
-    elseif cgi.pathinfo[2] == "tools" then
-      if cgi.pathinfo[3] == "multidelete" then
+end;
+
+handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(autosage)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(cycle)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+
+handlers["/Mod/tools/multidelete"] = function()
+        account_check();
         html.brc("multidelete", "Multidelete");
 
         if POST["board"] then
@@ -898,7 +928,10 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.mod_multidelete();
         html.cfinish();
-      elseif cgi.pathinfo[3] == "pattdelete" then
+end;
+
+handlers["/Mod/tools/pattdelete"] = function()
+        account_check();
         html.brc("pattern delete", "Pattern delete");
 
         if POST["pattern"] then
@@ -908,13 +941,14 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
 
         html.form.mod_pattdelete();
         html.cfinish();
-      end
-    elseif cgi.pathinfo[2] == "file" then
-      if cgi.pathinfo[3] == "delete" then
+end;
+
+handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
+        account_check();
         html.brc("delete file", "Delete file");
 
         if POST["reason"] and POST["reason"] ~= "" then
-          local result, msg = pico.file.delete(cgi.pathinfo[4], POST["reason"]);
+          local result, msg = pico.file.delete(file, POST["reason"]);
 
           if not result then
             html.error("Action failed", "Backend returned error: %s", msg);
@@ -925,17 +959,17 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
           end
         end
 
-        printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", cgi.pathinfo[4]);
+        printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", file);
         html.form.mod_action_reason();
         html.cfinish();
-      end
-    end
-  elseif cgi.pathinfo[1] == "Log" then
+end;
+
+handlers["/Log"] = function(page)
     html.begin("logs");
     html.redheader("Moderation Logs");
     html.container.begin("wide");
 
-    local page = tonumber(cgi.pathinfo[2]) or 1;
+    page = tonumber(page) or 1;
     page = (page < 1) and 1 or page;
 
     printf("<div class='page-switcher'>");
@@ -959,7 +993,11 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
     printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
     printf("</div>");
     html.cfinish();
-  elseif cgi.pathinfo[1] == "Stats" then
+end;
+
+handlers["/Log/(%d+)"] = handlers["/Log"];
+
+handlers["/Stats"] = function()
     html.begin("stats");
     html.redheader("Posting Statistics");
     html.container.begin("wide");
@@ -995,7 +1033,9 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
     html.table.entry("<i>GLOBAL</i>", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total);
     html.table.finish();
     html.cfinish();
-  elseif cgi.pathinfo[1] == "Post" then
+end;
+
+handlers["/Post"] = function()
     local file_hashes = {};
 
     -- step 1. add all the files of the post (if any) to pico's file registration
@@ -1032,20 +1072,24 @@ if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
     else
       cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
     end
-elseif cgi.pathinfo[1] == "Overboard" then
+end;
+
+handlers["/Overboard"] = function()
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
   html.announce();
   printf("<a href=''>[Update]</a><hr />");
   html.rendercatalog(pico.board.overboard());
   html.finish();
-elseif cgi.pathinfo[1] == "Recent" then
+end;
+
+handlers["/Recent"] = function(page)
   html.begin("recent posts");
   html.redheader("Recent Posts");
   html.announce();
   printf("<a href=''>[Update]</a><hr class='recent-page-separator' />");
 
-  local page = tonumber(cgi.pathinfo[2]) or 1;
+  page = tonumber(page) or 1;
   local recent_tbl = pico.post.recent(page);
 
   for i = 1, #recent_tbl do
@@ -1060,15 +1104,16 @@ elseif cgi.pathinfo[1] == "Recent" then
   printf("<a class='page-switcher-next' href='/Recent/%d'>[Next]</a>", page + 1);
   printf("</div>");
   html.finish();
-else
-  local board_tbl = pico.board.tbl(cgi.pathinfo[1]);
+end;
 
-  if not board_tbl then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Board Not Found", "The board you specified does not exist.");
-  end
+handlers["/Recent/(%d+)"] = handlers["/Recent"];
 
-  if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" or cgi.pathinfo[2] == "index" then
+local function board_header(board_tbl)
+    if not board_tbl then
+      cgi.headers["Status"] = "404 Not Found";
+      html.error("Board Not Found", "The board you specified does not exist.");
+    end
+
     html.begin("/%s/", board_tbl["Name"]);
     printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
     printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
@@ -1078,11 +1123,21 @@ else
     printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href=''>[Update]</a>",
            board_tbl["Name"], board_tbl["Name"]);
     printf("<hr />");
+end
 
-    if cgi.pathinfo[2] == nil or cgi.pathinfo[2] == "" or cgi.pathinfo[2] == "catalog" then
-      html.rendercatalog(pico.board.catalog(board_tbl["Name"]));
-    elseif cgi.pathinfo[2] == "index" then
-      local page = tonumber(cgi.pathinfo[3]) or 1;
+handlers["/([%l%d]+)/?"] = function(board)
+  local board_tbl = pico.board.tbl(board);
+  board_header(board_tbl);
+  html.rendercatalog(pico.board.catalog(board_tbl["Name"]));
+  html.finish();
+end;
+
+handlers["/([%l%d]+)/catalog"] = handlers["/([%l%d]+)/?"];
+
+handlers["/([%l%d]+)/index"] = function(board, page)
+      local board_tbl = pico.board.tbl(board);
+      board_header(board_tbl);
+      page = tonumber(page) or 1;
       page = (page > 0) and page or 1;
       local index_tbl = pico.board.index(board_tbl["Name"], page);
 
@@ -1110,11 +1165,21 @@ else
       printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board_tbl["Name"], page - 1);
       printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board_tbl["Name"], page + 1);
       printf("</div>");
+
+      html.finish();
+end;
+
+handlers["/([%l%d]+)/index/(%d+)"] = handlers["/([%l%d]+)/index"];
+
+handlers["/([%l%d]+)/(%d+)"] = function(board, post)
+    local board_tbl = pico.board.tbl(board);
+
+    if not board_tbl then
+      cgi.headers["Status"] = "404 Not Found";
+      html.error("Board Not Found", "The board you specified does not exist.");
     end
 
-    html.finish();
-  else
-    local thread_tbl, msg = pico.post.thread(board_tbl["Name"], cgi.pathinfo[2]);
+    local thread_tbl, msg = pico.post.thread(board_tbl["Name"], post);
 
     if not thread_tbl then
       cgi.headers["Status"] = "404 Not Found";
@@ -1128,7 +1193,7 @@ else
     printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
     html.announce();
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>");
-    html.form.postform(board_tbl, cgi.pathinfo[2]);
+    html.form.postform(board_tbl, post);
     printf("<hr />");
 
     for i = 0, #thread_tbl do
@@ -1149,8 +1214,17 @@ else
 
     printf("</div>");
     html.finish();
+end;
+
+for patt, func in pairs(handlers) do
+  patt = "^" .. patt .. "$";
+
+  if ENV["PATH_INFO"]:match(patt) then
+    ENV["PATH_INFO"]:gsub(patt, func);
+    cgi.finalize();
   end
 end
 
-cgi.finalize();
+cgi.headers["Status"] = "404 Not Found";
+html.error("Page Not Found", "The specified page does not exist.");
 %>
