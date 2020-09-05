@@ -152,7 +152,7 @@ function pico.account.create(name, password, type, board)
   elseif (type == "bo" or type == "lvol") then
     if not board then
       return false, "Board was not specified, but the account type requires it";
-    elseif not db:b("SELECT TRUE FROM Boards WHERE Name = ?", board) then
+    elseif not pico.board.exists(board) then
       return false, "Account's specified board does not exist";
     end
   end
@@ -288,7 +288,7 @@ function pico.board.create(name, title, subtitle)
 
   subtitle = subtitle or "";
 
-  if db:b("SELECT TRUE FROM Boards WHERE Name = ?", name) then
+  if pico.board.exists(name) then
     return false, "Board already exists";
   elseif not valid_board_name(name) then
     return false, "Invalid board name";
@@ -308,7 +308,7 @@ function pico.board.delete(name, reason)
   local auth, msg = permit("admin");
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Boards WHERE Name = ?", name) then
+  if not pico.board.exists(name) then
     return false, "Board does not exist";
   end
 
@@ -335,7 +335,7 @@ function pico.board.configure(board_tbl)
 
   if not board_tbl then
     return false, "Board configuration not supplied";
-  elseif not db:b("SELECT TRUE FROM Boards WHERE Name = ?", board_tbl["Name"]) then
+  elseif not pico.board.exists(board_tbl["Name"]) then
     return false, "Board does not exist";
   end
 
@@ -360,7 +360,7 @@ function pico.board.configure(board_tbl)
 end
 
 function pico.board.index(name, page)
-  if not db:b("SELECT TRUE FROM Boards WHERE Name = ?", name) then
+  if not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
 
@@ -396,7 +396,7 @@ function pico.board.index(name, page)
 end
 
 function pico.board.catalog(name)
-  if not db:b("SELECT TRUE FROM Boards WHERE Name = ?", name) then
+  if not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
 
@@ -776,7 +776,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   if not auth then return auth, msg end;
   assert(include, "Invalid include parameter");
 
-  if not db:b("SELECT TRUE FROM Boards WHERE Name = ?", board) then
+  if not pico.board.exists(board) then
     return false, "Board does not exist";
   end
 
@@ -881,7 +881,7 @@ function pico.post.movethread(board, number, newboard, reason)
 
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL", board, number) then
     return false, "Post does not exist or is not a thread";
-  elseif not db:b("SELECT TRUE FROM Boards WHERE Name = ?", newboard) then
+  elseif not pico.board.exists(newboard) then
     return false, "Destination board does not exist";
   end
 
