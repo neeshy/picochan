@@ -743,13 +743,13 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
     -- 1. Ensure that the reference doesn't already exist.
     -- 2. Ensure that the post being referred to does exist.
-    -- 3. Ensure that the post being referred to is in the same thread as the referee.
+    -- 3. Ensure that the post being referred to is in the same thread as the referrer.
     -- 4. Ensure that the post being referred to is not the same as the referrer.
     if ref ~= number then
       db:q("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
            "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
            "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
-           board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, tonumber(parent));
+           board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
     end
   end
 
