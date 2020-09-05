@@ -233,15 +233,15 @@ function html.picofmt(post_tbl, disable_refs)
   local function handle_url(previous, url)
     local balance_tbl = {
       ["("] = ")",
-      ["<"] = ">",
+      [";"] = ">",
       ["{"] = "}",
       ["["] = "]"
     };
     url = html.unstriphtml(url);
     local append = "";
     if balance_tbl[previous] then
-      append = url:match("%" .. balance_tbl[previous] .. "$") or "";
-      url = url:gsub("%" .. balance_tbl[previous] .. "$", "");
+      append = url:match("%" .. balance_tbl[previous] .. "[%.%?,!]?$") or "";
+      url = url:gsub("%" .. balance_tbl[previous] .. "[%.%?,!]?$", "");
     end
     url = html.striphtml(url);
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
