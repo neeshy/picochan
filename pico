@@ -2,7 +2,6 @@
 <% -- Picochan CGI/HTML Frontend
 -- HAPAS ARE SUPERIOR TO WHITES
 
-local openbsd = require("picoaux.openbsd");
 local brotli = require("picoaux.brotli");
 local zlib = require("picoaux.zlib");
 local pico = require("picoengine");
@@ -17,15 +16,6 @@ local html = {};
 --
 -- INITIALIZATION
 --
-
--- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
-openbsd.unveil("./picochan.db", "rw");
-openbsd.unveil("./picochan.db-journal", "rwc");
-openbsd.unveil("./media/", "rwxc");
-openbsd.unveil("/tmp/", "rwc");
-openbsd.unveil("/usr/local/", "x");
-openbsd.unveil("/bin/sh", "x");
-openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec");
 
 local outputbuf = {};
 local sitename = pico.global.get("sitename");
@@ -765,7 +755,6 @@ elseif cgi.pathinfo[1] == "System" then
       html.list.entry("<a href='/pico/System/mod/global/indexwindowsize'>Change index window size</a>");
       html.list.entry("<a href='/pico/System/mod/global/recentpagesize'>Change recent posts page size</a>");
       html.list.entry("<a href='/pico/System/mod/global/logpagesize'>Change mod log page size</a>");
-      html.list.entry("<a href='/pico/System/mod/global/bcryptrounds'>Change log_rounds parameter of bcrypt</a>");
       html.list.finish();
       html.container.barheader("Miscellaneous Tools");
       html.list.begin("unordered");
