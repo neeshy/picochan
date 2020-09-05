@@ -434,9 +434,9 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl, include_board_in_id)
-  printf("<div id='%s%d' class='post-container'>",
-         include_board_in_id and post_tbl["Board"] .. "-" or "", post_tbl["Number"]);
+function html.renderpost(post_tbl, overboard)
+  printf("<div%s class='post-container'>",
+         overboard and "" or string.format(" id='%d'", post_tbl["Number"]));
   printf("<div class='post%s'>", post_tbl["Parent"] and "" or " thread");
   printf("<div class='post-header'>");
 
@@ -1082,7 +1082,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   printf("You are about to <b>%s</b>%s the following post:", operation,
          (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
          " " .. file .. " from" or "");
-  html.renderpost(post_tbl);
+  html.renderpost(post_tbl, true);
 
   if operation == "move" then
     html.form.mod_move_thread();
