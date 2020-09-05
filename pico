@@ -233,8 +233,8 @@ function html.picofmt(post_tbl, disable_refs)
   local function handle_url(previous, url)
     local balance_tbl = {
       ["("] = ")",
-      ["<"] = "<",
-      ["{"] = "{",
+      ["<"] = ">",
+      ["{"] = "}",
       ["["] = "]"
     };
     url = html.unstriphtml(url);
