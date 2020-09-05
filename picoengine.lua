@@ -551,7 +551,7 @@ function pico.file.add(path)
 
     local p = io.popen("ffprobe -hide_banner media/" .. filename ..
                        " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
-    local dimensions = string.tokenize(p:read("*a"), "x");
+    local dimensions = string.tokenize(p:read("*l"), "x");
     p:close();
 
     width, height = tonumber(dimensions[1]), tonumber(dimensions[2]);

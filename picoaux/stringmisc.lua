@@ -35,7 +35,7 @@ function string.tokenize(input, delimiter)
     return {};
   end
 
-  for match in (input .. delimiter):gmatch("(.-)%" .. delimiter) do
+  for match in (input .. delimiter):gmatch("(.-)" .. delimiter) do
     result[#result + 1] = match;
   end
 
