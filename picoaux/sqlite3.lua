@@ -174,7 +174,7 @@ end
 -- e.g. db:b("SELECT TRUE FROM Customers WHERE Name = ?", "James") would
 --      return true if there is a customer named James, or false otherwise.
 function metatable_db:b(sql, ...)
-  local stmt = self:prepare(sql);
+  local stmt, errmsg = self:prepare(sql);
   if not stmt then
     error(errmsg, 2);
   end
@@ -191,7 +191,7 @@ function metatable_db:b(sql, ...)
     error(self:errmsg(), 2);
   end
 
-  return (ret == sqlite.ROW) and true or false;
+  return (ret == sqlite.ROW);
 end
 
 --
