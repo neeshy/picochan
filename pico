@@ -209,8 +209,6 @@ function html.picofmt(post_tbl, disable_refs)
 
     if not ref_post_tbl then
       return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
-    elseif ref_post_tbl["Parent"] == post_tbl["Parent"] then
-      return string.format("<a class='reference' href='#%d'>&gt;&gt;%d</a>", number, number);
     else
       return string.format("<a class='reference' href='/pico/%s/%d#%d'>&gt;&gt;%d</a>",
                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
@@ -430,7 +428,8 @@ function html.renderpost(post_tbl)
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
-    printf("<a class='referrer' href='#%d'>&gt;&gt;%d</a> ", reflist[i], reflist[i]);
+    printf("<a class='referrer' href='/pico/%s/%d#%d'>&gt;&gt;%d</a> ",
+           post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
   end
 
   printf("</div>");
