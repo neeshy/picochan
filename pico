@@ -25,20 +25,7 @@ local function printf(...)
 end
 
 local function thumbsize(w, h, mw, mh)
-  local tw, th;
-
-  if w <= mw and h <= mh then
-    tw = w;
-    th = h;
-  elseif h > mh then
-    th = mh;
-    tw = math.ceil(w / h * mh);
-  elseif w >= mw then
-    tw = mw;
-    th = math.ceil(h / w * mw);
-  end
-
-  return tw, th;
+  return math.min(w, mw, math.floor(w / h * mh + 0.5)), math.min(h, mh, math.floor(h / w * mw + 0.5));
 end
 
 --
