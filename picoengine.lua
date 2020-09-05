@@ -400,15 +400,15 @@ function pico.board.catalog(name)
     return nil, "Board does not exist";
   end
 
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
-              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
+  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
               "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
 end
 
 function pico.board.overboard()
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File " ..
-              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number " ..
+  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
               "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");

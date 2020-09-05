@@ -24,6 +24,23 @@ local function printf(...)
   cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...);
 end
 
+local function thumbsize(w, h, mw, mh)
+  local tw, th;
+
+  if w <= mw and h <= mh then
+    tw = w;
+    th = h;
+  elseif h > mh then
+    th = mh;
+    tw = math.ceil(w / h * mh);
+  elseif w >= mw then
+    tw = mw;
+    th = math.ceil(h / w * mw);
+  end
+
+  return tw, th;
+end
+
 --
 -- HTML FUNCTIONS
 --
@@ -320,23 +337,6 @@ function html.threadflags(post_tbl)
 end
 
 function html.renderpostfiles(post_tbl)
-  local function findthumbsize(w, h)
-    local tw, th;
-
-    if w <= 200 and h <= 200 then
-      tw = w;
-      th = h;
-    elseif h > w then
-      th = 200;
-      tw = math.ceil(w / h * 200);
-    elseif w >= h then
-      tw = 200;
-      th = math.ceil(h / w * 200);
-    end
-
-    return tw, th;
-  end
-
   local file_tbl = post_tbl["Files"];
 
   if file_tbl then
@@ -379,11 +379,12 @@ function html.renderpostfiles(post_tbl)
         printf("<label>");
         printf("<input type='checkbox' hidden />");
         printf("<img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' />",
-               filename, findthumbsize(file["Width"] or 0, file["Height"] or 0));
+               filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200));
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif extension == "pdf" then
-        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>", filename, filename, findthumbsize(file["Width"] or 200, file["Height"] or 200));
+        printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>",
+               filename, filename, thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200));
       elseif extension == "epub" then
         printf("<a href='/media/%s'><img class='post-file-thumbnail' src='/static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
       elseif extension == "txt" then
@@ -455,7 +456,8 @@ function html.rendercatalog(catalog_tbl)
       local class = pico.file.class(extension);
 
       if class == "image" or class == "video" or extension == "pdf" then
-        printf("<img alt='***' src='/media/icon/%s' />", post_tbl["File"]);
+        printf("<img alt='***' src='/media/icon/%s' width=%d height=%d />",
+               post_tbl["File"], thumbsize(post_tbl["FileWidth"] or 100, post_tbl["FileHeight"] or 70, 100, 70));
       elseif class == "audio" then
         printf("<img alt='***' src='/static/audio.png' width=100 height=70 />");
       elseif extension == "epub" then
