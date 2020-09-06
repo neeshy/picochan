@@ -76,7 +76,7 @@ function zlib.compress(data, complevel, windowbits, memlevel)
   strm[0].avail_out = bufsize;
 
   err = ffi.z.deflate(strm, 4);
-  if err ~= 1 then
+  if err ~= 0 then
     error(zlib_error_lut[err]);
   end
 
