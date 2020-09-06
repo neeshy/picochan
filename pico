@@ -76,7 +76,7 @@ function html.finish()
 end
 
 function html.error(title, ...)
-  outputbuf = {};
+  cgi.outputbuf = {};
   html.begin("error");
   html.redheader(title);
   html.container.begin();
