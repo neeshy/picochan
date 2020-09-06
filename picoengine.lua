@@ -17,8 +17,7 @@ local pico = {};
       pico.log = {};
       pico.captcha = {};
 
-local db, errcode, errmsg = sqlite3.open("picochan.db", sqlite3.OPEN_READWRITE);
-assert(db, errmsg);
+local db = assert(sqlite3.open("picochan.db", "w"));
 db:q("PRAGMA busy_timeout = 10000");
 db:q("PRAGMA foreign_keys = ON");
 db:q("PRAGMA recursive_triggers = ON");
