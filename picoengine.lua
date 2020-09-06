@@ -375,17 +375,11 @@ function pico.board.index(name, page)
                           name, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
-    index_tbl[i] = {};
+    index_tbl[i] = db:q("SELECT * FROM (SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
+                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) ORDER BY Number ASC",
+                        thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
     index_tbl[i][0] = thread_ops[i];
     index_tbl[i]["RepliesOmitted"] = thread_ops[i]["ReplyCount"] - windowsize;
-
-    local tmp_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
-                         "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?",
-                         thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
-
-    while #tmp_tbl > 0 do
-      index_tbl[i][#index_tbl[i] + 1] = table.remove(tmp_tbl);
-    end
 
     for j = 0, #index_tbl[i] do
       index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
