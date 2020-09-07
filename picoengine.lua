@@ -780,7 +780,7 @@ function pico.post.multidelete(board, include, exclude, reason)
 
   local function genspec(spec, sql, sqlp)
     if spec:match("-") then
-      local start, finish = unpack(spec:tokenize("-"));
+      local start, finish = table.unpack(spec:tokenize("-"));
       start, finish = tonumber(start), tonumber(finish);
       if not start or not finish then
         return false, "Invalid range specification";
@@ -805,7 +805,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   for i = 1, #exclist do genspec(exclist[i], sql, sqlp) end;
   sql[#sql + 1] = ")";
 
-  db:q(table.concat(sql, " "), unpack(sqlp));
+  db:q(table.concat(sql, " "), table.unpack(sqlp));
   log(false, board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
   return true, "Posts deleted successfully";
 end
