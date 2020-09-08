@@ -398,7 +398,7 @@ div.post-file-single div.post-file-fullsize {
     float: left;
 }
 
-div.post-comment {
+div.post-comment, div.catalog-thread-comment {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     margin: 1.3ch;
