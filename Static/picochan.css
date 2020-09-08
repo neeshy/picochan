@@ -407,7 +407,7 @@ div.post-comment {
     display: block;
 }
 
-div.post-comment a {
+div.post-comment a, div.catalog-thread-comment a {
     color: #F33;
     text-decoration: underline;
 }

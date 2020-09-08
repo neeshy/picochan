@@ -219,7 +219,7 @@ function html.unstriphtml(s)
   return ret;
 end
 
-function html.picofmt(post_tbl, disable_refs)
+function html.picofmt(post_tbl)
   if post_tbl["Email"] and post_tbl["Email"]:match("nofo") then
     return html.striphtml(post_tbl["Comment"]);
   end
@@ -285,11 +285,9 @@ function html.picofmt(post_tbl, disable_refs)
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
 
-  if not disable_refs then
-    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
-    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
-    s = s:gsub("&gt;&gt;(%d+)", handle_refs);
-  end
+  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
+  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
+  s = s:gsub("&gt;&gt;(%d+)", handle_refs);
 
   s = s:gsub("(.?.?.?.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#~@]-[a-zA-Z0-9%.%%%-%+%(%)/%?&;:,#@])[^a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#~@]", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
@@ -530,7 +528,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
     printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
-    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl, true));
+    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
 
     printf("</div>");
   end
