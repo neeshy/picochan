@@ -407,8 +407,6 @@ function pico.board.overboard()
               "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");
 end
 
--- for this and the following stats functions, set board to nil (where applicable)
--- to get site-wide statistics.
 -- To get number of posts per hour over the last 12 hours:
 --   * interval = 1 (hour)
 --   * intervals = 12 (12 hours)
