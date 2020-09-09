@@ -31,6 +31,17 @@ do not enable the dav1d USE-flag for ffmpeg).
   media-gfx/graphicsmagick  USE="jpeg png webp svg openmp threads bzip2 zlib"
   media-video/ffmpeg        USE="dav1d vpx x264 x265 gpl"
 
+It is optional but recommended to remove bash as your system shell (/bin/sh).
+Picochan uses the functions os.execute() and io.popen(), which make use of
+/bin/sh to execute commands. On most Linux systems, this is a symlink to bash.
+GNU bash is highly insecure, and for security reasons, consider replacing
+the /bin/sh symlink with a less insecure shell, such as app-shells/dash.
+
+  # emerge app-shells/dash app-eselect/eselect-sh
+  # eselect sh set dash
+
+(See https://en.wikipedia.org/wiki/Shellshock_(software_bug) for more info)
+
 Additionally, you must also install haserl which is not available through the
 gentoo repositories. Fortunately, on Linux it is easy and quick to compile by
 yourself.
@@ -41,12 +52,24 @@ Download the source tarball through the distribution URL provided.
 When compiling haserl, make sure to use the following configure options. A
 failure to use these options will most likely result in picochan not working.
 
-  --enable-luashell
-  --disable-luacshell
-  --disable-bashshell
-  --disable-bash-extensions
-  --enable-subshell=lua
-  --with-lua=luajit
+  $ ./configure --enable-luashell \
+                --disable-luacshell \
+                --disable-bashshell \
+                --disable-bash-extensions \
+                --enable-subshell=lua \
+                --with-lua=luajit
+  $ make
+  # make install
+
+At this stage, on certain systems including OpenBSD, compilation will fail due
+to "lua2c.c" failing to compile. This is caused by faulty GNU build scripts.
+If this is the case:
+
+  $ cd src
+  $ cc -I/usr/local/include/luajit* -o lua2c lua2c.c -lluajit-5.1
+  $ cd ..
+  $ make
+  # make install
 
 ---> FINAL PREPARATIONS <---
 
