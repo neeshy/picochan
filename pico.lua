@@ -343,7 +343,7 @@ function html.threadflags(post_tbl)
   end
 end
 
-function html.renderpostfiles(post_tbl)
+function html.renderpostfiles(post_tbl, unprivileged)
   local function formatfilesize(size)
     if size > (1024 * 1024) then
       return string.format("%.2f MiB", (size / 1024 / 1024));
@@ -374,8 +374,9 @@ function html.renderpostfiles(post_tbl)
              formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
       printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
 
-      if pico.account.current and ((not pico.account.current["Board"])
-                                   or (pico.account.current["Board"] == post_tbl["Board"])) then
+      if not unprivileged
+          and pico.account.current
+          and (not pico.account.current["Board"] or pico.account.current["Board"] == post_tbl["Board"]) then
         printf(" <span class='mod-links'>");
         printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
                post_tbl["Board"], post_tbl["Number"], filename);
@@ -432,7 +433,7 @@ function html.renderpostfiles(post_tbl)
   end
 end
 
-function html.renderpost(post_tbl, overboard, separate)
+function html.renderpost(post_tbl, overboard, separate, unprivileged)
   printf("<div%s class='post-container'>",
          overboard and "" or string.format(" id='%d'", post_tbl["Number"]));
   printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread");
@@ -469,7 +470,9 @@ function html.renderpost(post_tbl, overboard, separate)
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
   html.threadflags(post_tbl);
-  html.modlinks(post_tbl);
+  if not unprivileged then
+    html.modlinks(post_tbl);
+  end
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
@@ -478,7 +481,7 @@ function html.renderpost(post_tbl, overboard, separate)
   end
 
   printf("</div>");
-  html.renderpostfiles(post_tbl);
+  html.renderpostfiles(post_tbl, unprivileged);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
   printf("</div></div>");
 end
@@ -1097,7 +1100,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   printf("You are about to <b>%s</b>%s the following post:", operation,
          (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
          " " .. file .. " from" or "");
-  html.renderpost(post_tbl, true, true);
+  html.renderpost(post_tbl, true, true, true);
 
   if operation == "move" then
     html.form.mod_move_thread();
