@@ -33,6 +33,8 @@ CREATE TABLE Posts (
   Name                  TEXT            NOT NULL                                DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
   Email                 TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Email) <= 64),
   Subject               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Subject) <= 64),
+  Capcode               TEXT                                                    DEFAULT NULL,
+  CapcodeBoard          TEXT                                                    DEFAULT NULL,
   Comment               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Comment) <= 32768),
   Sticky                BOOLEAN         NOT NULL                                DEFAULT FALSE,
   Lock                  BOOLEAN         NOT NULL                                DEFAULT FALSE,
@@ -42,7 +44,8 @@ CREATE TABLE Posts (
 
   PRIMARY KEY (Board, Number),
   FOREIGN KEY (Board) REFERENCES Boards(Name) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE
+  FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
+  CHECK((Capcode IN ('admin', 'gvol') AND CapcodeBoard IS NULL) OR (Capcode IN ('bo', 'lvol') AND Capcode IS NOT NULL))
 );
 
 CREATE TABLE Refs (

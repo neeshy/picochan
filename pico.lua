@@ -455,15 +455,30 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   end
 
   printf("<span class='post-name'>");
-
   if post_tbl["Email"] ~= "" then
     printf("<a class='post-email' href='mailto:%s'>%s</a>",
            html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"]));
   else
     printf("%s", html.striphtml(post_tbl["Name"]));
   end
-
   printf("</span>");
+
+  if post_tbl["Capcode"] then
+    local capcode;
+
+    if post_tbl["Capcode"] == "admin" then
+      capcode = "Administrator";
+    elseif post_tbl["Capcode"] == "bo" then
+      capcode = "Board Owner (" .. post_tbl["CapcodeBoard"] .. ")";
+    elseif post_tbl["Capcode"] == "gvol" then
+      capcode = "Global Volunteer";
+    elseif post_tbl["Capcode"] == "lvol" then
+      capcode = "Board Volunteer (" .. post_tbl["CapcodeBoard"] .. ")";
+    end
+
+    printf("<span class='post-capcode'>## %s</span>", capcode);
+  end
+
   printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
   printf("<span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],

@@ -366,7 +366,7 @@ function pico.board.index(name, page)
 
   local index_tbl = {};
   local sql = "SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-              "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts WHERE " ..
+              "Capcode, CapcodeBoard, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts WHERE " ..
               (name and "Board = ? AND " or "") ..
               "Parent IS NULL ORDER BY " ..
               (name and "Sticky DESC, " or "") ..
@@ -375,7 +375,7 @@ function pico.board.index(name, page)
                            or db:q(sql, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM (SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
+    index_tbl[i] = db:q("SELECT * FROM (SELECT Board, Number, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment FROM Posts " ..
                         "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) ORDER BY Number ASC",
                         thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
     index_tbl[i][0] = thread_ops[i];
@@ -633,10 +633,10 @@ function pico.post.thread(board, number)
     return nil, "Post is not a thread or does not exist";
   end
 
-  local thread_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Comment FROM Posts " ..
+  local thread_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment FROM Posts " ..
                           "WHERE Board = ? AND Parent = ? ORDER BY Number ASC", board, number);
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                       "Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
+                       "Capcode, CapcodeBoard, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                        "WHERE Board = ? AND Number = ?", board, number);
   local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
                           "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
@@ -670,6 +670,13 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
   local board_tbl = pico.board.tbl(board);
   local is_thread = (not parent);
+
+  local capcode, capcode_board;
+  if name == "##" and pico.account.current then
+    name = pico.account.current["Name"];
+    capcode = pico.account.current["Type"];
+    capcode_board = pico.account.current["Board"];
+  end
 
   name = (name ~= "") and name or pico.global.get("defaultpostname");
   email = email or "";
@@ -722,8 +729,8 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   end
 
   db:e("BEGIN TRANSACTION");
-  db:e("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Comment) " ..
-       "VALUES (?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, comment);
+  db:e("INSERT INTO Posts (Board, Parent, Name, Email, Subject, Capcode, CapcodeBoard, Comment) " ..
+       "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, capcode, capcode_board, comment);
   local number = db:r1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board);
 
   if files ~= nil then

@@ -323,6 +323,11 @@ div.post-header span.post-name {
     color: #0D0;
 }
 
+div.post-header span.post-capcode {
+    font-weight: normal;
+    color: #F22;
+}
+
 div.post-header span.post-number a {
     color: #666;
     text-decoration: none;
@@ -437,11 +442,6 @@ span.spoiler {
 
 span.spoiler:hover {
     color: #FFF;
-}
-
-span.capcode {
-    color: #F22;
-    font-weight: normal;
 }
 
 div#thread-view-links a {
