@@ -209,7 +209,7 @@ form#postform label {
 }
 
 form#postform textarea {
-    width: calc(100% - 7ch - 20px);
+    width: calc(100% - 7ch - 25px);
     max-width: calc(100% - 7ch - 20px);
     margin: 0;
 }
