@@ -10,6 +10,7 @@ like vichan and friends:
     Despite this, many "javascript" features such as floating reply box,
     working mobile view, inline image expansion etc. are present
   - High speed and small code size along with good feature density
+  - High security due to the use of pledge() and unveil()
   - Highly transparent moderation logs which include a reason for all
     moderation actions such as deleting a post, autosaging a thread etc.
 
@@ -34,7 +35,7 @@ nanochan:
 
 Other more minor changes:
 
-  - Theme has been changed to dark. CSS was modified.
+  - Multiple themes are available.
   - Site name can be changed through the administration interface and is
     no longer hard-coded.
   - Opening the post box using the keyboard shortcut no longer jumps you
@@ -43,5 +44,4 @@ Other more minor changes:
   - Formatting has been improved significantly from the original Nanochan
     formatting engine.
 
-The nanochan source code can be found at https://github.com/vxiiduu/nanochan
 Installation instructions can be found at /INSTALL
