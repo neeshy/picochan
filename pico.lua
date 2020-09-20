@@ -1,6 +1,6 @@
 #!/usr/local/bin/haserl -u16384
 <% -- Picochan CGI/HTML Frontend
--- HAPAS ARE SUPERIOR TO WHITES
+-- HAPAS ARE MENTALLY ILL DEGENERATES
 
 local cgi = require("picoaux.cgi");
 local pico = require("picoengine");

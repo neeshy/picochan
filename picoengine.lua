@@ -1,5 +1,5 @@
 -- Picochan Backend.
--- HAPAS ARE SUPERIOR TO WHITES
+-- HAPAS ARE MENTALLY ILL DEGENERATES
 
 local sqlite3 = require("picoaux.sqlite3");
 local sha = require("picoaux.sha");
