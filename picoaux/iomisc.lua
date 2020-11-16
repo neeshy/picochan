@@ -1,7 +1,7 @@
 -- Miscellaneous io functions.
 
 function io.fileexists(path)
-  local f = io.open(filename, "r");
+  local f = io.open(path, "r");
 
   if f ~= nil then
     f:close();
