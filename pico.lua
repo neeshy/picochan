@@ -8,6 +8,8 @@ local json = require("picoaux.json");
 local request = require("picoaux.request");
 local date = require("picoaux.date");
 
+require("picoaux.iomisc");
+
 local html = {};
       html.table = {};
       html.list = {};
@@ -24,6 +26,7 @@ if jit.os == "BSD" then
   openbsd.unveil("./picochan.db", "rw");
   openbsd.unveil("./picochan.db-journal", "rwc");
   openbsd.unveil("./Media/", "rwxc");
+  openbsd.unveil("./Static/", "rx");
   openbsd.unveil("/dev/urandom", "r");
   openbsd.unveil("/tmp/", "rwc");
   openbsd.unveil("/usr/local/", "x");
@@ -51,12 +54,15 @@ end
 function html.begin(...)
   local title = string.format(...);
   title = title and (title .. " - ") or "";
+  local theme = pico.global.get("theme");
+  theme = (COOKIE["theme"] and io.fileexists("./Static/" .. COOKIE["theme"] .. ".css"))
+          and COOKIE["theme"] or (theme ~= "" and theme or "picochan");
 
   printf("<!DOCTYPE html>\n");
   printf("<html>");
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
-  printf(    "<link rel='stylesheet' type='text/css' href='/Static/picochan.css' />");
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme);
   printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />");
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
@@ -69,6 +75,7 @@ function html.begin(...)
   printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>");
   printf(      "<li class='system'><a href='/Recent' accesskey='4'>recent</a></li>");
   printf(      "<li class='system'><a href='/Overboard' accesskey='5'>overboard</a></li>");
+  printf(      "<li class='system'><a href='/Theme' accesskey='6'>theme</a></li>");
 
   local boards = pico.board.list();
   for i = 1, #boards do
@@ -769,10 +776,40 @@ function html.form.globalconfig(varname)
   if varname == "frontpage" or varname == "announce" then
     printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
            html.striphtml(pico.global.get(varname)) or "");
+  elseif varname == "theme" then
+    printf("<select id='value' name='value' form='globalconfig' autofocus>");
+    local theme = pico.global.get("theme");
+    local themes = io.popen("ls ./Static/*.css | awk -F/ '{sub(/\\.css$/, \"\"); print $3}'");
+    for t in themes:lines() do
+      printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t);
+    end
+    printf("</select>");
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
            html.striphtml(pico.global.get(varname)) or "");
   end
+  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.themeconfig()
+  printf("<fieldset><form id='themeconfig' method='POST'>");
+  printf("<label for='theme'>theme</label>");
+
+  printf("<select id='theme' name='theme' form='themeconfig' autofocus>");
+  local theme = pico.global.get("theme");
+  local themes = io.popen("ls ./Static/*.css | awk -F/ '{sub(/\\.css$/, \"\"); print $3}'");
+  for t in themes:lines() do
+    local selected;
+    if COOKIE["theme"] then
+      selected = COOKIE["theme"] == t;
+    else
+      selected = theme == t;
+    end
+    printf("<option value='%s'%s>%s</option>", t, selected and " selected" or "", t);
+  end
+  printf("</select>");
+
   printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
   printf("</form></fieldset>");
 end
@@ -851,6 +888,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>");
   html.list.entry("<a href='/Mod/global/url'>Change site URL</a>");
   html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>");
+  html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>");
   html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>");
   html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>");
   html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>");
@@ -1378,6 +1416,25 @@ handlers["/Post"] = function()
   else
     cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
   end
+end;
+
+handlers["/Theme"] = function()
+  html.brc("change theme configuration", "Change theme configuration");
+
+  if POST["theme"] then
+    if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
+    end
+
+    cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
+    cgi.headers["Status"] = "303 See Other";
+    cgi.headers["Location"] = "/";
+    cgi.finalize();
+  end
+
+  html.form.themeconfig();
+  html.cfinish();
 end;
 
 local function overboard_header()

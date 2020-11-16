@@ -233,6 +233,7 @@ INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$argon2id$v
 INSERT INTO GlobalConfig VALUES ('sitename', 'Picochan');
 INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
+INSERT INTO GlobalConfig VALUES ('theme', 'picochan');
 INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
