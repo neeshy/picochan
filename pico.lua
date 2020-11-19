@@ -678,7 +678,7 @@ function html.form.board_config(board)
   printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"]));
   printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
   printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "");
-  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min=0 max=5 required /><br />", board_tbl["PostMaxFiles"]);
+  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' required /><br />", board_tbl["PostMaxFiles"]);
   printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' required /><br />", board_tbl["ThreadMinLength"]);
   printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' required /><br />", board_tbl["PostMaxLength"]);
   printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' required /><br />", board_tbl["PostMaxNewlines"]);
@@ -1387,7 +1387,7 @@ handlers["/Post"] = function()
   end
 
   -- step 1. add all the files of the post (if any) to pico's file registration
-  for i = 1, 5 do
+  for i = 1, board_tbl["PostMaxFiles"] do
     local name = POST["file" .. i .. "_name"];
     if name and name ~= "" then
       local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;

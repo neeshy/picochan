@@ -8,7 +8,7 @@ CREATE TABLE Boards (
   MaxPostNumber         INTEGER         NOT NULL                                DEFAULT 0       CHECK(MaxPostNumber >= 0),
   Lock                  BOOLEAN         NOT NULL                                DEFAULT FALSE,
   DisplayOverboard      BOOLEAN         NOT NULL                                DEFAULT TRUE,
-  PostMaxFiles          INTEGER         NOT NULL                                DEFAULT 5       CHECK(PostMaxFiles BETWEEN 0 AND 5),
+  PostMaxFiles          INTEGER         NOT NULL                                DEFAULT 5       CHECK(PostMaxFiles >= 0),
   ThreadMinLength       INTEGER         NOT NULL                                DEFAULT 1,
   PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength <= 32768),
   PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines <= 1024),
