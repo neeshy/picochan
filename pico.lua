@@ -1380,6 +1380,12 @@ end;
 handlers["/Post"] = function()
   local files = {};
 
+  board_tbl = pico.board.tbl(POST["board"]);
+  if not board_tbl then
+    cgi.headers["Status"] = "400 Bad Request";
+    html.error("Board Not Found", "The board you specified does not exist.");
+  end
+
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, 5 do
     local name = POST["file" .. i .. "_name"];
