@@ -168,14 +168,14 @@ function pico.account.delete(name, reason)
   local auth, msg = permit("admin bo", "acct", name);
   if not auth then return auth, msg end;
 
-  local account_tbl = db:r("SELECT * FROM Accounts WHERE Name = ?", name);
+  local account_tbl = db:r("SELECT Type, Board FROM Accounts WHERE Name = ?", name);
   if not account_tbl then
     return false, "Account does not exist";
   end
 
   db:e("DELETE FROM Accounts WHERE Name = ?", name);
   log(false, account_tbl["Board"], "Deleted a %s account '%s' for reason: %s",
-                  account_tbl["Type"], account_tbl["Name"], reason);
+                  account_tbl["Type"], name, reason);
   return true, "Account deleted successfully";
 end
 
@@ -183,7 +183,7 @@ function pico.account.changepass(name, password)
   local auth, msg = permit("admin gvol bo lvol", "acct", name);
   if not auth then return auth, msg end;
 
-  local account_tbl = db:r("SELECT * FROM Accounts WHERE Name = ?", name);
+  local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", name);
 
   if not account_tbl then
     return false, "Account does not exist";
