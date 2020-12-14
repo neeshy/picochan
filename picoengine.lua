@@ -97,11 +97,10 @@ local function permit(permclass, targettype, targarg)
       return true;
     end
 
-    local board = db:r1("SELECT Board FROM Accounts WHERE Name = ?", targarg);
-
     if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
       return false, "Action not permitted (account type not authorized)";
     elseif pico.account.current["Type"] == "bo" then
+      local board = db:r1("SELECT Board FROM Accounts WHERE Name = ?", targarg);
       if board == pico.account.current["Board"] then
         return true;
       else
