@@ -216,7 +216,7 @@ end
 -- session cookie, or by pico.account.login() above)
 function pico.account.register_login(key)
   if pico.account.current ~= nil then
-    pico.account.logout();
+    pico.account.logout(key);
   end
 
   pico.account.current = db:r("SELECT * FROM Accounts WHERE Name = (SELECT Account FROM Sessions " ..
@@ -224,7 +224,7 @@ function pico.account.register_login(key)
   db:e("UPDATE Sessions SET ExpireDate = STRFTIME('%s', 'now') + 86400 WHERE Key = ?", key);
 end
 
-function pico.account.logout()
+function pico.account.logout(key)
   if not pico.account.current then
     return false, "No account logged in";
   end

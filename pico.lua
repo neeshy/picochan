@@ -949,7 +949,7 @@ end;
 
 handlers["/Mod/logout"] = function()
   account_check();
-  pico.account.logout();
+  pico.account.logout(COOKIE["session_key"]);
   cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
   cgi.headers["Status"] = "303 See Other";
   cgi.headers["Location"] = "/Overboard";
