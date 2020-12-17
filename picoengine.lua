@@ -41,10 +41,8 @@ local function checkcaptcha(id, text)
 end
 
 -- Use nil for the board parameter if the action applies to all boards.
--- system_action is a boolean describing whether the action was performed by
--- the system or by a logged-in account.
-local function log(system_action, board, ...)
-  local account = system_action and nil or pico.account.current["Name"];
+local function log(board, ...)
+  local account = pico.account.current and pico.account.current["Name"];
   db:e("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
       account or 'SYSTEM', board or 'GLOBAL', string.format(...));
 end
@@ -159,7 +157,7 @@ function pico.account.create(name, password, type, board)
 
   db:e("INSERT INTO Accounts (Name, Type, Board, PwHash) VALUES (?, ?, ?, ?)",
        name, type, board, argon2.digest(password));
-  log(false, board, "Created new %s account '%s'", type, name);
+  log(board, "Created new %s account '%s'", type, name);
   return true, "Account created successfully";
 end
 
@@ -173,7 +171,7 @@ function pico.account.delete(name, reason)
   end
 
   db:e("DELETE FROM Accounts WHERE Name = ?", name);
-  log(false, account_tbl["Board"], "Deleted a %s account '%s' for reason: %s",
+  log(account_tbl["Board"], "Deleted a %s account '%s' for reason: %s",
                   account_tbl["Type"], name, reason);
   return true, "Account deleted successfully";
 end
@@ -192,7 +190,7 @@ function pico.account.changepass(name, password)
 
   db:e("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
        argon2.digest(password), name);
-  log(false, account_tbl["Board"], "Changed password of account '%s'", name);
+  log(account_tbl["Board"], "Changed password of account '%s'", name);
   return true, "Account password changed successfully";
 end
 
@@ -256,7 +254,7 @@ function pico.global.set(name, value)
     db:e("INSERT INTO GlobalConfig VALUES (?, ?)", name, value);
   end
 
-  log(false, nil, "Edited global configuration variable '%s'", name);
+  log(nil, "Edited global configuration variable '%s'", name);
   return true, "Global configuration modified";
 end
 
@@ -295,7 +293,7 @@ function pico.board.create(name, title, subtitle)
 
   db:e("INSERT INTO Boards (Name, Title, Subtitle) VALUES (?, ?, ?)",
        name, title, subtitle);
-  log(false, nil, "Created a new board: /%s/ - %s", name, title);
+  log(nil, "Created a new board: /%s/ - %s", name, title);
   return true, "Board created successfully";
 end
 
@@ -308,7 +306,7 @@ function pico.board.delete(name, reason)
   end
 
   db:e("DELETE FROM Boards WHERE Name = ?", name);
-  log(false, nil, "Deleted board /%s/ for reason: %s", name, reason);
+  log(nil, "Deleted board /%s/ for reason: %s", name, reason);
   return true, "Board deleted successfully";
 end
 
@@ -350,7 +348,7 @@ function pico.board.configure(board_tbl)
        board_tbl["PostLimit"],          board_tbl["ThreadLimit"],
        board_tbl["Name"]);
 
-  log(false, board_tbl["Name"], "Modified board configuration");
+  log(board_tbl["Name"], "Modified board configuration");
   return true, "Board configured successfully";
 end
 
@@ -587,7 +585,7 @@ function pico.file.delete(hash, reason)
   os.remove("Media/icon/" .. hash);
   os.remove("Media/thumb/" .. hash);
 
-  log(false, nil, "Deleted file %s from all boards for reason: %s", hash, reason);
+  log(nil, "Deleted file %s from all boards for reason: %s", hash, reason);
   return true, "File deleted successfully";
 end
 
@@ -768,7 +766,7 @@ function pico.post.delete(board, number, reason)
   end
 
   db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
-  log(false, board, "Deleted post /%s/%d for reason: %s", board, number, reason);
+  log(board, "Deleted post /%s/%d for reason: %s", board, number, reason);
   return true, "Post deleted successfully";
 end
 
@@ -815,7 +813,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   sql[#sql + 1] = ")";
 
   db:e(table.concat(sql, " "), table.unpack(sqlp));
-  log(false, board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
+  log(board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
   return true, "Posts deleted successfully";
 end
 
@@ -825,7 +823,7 @@ function pico.post.pattdelete(pattern, reason)
   if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end;
 
   db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", "%" .. pattern .. "%");
-  log(false, board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason);
+  log(board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason);
   return true, "Posts deleted successfully";
 end
 
@@ -840,7 +838,7 @@ function pico.post.unlink(board, number, file, reason)
   end
 
   db:e("DELETE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?", board, number, file);
-  log(false, board, "Unlinked file %s from /%s/%d for reason: %s",
+  log(board, "Unlinked file %s from /%s/%d for reason: %s",
       file, board, number, reason);
   return true, "File unlinked successfully";
 end
@@ -856,7 +854,7 @@ function pico.post.spoiler(board, number, file, spoil, reason)
 
   db:q("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
        spoil and 1 or 0, board, number, file);
-  log(false, board, "%s file %s from /%s/%d for reason: %s",
+  log(board, "%s file %s from /%s/%d for reason: %s",
       spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
   return true, "File " .. (spoil and "spoilered" or "unspoilered") .. " sucessfully";
 end
@@ -882,7 +880,7 @@ function pico.post.toggle(attribute, board, number, reason)
     return false, "Invalid attribute";
   end
 
-  log(false, board, "Toggled attribute '%s' on /%s/%d for reason: %s",
+  log(board, "Toggled attribute '%s' on /%s/%d for reason: %s",
       attribute, board, number, reason);
   return true, "Attribute toggled successfully";
 end
@@ -929,7 +927,7 @@ function pico.post.movethread(board, number, newboard, reason)
   end
 
   db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
-  log(false, nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
+  log(nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
   return true, "Thread moved successfully";
 end
 
@@ -1056,7 +1054,7 @@ function pico.webring.endpoint.add(endpoint, type)
   end
 
   db:q("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type);
-  log(false, nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
+  log(nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
 
   return true, "Endpoint successfully added";
 end
@@ -1072,7 +1070,7 @@ function pico.webring.endpoint.remove(endpoint, reason)
   end
 
   db:q("DELETE FROM Webring WHERE Endpoint = ?", endpoint);
-  log(false, nil, "Removed webring endpoint '%s' for reason: %s", endpoint, reason);
+  log(nil, "Removed webring endpoint '%s' for reason: %s", endpoint, reason);
 
   return true, "Endpoint successfully removed";
 end
@@ -1089,7 +1087,7 @@ function pico.webring.endpoint.configure(endpoint_tbl)
 
   db:q("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
        endpoint_tbl["Type"] or "known", endpoint_tbl["Endpoint"]);
-  log(false, nil, "Modified webring endpoint configuration for '%s'",
+  log(nil, "Modified webring endpoint configuration for '%s'",
       endpoint_tbl["Endpoint"]);
   return true, "Endpoint configured successfully";
 end
