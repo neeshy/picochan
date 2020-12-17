@@ -1140,6 +1140,10 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
 
       if operation == "move" then
         cgi.headers["Location"] = "/" .. POST["destination"];
+      elseif operation == "delete" then
+        cgi.headers["Location"] =
+          post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
+                              or ("/" .. board_tbl["Name"]);
       else
         cgi.headers["Location"] =
           post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
