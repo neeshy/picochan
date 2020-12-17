@@ -1254,8 +1254,8 @@ handlers["/Log"] = function(page)
 
   for i = 1, #log_tbl do
     local entry = log_tbl[i];
-    html.table.entry(entry["Account"] == "SYSTEM" and "<i>SYSTEM</i>" or entry["Account"],
-                     entry["Board"] == "GLOBAL" and "<i>GLOBAL</i>" or string.format("<a href='/%s/'>/%s/</a>", entry["Board"], entry["Board"]),
+    html.table.entry(entry["Account"] or "<i>SYSTEM</i>",
+                     entry["Board"] == nil and "<i>GLOBAL</i>" or string.format("<a href='/%s/'>/%s/</a>", entry["Board"], entry["Board"]),
                      html.date(entry["Date"]),
                      html.striphtml(entry["Description"]));
   end

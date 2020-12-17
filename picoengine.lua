@@ -44,7 +44,7 @@ end
 local function log(board, ...)
   local account = pico.account.current and pico.account.current["Name"];
   db:e("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
-      account or 'SYSTEM', board or 'GLOBAL', string.format(...));
+      account, board, string.format(...));
 end
 
 --
@@ -54,8 +54,7 @@ end
 pico.account.current = nil;
 
 local function valid_account_name(name)
-  return (type(name) == "string") and (#name <= 16 and #name >= 1) and (not name:match("[^a-zA-Z0-9]"))
-         and name ~= "SYSTEM";
+  return (type(name) == "string") and (#name <= 16 and #name >= 1) and (not name:match("[^a-zA-Z0-9]"));
 end
 
 local function valid_account_type(type)

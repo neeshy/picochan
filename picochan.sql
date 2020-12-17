@@ -105,8 +105,8 @@ CREATE TABLE Sessions (
 ) WITHOUT ROWID;
 
 CREATE TABLE Logs (
-  Account               TEXT            NOT NULL                                DEFAULT 'SYSTEM',
-  Board                 TEXT            NOT NULL                                DEFAULT 'GLOBAL',
+  Account               TEXT                                                    DEFAULT NULL,
+  Board                 TEXT                                                    DEFAULT NULL,
   Date                  DATETIME        NOT NULL                                DEFAULT 0,
   Description           TEXT            NOT NULL                                                CHECK(LENGTH(Description) > 0)
 );
