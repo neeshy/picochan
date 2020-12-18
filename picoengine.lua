@@ -131,7 +131,7 @@ function pico.account.create(name, password, type, board)
     return false, "Account type is invalid";
   elseif not valid_account_password(password) then
     return false, "Account password does not meet requirements";
-  elseif db:b("SELECT TRUE FROM Accounts WHERE Name = ?", name) then
+  elseif pico.account.exists(name) then
     return false, "Account already exists";
   elseif (type == "bo" or type == "lvol") then
     if not board then
@@ -187,7 +187,7 @@ end
 -- log in an account. returns an authentication key which you can use to perform
 -- mod-only actions.
 function pico.account.login(name, password)
-  if not db:b("SELECT TRUE FROM Accounts WHERE Name = ?", name)
+  if not pico.account.exists(name)
   or not argon2.verify(password, db:r1("SELECT PwHash FROM Accounts WHERE Name = ?", name)) then
     return nil, "Invalid username or password";
   end
