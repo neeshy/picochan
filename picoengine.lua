@@ -423,12 +423,9 @@ local function identify_file(data)
   elseif data:sub(1,6) == "GIF87a"
       or data:sub(1,6) == "GIF89a" then
     return "gif";
-  elseif data:sub(1, 4) == "RIFF"
-     and data:sub(9, 12) == "WEBP" then
+  elseif data:sub(1,4) == "RIFF"
+     and data:sub(9,12) == "WEBP" then
     return "webp";
-  elseif data:find("DOCTYPE svg", 1, true)
-      or data:find("<svg", 1, true) then
-    return "svg";
   elseif data:sub(1,4) == "\x1A\x45\xDF\xA3" then
     return "webm";
   elseif data:sub(5,12) == "ftypmp42"
@@ -446,6 +443,9 @@ local function identify_file(data)
   elseif data:sub(1,4) == "PK\x03\x04"
      and data:sub(31,58) == "mimetypeapplication/epub+zip" then
     return "epub";
+  elseif data:find("DOCTYPE svg", 1, true)
+      or data:find("<svg", 1, true) then
+    return "svg";
   elseif not data:find("[^%w%s%p]") then
     return "txt";
   else
