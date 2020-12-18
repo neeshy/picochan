@@ -894,6 +894,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>");
   html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>");
   html.list.entry("<a href='/Mod/global/logpagesize'>Change mod log page size</a>");
+  html.list.entry("<a href='/Mod/global/maxfilesize'>Change the maximum file size</a>");
   html.list.finish();
   html.container.barheader("Miscellaneous Tools");
   html.list.begin("unordered");

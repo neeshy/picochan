@@ -74,7 +74,7 @@ CREATE TABLE FileRefs (
 
 CREATE TABLE Files (
   Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 130 AND 133),
-  Size                  INTEGER         NOT NULL                                                CHECK(Size BETWEEN 1 AND 16777216),
+  Size                  INTEGER         NOT NULL                                                CHECK(Size > 0),
   Width                 INTEGER                                                 DEFAULT NULL,
   Height                INTEGER                                                 DEFAULT NULL,
 
@@ -238,4 +238,5 @@ INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
 INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
+INSERT INTO GlobalConfig VALUES ('maxfilesize', 16777216);
 INSERT INTO GlobalConfig VALUES ('url', 'http://localhost');

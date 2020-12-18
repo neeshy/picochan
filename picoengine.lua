@@ -25,8 +25,6 @@ db:e("PRAGMA foreign_keys = ON");
 db:e("PRAGMA recursive_triggers = ON");
 db:e("PRAGMA secure_delete = ON");
 
-local max_filesize = 16777216; -- 16 MiB
-
 --
 -- MISCELLANEOUS FUNCTIONS
 --
@@ -498,7 +496,7 @@ function pico.file.add(path)
   local f = assert(io.open(path, "r"));
   local size = assert(f:seek("end"));
 
-  if size > max_filesize then
+  if size > pico.global.get("maxfilesize") then
     f:close()
     return nil, "File too large";
   end
