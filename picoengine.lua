@@ -215,9 +215,9 @@ end
 -- GLOBAL CONFIGURATION FUNCTIONS
 --
 
--- retrieve value of globalconfig variable or empty string if it doesn't exist
+-- retrieve value of globalconfig variable or nil if it doesn't exist
 function pico.global.get(name)
-  return db:r1("SELECT Value FROM GlobalConfig WHERE Name = ?", name) or "";
+  return db:r1("SELECT Value FROM GlobalConfig WHERE Name = ?", name);
 end
 
 -- setting a globalconfig variable to nil removes it.

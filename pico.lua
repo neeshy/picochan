@@ -34,7 +34,7 @@ if jit.os == "BSD" then
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns");
 end
 
-local sitename = pico.global.get("sitename");
+local sitename = pico.global.get("sitename") or "Picochan";
 pico.account.register_login(COOKIE["session_key"]);
 
 cgi.initialize();
@@ -54,9 +54,8 @@ end
 function html.begin(...)
   local title = string.format(...);
   title = title and (title .. " - ") or "";
-  local theme = pico.global.get("theme");
-  theme = (COOKIE["theme"] and io.fileexists("./Static/" .. COOKIE["theme"] .. ".css"))
-          and COOKIE["theme"] or (theme ~= "" and theme or "picochan");
+  local theme = (COOKIE["theme"] and io.fileexists("./Static/" .. COOKIE["theme"] .. ".css"))
+                and COOKIE["theme"] or (pico.global.get("theme") or "picochan");
 
   printf("<!DOCTYPE html>\n");
   printf("<html>");
@@ -114,7 +113,7 @@ function html.redheader(...)
 end
 
 function html.announce()
-  printf("<div id='announce'>%s</div>", pico.global.get("announce"));
+  printf("<div id='announce'>%s</div>", pico.global.get("announce") or "");
 end
 
 function html.container.begin(width)
@@ -775,7 +774,7 @@ function html.form.globalconfig(varname)
 
   if varname == "frontpage" or varname == "announce" then
     printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
-           html.striphtml(pico.global.get(varname)) or "");
+           html.striphtml(pico.global.get(varname) or "") or "");
   elseif varname == "theme" then
     printf("<select id='value' name='value' form='globalconfig' autofocus>");
     local theme = pico.global.get("theme");
@@ -786,7 +785,7 @@ function html.form.globalconfig(varname)
     printf("</select>");
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
-           html.striphtml(pico.global.get(varname)) or "");
+           html.striphtml(pico.global.get(varname) or "") or "");
   end
   printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
   printf("</form></fieldset>");
