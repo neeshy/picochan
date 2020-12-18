@@ -752,20 +752,24 @@ end
 function pico.post.multidelete(board, include, exclude, reason)
   local auth, msg = permit("admin bo", "board", board);
   if not auth then return auth, msg end;
-  assert(include, "Invalid include parameter");
+  if not include then return false, "Invalid include parameter" end;
 
   if not pico.board.exists(board) then
     return false, "Board does not exist";
   end
 
-  local sql = {"DELETE FROM Posts WHERE Board = ? AND (TRUE=FALSE"};
+  local sql = {"DELETE FROM Posts WHERE Board = ? AND (FALSE"};
   local sqlp = {board};
-  local inclist = (include or ""):tokenize();
-  local exclist = (exclude or ""):tokenize();
+  local inclist = include:tokenize();
 
   local function genspec(spec, sql, sqlp)
     if spec:match("-") then
-      local start, finish = table.unpack(spec:tokenize("-"));
+      local spec_tbl = spec:tokenize("-");
+      if #spec_tbl ~= 2 then
+        return false, "Invalid range specification";
+      end
+
+      local start, finish = table.unpack(spec_tbl);
       start, finish = tonumber(start), tonumber(finish);
       if not start or not finish then
         return false, "Invalid range specification";
@@ -783,11 +787,22 @@ function pico.post.multidelete(board, include, exclude, reason)
       sql[#sql + 1] = "OR Number = ?";
       sqlp[#sqlp + 1] = number;
     end
+
+    return true;
   end
 
-  for i = 1, #inclist do genspec(inclist[i], sql, sqlp) end;
-  sql[#sql + 1] = ") AND NOT (TRUE=FALSE";
-  for i = 1, #exclist do genspec(exclist[i], sql, sqlp) end;
+  for i = 1, #inclist do
+    result, msg = genspec(inclist[i], sql, sqlp);
+    if not result then return result, msg end;
+  end
+  sql[#sql + 1] = ") AND NOT (FALSE";
+  if exclude then
+    local exclist = exclude:tokenize();
+    for i = 1, #exclist do
+      result, msg = genspec(exclist[i], sql, sqlp);
+      if not result then return result, msg end;
+    end
+  end
   sql[#sql + 1] = ")";
 
   db:e(table.concat(sql, " "), table.unpack(sqlp));

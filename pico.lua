@@ -1182,7 +1182,7 @@ handlers["/Mod/tools/multidelete"] = function()
   html.brc("multidelete", "Multidelete");
 
   if POST["board"] then
-    local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"], POST["reason"]);
+    local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
     printf("%s", msg);
   end
 
