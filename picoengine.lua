@@ -31,15 +31,6 @@ local max_filesize = 16777216; -- 16 MiB
 -- MISCELLANEOUS FUNCTIONS
 --
 
-local function checkcaptcha(id, text)
-  if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
-    db:e("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id);
-    return true;
-  else
-    return false;
-  end
-end
-
 -- Use nil for the board parameter if the action applies to all boards.
 local function log(board, ...)
   local account = pico.account.current and pico.account.current["Name"];
@@ -702,7 +693,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     elseif (not files or #files == 0) and #comment == 0 then
       return nil, "Post is blank";
     elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
-           and not checkcaptcha(captcha_id, captcha_text) then
+           and not pico.captcha.check(captcha_id, captcha_text) then
       return nil, "Captcha is required but no valid captcha supplied";
     elseif is_thread then
       if board_tbl["TPHLimit"] > 0 and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
@@ -987,6 +978,15 @@ function pico.captcha.create()
   db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc));
 
   return captcha_id, string.base64(captcha_data);
+end
+
+function pico.captcha.check(id, text)
+  if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
+    db:e("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id);
+    return true;
+  else
+    return false;
+  end
 end
 
 --
