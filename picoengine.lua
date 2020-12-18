@@ -568,7 +568,7 @@ end
 
 function pico.file.list(board, number)
   return db:q("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
-              "FROM FileRefs JOIN Files ON FileRefs.File=Files.Name " ..
+              "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
               "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC",
               board, number);
 end
@@ -615,8 +615,8 @@ function pico.post.thread(board, number)
   local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
                           "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
                           "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
-  db:e("BEGIN TRANSACTION");
 
+  db:e("BEGIN TRANSACTION");
   for i = 0, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Files"] = {};
@@ -628,9 +628,10 @@ function pico.post.thread(board, number)
 
     stmt:reset();
   end
-
   db:e("END TRANSACTION");
+
   stmt:finalize();
+
   return thread_tbl;
 end
 
