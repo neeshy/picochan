@@ -885,7 +885,7 @@ function pico.post.movethread(board, number, newboard, reason)
   for i = 0, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>([0-9]+)", number_lut);
-    post_tbl["Parent"] = post_tbl["Parent"] and newthread or nil;
+    post_tbl["Parent"] = post_tbl["Parent"] and newthread;
 
     local files_tbl = pico.file.list(post_tbl["Board"], post_tbl["Number"]);
     for j = 1, #post_tbl["Files"] do
