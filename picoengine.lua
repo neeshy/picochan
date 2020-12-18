@@ -454,8 +454,8 @@ local function identify_file(data)
 end
 
 -- return a file's extension based on its name
-function pico.file.extension(hash)
-  return hash:match("%.([^.]-)$");
+function pico.file.extension(filename)
+  return filename:match("%.([^.]-)$");
 end
 
 -- return a file's media type based on its extension
@@ -549,20 +549,20 @@ end
 
 -- Delete a file from the media directory and remove its corresponding entries
 -- in the database.
-function pico.file.delete(hash, reason)
+function pico.file.delete(filename, reason)
   local auth, msg = permit("admin gvol");
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Files WHERE Name = ?", hash) then
+  if not db:b("SELECT TRUE FROM Files WHERE Name = ?", filename) then
     return false, "File does not exist";
   end
 
-  db:e("DELETE FROM Files WHERE Name = ?", hash);
-  os.remove("Media/" .. hash);
-  os.remove("Media/icon/" .. hash);
-  os.remove("Media/thumb/" .. hash);
+  db:e("DELETE FROM Files WHERE Name = ?", filename);
+  os.remove("Media/" .. filename);
+  os.remove("Media/icon/" .. filename);
+  os.remove("Media/thumb/" .. filename);
 
-  pico.log.insert(nil, "Deleted file %s from all boards for reason: %s", hash, reason);
+  pico.log.insert(nil, "Deleted file %s from all boards for reason: %s", filename, reason);
   return true, "File deleted successfully";
 end
 
