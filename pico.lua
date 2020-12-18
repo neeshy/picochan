@@ -961,13 +961,7 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   html.brc("change global configuration", "Change global configuration");
 
   if POST["name"] then
-    local result, msg;
-    if POST["value"] == "" then
-      result, msg = pico.global.set(POST["name"], nil);
-    else
-      result, msg = pico.global.set(POST["name"], POST["value"]);
-    end
-
+    local result, msg = pico.global.set(POST["name"], POST["value"] ~= "" and POST["value"] or nil);
     printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
   end
 
