@@ -688,9 +688,9 @@ function html.form.board_config(board)
   printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "");
   printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerTPH"] or "");
   printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerPPH"] or "");
-  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%d' min=0 required /><br />", board_tbl["BumpLimit"]);
-  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%d' min=0 required /><br />", board_tbl["PostLimit"]);
-  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%d' min=0 required /><br />", board_tbl["ThreadLimit"]);
+  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%s' /><br />", board_tbl["BumpLimit"] or "");
+  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%s' /><br />", board_tbl["PostLimit"] or "");
+  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%s' /><br />", board_tbl["ThreadLimit"] or "");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />");
   printf("</form></fieldset>");
 end
@@ -1090,6 +1090,9 @@ handlers["/Mod/board/config"] = function()
           POST["PPHLimit"] = POST["PPHLimit"] ~= "" and POST["PPHLimit"] or nil;
           POST["CaptchaTriggerTPH"] = POST["CaptchaTriggerTPH"] ~= "" and POST["CaptchaTriggerTPH"] or nil;
           POST["CaptchaTriggerPPH"] = POST["CaptchaTriggerPPH"] ~= "" and POST["CaptchaTriggerPPH"] or nil;
+          POST["BumpLimit"] = POST["BumpLimit"] ~= "" and POST["BumpLimit"] or nil;
+          POST["PostLimit"] = POST["PostLimit"] ~= "" and POST["PostLimit"] or nil;
+          POST["ThreadLimit"] = POST["ThreadLimit"] ~= "" and POST["ThreadLimit"] or nil;
           local status, msg = pico.board.configure(POST);
           printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
         end

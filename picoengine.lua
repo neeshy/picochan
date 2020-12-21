@@ -692,7 +692,8 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
         return nil, "Parent post is not a thread";
       elseif parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
         return nil, "Parent thread is locked";
-      elseif parent_tbl["Cycle"] ~= 1 and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
+      elseif parent_tbl["Cycle"] ~= 1 and board_tbl["PostLimit"]
+             and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
         return nil, "Thread full";
       end
     end

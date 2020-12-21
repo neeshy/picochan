@@ -19,9 +19,9 @@ CREATE TABLE Boards (
   PostCaptcha           BOOLEAN         NOT NULL                                DEFAULT FALSE,
   CaptchaTriggerTPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerTPH IS NULL OR CaptchaTriggerTPH > 0),
   CaptchaTriggerPPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerPPH IS NULL OR CaptchaTriggerPPH > 0),
-  BumpLimit             INTEGER         NOT NULL                                DEFAULT 200     CHECK(BumpLimit >= 0),
-  PostLimit             INTEGER         NOT NULL                                DEFAULT 250     CHECK(PostLimit >= 0),
-  ThreadLimit           INTEGER         NOT NULL                                DEFAULT 500     CHECK(ThreadLimit > 0)
+  BumpLimit             INTEGER                                                 DEFAULT 200     CHECK(BumpLimit IS NULL OR BumpLimit >= 0),
+  PostLimit             INTEGER                                                 DEFAULT 250     CHECK(PostLimit IS NULL OR PostLimit >= 0),
+  ThreadLimit           INTEGER                                                 DEFAULT 500     CHECK(ThreadLimit IS NULL OR ThreadLimit > 0)
 ) WITHOUT ROWID;
 
 CREATE TABLE Posts (
@@ -125,8 +125,9 @@ CREATE TABLE Webring (
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL AND (NEW.Email IS NULL OR NEW.Email NOT LIKE '%sage%')
-   AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
-       <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board)
+   AND ((SELECT BumpLimit FROM Boards WHERE Name = NEW.Board) IS NULL
+    OR (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
+       <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board))
 BEGIN
   UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent AND Autosage = FALSE;
 END;
@@ -181,6 +182,7 @@ END;
 
 CREATE TRIGGER delete_cyclical BEFORE INSERT ON Posts
   WHEN (SELECT Cycle FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent) = TRUE
+   AND (SELECT PostLimit FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
        >= (SELECT PostLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
@@ -188,7 +190,8 @@ BEGIN
 END;
 
 CREATE TRIGGER slide_thread BEFORE INSERT ON Posts
-  WHEN (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL)
+  WHEN (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board) IS NOT NULL
+   AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL)
        >= (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board)
    AND NEW.Parent IS NULL
 BEGIN
