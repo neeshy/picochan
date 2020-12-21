@@ -867,6 +867,16 @@ local function account_check()
   end
 end
 
+local function tbl_validate(tbl, ...)
+  for i = 1, select("#", ...) do
+    v = tbl[select(i, ...)];
+    if v == nil or v == "" then
+      return false;
+    end
+  end
+  return true;
+end
+
 handlers["/"] = function()
   html.begin("welcome");
   html.redheader("Welcome to %s", sitename);
@@ -930,16 +940,21 @@ handlers["/Mod/login"] = function()
 
   html.brc("login", "Moderator Login");
 
-  if POST["username"] and POST["password"] then
-    local session_key, errmsg = pico.account.login(POST["username"], POST["password"]);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "username", "password") then
+      local session_key, errmsg = pico.account.login(POST["username"], POST["password"]);
 
-    if not session_key then
-      printf("Cannot log in: %s", errmsg);
+      if not session_key then
+        printf("Cannot log in: %s", errmsg);
+      else
+        cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict";
+        cgi.headers["Status"] = "303 See Other";
+        cgi.headers["Location"] = "/Mod";
+        cgi.finalize();
+      end
     else
-      cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict";
-      cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/Mod";
-      cgi.finalize();
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
     end
   end
 
@@ -960,9 +975,14 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   account_check();
   html.brc("change global configuration", "Change global configuration");
 
-  if POST["name"] then
-    local result, msg = pico.global.set(POST["name"], POST["value"] ~= "" and POST["value"] or nil);
-    printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name") then
+      local result, msg = pico.global.set(POST["name"], POST["value"] ~= "" and POST["value"] or nil);
+      printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.globalconfig(varname);
@@ -973,8 +993,13 @@ handlers["/Mod/account/create"] = function()
   account_check();
   html.brc("create account", "Create account");
 
-  if POST["name"] ~= nil and POST["name"] ~= "" then
-    printf("%s", select(2, pico.account.create(POST["name"], POST["password"], POST["type"], POST["board"])));
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name", "password", "type", "board") then
+      printf("%s", select(2, pico.account.create(POST["name"], POST["password"], POST["type"], POST["board"])));
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.account_create();
@@ -985,9 +1010,14 @@ handlers["/Mod/account/delete"] = function()
   account_check();
   html.brc("delete account", "Delete account");
 
-  if POST["name"] and POST["reason"] then
-    local status, msg = pico.account.delete(POST["name"], POST["reason"]);
-    printf("%s%s", (not status) and "Cannot delete account: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name", "reason") then
+      local status, msg = pico.account.delete(POST["name"], POST["reason"]);
+      printf("%s%s", (not status) and "Cannot delete account: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.account_delete();
@@ -998,8 +1028,13 @@ handlers["/Mod/account/config"] = function()
   account_check();
   html.brc("configure account", "Configure account");
 
-  if POST["name"] and POST["password"] then
-    printf("%s", select(2, pico.account.changepass(POST["name"], POST["password"])));
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name", "password") then
+      printf("%s", select(2, pico.account.changepass(POST["name"], POST["password"])));
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.account_config();
@@ -1010,9 +1045,14 @@ handlers["/Mod/board/create"] = function()
   account_check();
   html.brc("create board", "Create board");
 
-  if POST["name"] and POST["title"] and POST["subtitle"] then
-    local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"]);
-    printf("%s%s", (not status) and "Cannot create board: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name", "title") then
+      local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"]);
+      printf("%s%s", (not status) and "Cannot create board: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.board_create();
@@ -1023,9 +1063,14 @@ handlers["/Mod/board/delete"] = function()
   account_check();
   html.brc("delete board", "Delete board");
 
-  if POST["name"] and POST["reason"] then
-    local status, msg = pico.board.delete(POST["name"], POST["reason"]);
-    printf("%s%s", (not status) and "Cannot delete board: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "name", "reason") then
+      local status, msg = pico.board.delete(POST["name"], POST["reason"]);
+      printf("%s%s", (not status) and "Cannot delete board: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.board_delete();
@@ -1036,18 +1081,24 @@ handlers["/Mod/board/config"] = function()
   account_check();
   html.brc("configure board", "Configure board");
 
-  if POST["Name"] == nil or POST["Name"] == "" then
-    html.form.board_config_select();
-  elseif not pico.board.exists(POST["Name"]) then
-    printf("Cannot configure board: Board does not exist");
-    html.form.board_config_select();
-  else
-    if POST["Title"] then
-      local status, msg = pico.board.configure(POST);
-      printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "Name") then
+      if pico.board.exists(POST["Name"]) then
+        if tbl_validate(POST, "Title") then
+          local status, msg = pico.board.configure(POST);
+          printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
+        end
+        html.form.board_config(POST["Name"]);
+      else
+        printf("Cannot configure board: Board does not exist");
+        html.form.board_config_select();
+      end
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
     end
-
-    html.form.board_config(POST["Name"]);
+  else
+    html.form.board_config_select();
   end
 
   html.cfinish();
@@ -1057,9 +1108,14 @@ handlers["/Mod/webring/add"] = function()
   account_check();
   html.brc("add webring endpoint", "Add webring endpoint");
 
-  if POST["endpoint"] and POST["type"] then
-    local status, msg = pico.webring.endpoint.add(POST["endpoint"], POST["type"]);
-    printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "endpoint", "type") then
+      local status, msg = pico.webring.endpoint.add(POST["endpoint"], POST["type"]);
+      printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.endpoint_add();
@@ -1069,9 +1125,14 @@ handlers["/Mod/webring/remove"] = function()
   account_check();
   html.brc("remove webring endpoint", "Remove webring endpoint");
 
-  if POST["endpoint"] and POST["reason"] then
-    local status, msg = pico.webring.endpoint.remove(POST["endpoint"], POST["reason"]);
-    printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "endpoint", "reason") then
+      local status, msg = pico.webring.endpoint.remove(POST["endpoint"], POST["reason"]);
+      printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.endpoint_remove();
@@ -1081,18 +1142,24 @@ handlers["/Mod/webring/config"] = function()
   account_check();
   html.brc("configure webring endpoint", "Configure webring endpoint");
 
-  if POST["Endpoint"] == nil or POST["Endpoint"] == "" then
-    html.form.endpoint_config_select();
-  elseif not pico.webring.endpoint.exists(POST["Endpoint"]) then
-    printf("Cannot configure webring endpoint: Endpoint does not exist");
-    html.form.endpoint_config_select();
-  else
-    if POST["Type"] then
-      local status, msg = pico.webring.endpoint.configure(POST);
-      printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "Endpoint") then
+      if pico.webring.endpoint.exists(POST["Endpoint"]) then
+        if tbl_validate(POST, "Type") then
+          local status, msg = pico.webring.endpoint.configure(POST);
+          printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg);
+        end
+        html.form.endpoint_config(POST["Endpoint"]);
+      else
+        printf("Cannot configure webring endpoint: Endpoint does not exist");
+        html.form.endpoint_config_select();
+      end
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
     end
-
-    html.form.endpoint_config(POST["Endpoint"]);
+  else
+    html.form.endpoint_config_select();
   end
 
   html.cfinish();
@@ -1110,41 +1177,50 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
     html.error("Action failed", "Cannot find post: %s", msg);
   end
 
-  if POST["reason"] and POST["reason"] ~= "" then
-    local result, msg;
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "reason") then
+      local result, msg;
 
-    if operation == "delete" then
-      result, msg = pico.post.delete(board, post, POST["reason"]);
-    elseif operation == "unlink" then
-      result, msg = pico.post.unlink(board, post, file, POST["reason"]);
-    elseif operation == "spoiler" then
-      result, msg = pico.post.spoiler(board, post, file, true, POST["reason"]);
-    elseif operation == "unspoiler" then
-      result, msg = pico.post.spoiler(board, post, file, false, POST["reason"]);
-    elseif operation == "move" then
-      result, msg = pico.post.movethread(board, post, POST["destination"], POST["reason"]);
-    else
-      result, msg = pico.post.toggle(operation, board, post, POST["reason"]);
-    end
-
-    if not result then
-      html.error("Action failed", "Backend returned error: %s", msg);
-    else
-      cgi.headers["Status"] = "303 See Other";
-
-      if operation == "move" then
-        cgi.headers["Location"] = "/" .. POST["destination"];
-      elseif operation == "delete" then
-        cgi.headers["Location"] =
-          post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                              or ("/" .. board_tbl["Name"]);
+      if operation == "delete" then
+        result, msg = pico.post.delete(board, post, POST["reason"]);
+      elseif operation == "unlink" then
+        result, msg = pico.post.unlink(board, post, file, POST["reason"]);
+      elseif operation == "spoiler" then
+        result, msg = pico.post.spoiler(board, post, file, true, POST["reason"]);
+      elseif operation == "unspoiler" then
+        result, msg = pico.post.spoiler(board, post, file, false, POST["reason"]);
+      elseif operation == "move" then
+        if not tbl_validate(POST, "destination") then
+          cgi.headers["Status"] = "400 Bad Request";
+          html.error("Action failed", "Invalid request");
+        end
+        result, msg = pico.post.movethread(board, post, POST["destination"], POST["reason"]);
       else
-        cgi.headers["Location"] =
-          post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                              or ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+        result, msg = pico.post.toggle(operation, board, post, POST["reason"]);
       end
 
-      cgi.finalize();
+      if not result then
+        html.error("Action failed", "Backend returned error: %s", msg);
+      else
+        cgi.headers["Status"] = "303 See Other";
+
+        if operation == "move" then
+          cgi.headers["Location"] = "/" .. POST["destination"];
+        elseif operation == "delete" then
+          cgi.headers["Location"] =
+            post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
+                                or ("/" .. board_tbl["Name"]);
+        else
+          cgi.headers["Location"] =
+            post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
+                                or ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+        end
+
+        cgi.finalize();
+      end
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
     end
   end
 
@@ -1175,9 +1251,14 @@ handlers["/Mod/tools/multidelete"] = function()
   account_check();
   html.brc("multidelete", "Multidelete");
 
-  if POST["board"] then
-    local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
-    printf("%s", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "board", "ispec", "reason") then
+      local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
+      printf("%s", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.mod_multidelete();
@@ -1188,9 +1269,14 @@ handlers["/Mod/tools/pattdelete"] = function()
   account_check();
   html.brc("pattern delete", "Pattern delete");
 
-  if POST["pattern"] then
-    local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
-    printf("%s", msg);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "pattern", "reason") then
+      local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
+      printf("%s", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.mod_pattdelete();
@@ -1201,15 +1287,20 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
   account_check();
   html.brc("delete file", "Delete file");
 
-  if POST["reason"] and POST["reason"] ~= "" then
-    local result, msg = pico.file.delete(file, POST["reason"]);
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "reason") then
+      local result, msg = pico.file.delete(file, POST["reason"]);
 
-    if not result then
-      html.error("Action failed", "Backend returned error: %s", msg);
+      if not result then
+        html.error("Action failed", "Backend returned error: %s", msg);
+      else
+        cgi.headers["Status"] = "303 See Other";
+        cgi.headers["Location"] = "/Overboard";
+        cgi.finalize();
+      end
     else
-      cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/Overboard";
-      cgi.finalize();
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
     end
   end
 
@@ -1425,16 +1516,21 @@ end;
 handlers["/Theme"] = function()
   html.brc("change theme configuration", "Change theme configuration");
 
-  if POST["theme"] then
-    if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
-    end
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "theme") then
+      if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
+        cgi.headers["Status"] = "400 Bad Request";
+        html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
+      end
 
-    cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
-    cgi.headers["Status"] = "303 See Other";
-    cgi.headers["Location"] = "/";
-    cgi.finalize();
+      cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
+      cgi.headers["Status"] = "303 See Other";
+      cgi.headers["Location"] = "/";
+      cgi.finalize();
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
   end
 
   html.form.themeconfig();
