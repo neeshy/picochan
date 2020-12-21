@@ -688,9 +688,9 @@ function html.form.board_config(board)
   printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "");
   printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerTPH"] or "");
   printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerPPH"] or "");
-  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["BumpLimit"]);
-  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["PostLimit"]);
-  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["ThreadLimit"]);
+  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%d' min=0 required /><br />", board_tbl["BumpLimit"]);
+  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%d' min=0 required /><br />", board_tbl["PostLimit"]);
+  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%d' min=0 required /><br />", board_tbl["ThreadLimit"]);
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />");
   printf("</form></fieldset>");
 end

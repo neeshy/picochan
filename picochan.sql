@@ -10,18 +10,18 @@ CREATE TABLE Boards (
   DisplayOverboard      BOOLEAN         NOT NULL                                DEFAULT TRUE,
   PostMaxFiles          INTEGER         NOT NULL                                DEFAULT 5       CHECK(PostMaxFiles >= 0),
   ThreadMinLength       INTEGER         NOT NULL                                DEFAULT 1       CHECK(ThreadMinLength >= 0),
-  PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength BETWEEN 0 AND 32768),
-  PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines BETWEEN 0 AND 1024),
-  PostMaxDblNewlines    INTEGER         NOT NULL                                DEFAULT 16      CHECK(PostMaxDblNewlines BETWEEN 0 AND 512),
+  PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength >= 0),
+  PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines >= 0),
+  PostMaxDblNewlines    INTEGER         NOT NULL                                DEFAULT 16      CHECK(PostMaxDblNewlines >= 0),
   TPHLimit              INTEGER                                                 DEFAULT NULL    CHECK(TPHLimit IS NULL OR TPHLimit > 0),
   PPHLimit              INTEGER                                                 DEFAULT NULL    CHECK(PPHLimit IS NULL OR PPHLimit > 0),
   ThreadCaptcha         BOOLEAN         NOT NULL                                DEFAULT FALSE,
   PostCaptcha           BOOLEAN         NOT NULL                                DEFAULT FALSE,
   CaptchaTriggerTPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerTPH IS NULL OR CaptchaTriggerTPH > 0),
   CaptchaTriggerPPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerPPH IS NULL OR CaptchaTriggerPPH > 0),
-  BumpLimit             INTEGER         NOT NULL                                DEFAULT 200     CHECK(BumpLimit BETWEEN 0 AND 1000),
-  PostLimit             INTEGER         NOT NULL                                DEFAULT 250     CHECK(PostLimit BETWEEN 0 AND 1000),
-  ThreadLimit           INTEGER         NOT NULL                                DEFAULT 500     CHECK(ThreadLimit BETWEEN 1 AND 1000)
+  BumpLimit             INTEGER         NOT NULL                                DEFAULT 200     CHECK(BumpLimit >= 0),
+  PostLimit             INTEGER         NOT NULL                                DEFAULT 250     CHECK(PostLimit >= 0),
+  ThreadLimit           INTEGER         NOT NULL                                DEFAULT 500     CHECK(ThreadLimit > 0)
 ) WITHOUT ROWID;
 
 CREATE TABLE Posts (
