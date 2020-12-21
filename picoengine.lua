@@ -249,14 +249,12 @@ local function valid_board_title(title)
 end
 
 local function valid_board_subtitle(subtitle)
-  return (type(subtitle) == "string") and (#subtitle >= 0 and #subtitle <= 64);
+  return (type(subtitle) == "string") and (#subtitle >= 1 and #subtitle <= 64);
 end
 
 function pico.board.create(name, title, subtitle)
   local auth, msg = permit("admin");
   if not auth then return auth, msg end;
-
-  subtitle = subtitle or "";
 
   if pico.board.exists(name) then
     return false, "Board already exists";
@@ -264,7 +262,7 @@ function pico.board.create(name, title, subtitle)
     return false, "Invalid board name";
   elseif not valid_board_title(name) then
     return false, "Invalid board title";
-  elseif not valid_board_subtitle(subtitle) then
+  elseif subtitle and not valid_board_subtitle(subtitle) then
     return false, "Invalid board subtitle";
   end
 
@@ -654,8 +652,6 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   end
 
   name = (name ~= "") and name or pico.global.get("defaultpostname");
-  email = email or "";
-  subject = subject or "";
   comment = comment or "";
 
   if not bypasschecks then
@@ -663,8 +659,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Board does not exist";
     elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
       return nil, "Board is locked";
-    elseif board_tbl["PPHLimit"] > 0
-           and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
+    elseif board_tbl["PPHLimit"] and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
       return nil, "Maximum post creation rate exceeded";
     elseif #comment > board_tbl["PostMaxLength"] then
       return nil, "Post text too long";
@@ -674,9 +669,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Post contained too many double newlines";
     elseif #name > 64 then
       return nil, "Name too long";
-    elseif #email > 64 then
+    elseif email and #email > 64 then
       return nil, "Email too long";
-    elseif #subject > 64 then
+    elseif subject and #subject > 64 then
       return nil, "Subject too long";
     elseif (not files or #files == 0) and #comment == 0 then
       return nil, "Post is blank";
@@ -684,7 +679,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
            and not pico.captcha.check(captcha_id, captcha_text) then
       return nil, "Captcha is required but no valid captcha supplied";
     elseif is_thread then
-      if board_tbl["TPHLimit"] > 0 and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
+      if board_tbl["TPHLimit"] and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
         return nil, "Maximum thread creation rate exceeded";
       elseif #comment < board_tbl["ThreadMinLength"] then
         return nil, "Thread text too short";

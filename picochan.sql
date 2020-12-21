@@ -4,21 +4,21 @@ PRAGMA user_version = 1;
 CREATE TABLE Boards (
   Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 1 AND 8),
   Title                 TEXT            NOT NULL        UNIQUE                                  CHECK(LENGTH(Title) BETWEEN 1 AND 32),
-  Subtitle              TEXT            NOT NULL                                                CHECK(LENGTH(Subtitle) <= 64),
+  Subtitle              TEXT                                                                    CHECK(Subtitle IS NULL OR LENGTH(Subtitle) BETWEEN 1 AND 64),
   MaxPostNumber         INTEGER         NOT NULL                                DEFAULT 0       CHECK(MaxPostNumber >= 0),
   Lock                  BOOLEAN         NOT NULL                                DEFAULT FALSE,
   DisplayOverboard      BOOLEAN         NOT NULL                                DEFAULT TRUE,
   PostMaxFiles          INTEGER         NOT NULL                                DEFAULT 5       CHECK(PostMaxFiles >= 0),
-  ThreadMinLength       INTEGER         NOT NULL                                DEFAULT 1,
-  PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength <= 32768),
-  PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines <= 1024),
-  PostMaxDblNewlines    INTEGER         NOT NULL                                DEFAULT 16      CHECK(PostMaxDblNewlines <= 512),
-  TPHLimit              INTEGER         NOT NULL                                DEFAULT -1,
-  PPHLimit              INTEGER         NOT NULL                                DEFAULT -1,
+  ThreadMinLength       INTEGER         NOT NULL                                DEFAULT 1       CHECK(ThreadMinLength >= 0),
+  PostMaxLength         INTEGER         NOT NULL                                DEFAULT 8192    CHECK(PostMaxLength BETWEEN 0 AND 32768),
+  PostMaxNewlines       INTEGER         NOT NULL                                DEFAULT 64      CHECK(PostMaxNewlines BETWEEN 0 AND 1024),
+  PostMaxDblNewlines    INTEGER         NOT NULL                                DEFAULT 16      CHECK(PostMaxDblNewlines BETWEEN 0 AND 512),
+  TPHLimit              INTEGER                                                 DEFAULT NULL    CHECK(TPHLimit IS NULL OR TPHLimit > 0),
+  PPHLimit              INTEGER                                                 DEFAULT NULL    CHECK(PPHLimit IS NULL OR PPHLimit > 0),
   ThreadCaptcha         BOOLEAN         NOT NULL                                DEFAULT FALSE,
   PostCaptcha           BOOLEAN         NOT NULL                                DEFAULT FALSE,
-  CaptchaTriggerTPH     INTEGER         NOT NULL                                DEFAULT -1,
-  CaptchaTriggerPPH     INTEGER         NOT NULL                                DEFAULT -1,
+  CaptchaTriggerTPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerTPH IS NULL OR CaptchaTriggerTPH > 0),
+  CaptchaTriggerPPH     INTEGER                                                 DEFAULT NULL    CHECK(CaptchaTriggerPPH IS NULL OR CaptchaTriggerPPH > 0),
   BumpLimit             INTEGER         NOT NULL                                DEFAULT 200     CHECK(BumpLimit BETWEEN 0 AND 1000),
   PostLimit             INTEGER         NOT NULL                                DEFAULT 250     CHECK(PostLimit BETWEEN 0 AND 1000),
   ThreadLimit           INTEGER         NOT NULL                                DEFAULT 500     CHECK(ThreadLimit BETWEEN 1 AND 1000)
@@ -26,13 +26,13 @@ CREATE TABLE Boards (
 
 CREATE TABLE Posts (
   Board                 TEXT            NOT NULL,
-  Number                INTEGER                                                 DEFAULT NULL,
+  Number                INTEGER                                                 DEFAULT NULL    CHECK(Number IS NULL OR Number > 0),
   Parent                INTEGER                                                 DEFAULT NULL,
   Date                  DATETIME        NOT NULL                                DEFAULT 0,
-  LastBumpDate          DATETIME        NOT NULL                                DEFAULT 0       CHECK(LastBumpDate >= Date),
+  LastBumpDate          DATETIME                                                DEFAULT NULL    CHECK(LastBumpDate IS NULL OR LastBumpDate >= Date),
   Name                  TEXT            NOT NULL                                DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
-  Email                 TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Email) <= 64),
-  Subject               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Subject) <= 64),
+  Email                 TEXT                                                    DEFAULT NULL    CHECK(Email IS NULL OR LENGTH(Email) <= 64),
+  Subject               TEXT                                                    DEFAULT NULL    CHECK(Subject IS NULL OR LENGTH(Subject) <= 64),
   Capcode               TEXT                                                    DEFAULT NULL,
   CapcodeBoard          TEXT                                                    DEFAULT NULL,
   Comment               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Comment) <= 32768),
@@ -124,14 +124,16 @@ CREATE TABLE Webring (
 ) WITHOUT ROWID;
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
-  WHEN NEW.Parent IS NOT NULL AND NEW.Email NOT LIKE '%sage%'
+  WHEN NEW.Parent IS NOT NULL AND (NEW.Email IS NULL OR NEW.Email NOT LIKE '%sage%')
    AND (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
        <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent AND Autosage = FALSE;
 END;
 
-CREATE TRIGGER user_autosage AFTER INSERT ON Posts WHEN NEW.Parent IS NULL AND NEW.Email LIKE '%sage%'
+CREATE TRIGGER user_autosage AFTER INSERT ON Posts
+ WHEN NEW.Parent IS NULL
+  AND NEW.Email IS NOT NULL AND NEW.Email LIKE '%sage%'
 BEGIN
   UPDATE Posts SET Autosage = TRUE WHERE ROWID = NEW.ROWID;
 END;
@@ -157,9 +159,9 @@ END;
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NULL
    AND (SELECT ThreadCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
+   AND (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL AND Date > (STRFTIME('%s', 'now') - 3600))
        > (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board)
-   AND (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board) > 0
 BEGIN
   UPDATE Boards SET ThreadCaptcha = TRUE WHERE Name = NEW.Board;
   INSERT INTO Logs (Board, Date, Description) VALUES (NEW.Board, STRFTIME('%s', 'now'),
@@ -168,9 +170,9 @@ END;
 
 CREATE TRIGGER auto_enable_captcha_per_post AFTER INSERT ON Posts
   WHEN (SELECT PostCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
+   AND (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Date > (STRFTIME('%s', 'now') - 3600))
        > (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board)
-   AND (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board) > 0
 BEGIN
   UPDATE Boards SET PostCaptcha = TRUE WHERE Name = NEW.Board;
   INSERT INTO Logs (Board, Date, Description) VALUES (New.Board, STRFTIME('%s', 'now'),

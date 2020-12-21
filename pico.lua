@@ -456,12 +456,12 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
     printf("</span>-&gt; ");
   end
 
-  if post_tbl["Subject"] ~= "" then
+  if post_tbl["Subject"] and post_tbl["Subject"] ~= "" then
     printf("<span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]));
   end
 
   printf("<span class='post-name'>");
-  if post_tbl["Email"] ~= "" then
+  if post_tbl["Email"] and post_tbl["Email"] ~= "" then
     printf("<a class='post-email' href='mailto:%s'>%s</a>",
            html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"]));
   else
@@ -551,7 +551,7 @@ function html.rendercatalog(catalog_tbl)
     printf("</div>");
 
     printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
-    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"]));
+    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"] or ""));
     printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
 
     printf("</div>");
@@ -674,7 +674,7 @@ function html.form.board_config(board)
   printf("<fieldset><form method='POST'>");
   printf(  "<input type='hidden' name='Name' value='%s' />", board_tbl["Name"]);
   printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]));
-  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"]));
+  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""));
   printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
   printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "");
   printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' required /><br />", board_tbl["PostMaxFiles"]);
@@ -682,12 +682,12 @@ function html.form.board_config(board)
   printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' required /><br />", board_tbl["PostMaxLength"]);
   printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' required /><br />", board_tbl["PostMaxNewlines"]);
   printf(  "<label for='PostMaxDblNewlines'>PostMaxDblNewlines</label><input id='PostMaxDblNewlines' name='PostMaxDblNewlines' type='number' value='%d' required /><br />", board_tbl["PostMaxDblNewlines"]);
-  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%d' required /><br />", board_tbl["TPHLimit"]);
-  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%d' required /><br />", board_tbl["PPHLimit"]);
+  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%s' /><br />", board_tbl["TPHLimit"] or "");
+  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%s' /><br />", board_tbl["PPHLimit"] or "");
   printf(  "<label for='ThreadCaptcha'>ThreadCaptcha</label><input id='ThreadCaptcha' name='ThreadCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["ThreadCaptcha"] == 1 and "checked " or "");
   printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "");
-  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%d' required /><br />", board_tbl["CaptchaTriggerTPH"]);
-  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%d' required /><br />", board_tbl["CaptchaTriggerPPH"]);
+  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerTPH"] or "");
+  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' /><br />", board_tbl["CaptchaTriggerPPH"] or "");
   printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["BumpLimit"]);
   printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["PostLimit"]);
   printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%d' min=0 max=1000 required /><br />", board_tbl["ThreadLimit"]);
@@ -1047,7 +1047,7 @@ handlers["/Mod/board/create"] = function()
 
   if next(POST) ~= nil then
     if tbl_validate(POST, "name", "title") then
-      local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"]);
+      local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"] ~= "" and POST["subtitle"] or nil);
       printf("%s%s", (not status) and "Cannot create board: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1085,6 +1085,11 @@ handlers["/Mod/board/config"] = function()
     if tbl_validate(POST, "Name") then
       if pico.board.exists(POST["Name"]) then
         if tbl_validate(POST, "Title") then
+          POST["Subtitle"] = POST["Subtitle"] ~= "" and POST["Subtitle"] or nil;
+          POST["TPHLimit"] = POST["TPHLimit"] ~= "" and POST["TPHLimit"] or nil;
+          POST["PPHLimit"] = POST["PPHLimit"] ~= "" and POST["PPHLimit"] or nil;
+          POST["CaptchaTriggerTPH"] = POST["CaptchaTriggerTPH"] ~= "" and POST["CaptchaTriggerTPH"] or nil;
+          POST["CaptchaTriggerPPH"] = POST["CaptchaTriggerPPH"] ~= "" and POST["CaptchaTriggerPPH"] or nil;
           local status, msg = pico.board.configure(POST);
           printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
         end
@@ -1423,7 +1428,7 @@ handlers["/Boards"] = function()
   for i = 1, #board_list_tbl do
     local board = board_list_tbl[i]["Name"];
     local title = board_list_tbl[i]["Title"];
-    local subtitle = board_list_tbl[i]["Subtitle"];
+    local subtitle = board_list_tbl[i]["Subtitle"] or "";
     local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1);
     local tpd1d = pico.board.stats.threadrate(board, 24, 1);
     local ppd7d = pico.board.stats.postrate(board, 24, 7);
@@ -1494,7 +1499,9 @@ handlers["/Post"] = function()
   -- step 2. create the post itself
   local number, msg = pico.post.create(
     POST["board"], tonumber(POST["parent"]),
-    POST["name"], POST["email"], POST["subject"],
+    POST["name"] ~= "" and POST["name"] or nil,
+    POST["email"] ~= "" and POST["email"] or nil,
+    POST["subject"] ~= "" and POST["subject"] or nil,
     POST["comment"], files,
     POST["captchaid"], POST["captcha"]
   );
@@ -1620,7 +1627,7 @@ local function board_header(board_tbl)
 
   html.begin("/%s/", board_tbl["Name"]);
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
+  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();
   printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
   html.form.postform(board_tbl, nil);
@@ -1686,7 +1693,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
                                              and html.striphtml(thread_tbl[0]["Subject"])
                                              or html.striphtml(thread_tbl[0]["Comment"]:sub(1, 64)));
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"]));
+  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();
   printf("<a id='new-post' href='#postform'>[Make a Post]</a>");
   html.form.postform(board_tbl, post);
