@@ -1177,9 +1177,9 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   html.container.begin();
 
   local board_tbl = pico.board.tbl(board);
-  local post_tbl, msg = pico.post.tbl(board, post);
+  local post_tbl = pico.post.tbl(board, post);
   if not post_tbl then
-    html.error("Action failed", "Cannot find post: %s", msg);
+    html.error("Action failed", "Cannot find post %d on board %s", post, board);
   end
 
   if next(POST) ~= nil then
