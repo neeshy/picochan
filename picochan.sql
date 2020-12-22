@@ -125,11 +125,12 @@ CREATE TABLE Webring (
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL AND (NEW.Email IS NULL OR NEW.Email NOT LIKE '%sage%')
+   AND (SELECT Autosage FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent) = FALSE
    AND ((SELECT BumpLimit FROM Boards WHERE Name = NEW.Board) IS NULL
     OR (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
        <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board))
 BEGIN
-  UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent AND Autosage = FALSE;
+  UPDATE Posts SET LastBumpDate = STRFTIME('%s', 'now') WHERE Board = NEW.Board AND Number = NEW.Parent;
 END;
 
 CREATE TRIGGER user_autosage AFTER INSERT ON Posts
