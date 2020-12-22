@@ -642,7 +642,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   end
 
   local board_tbl = pico.board.tbl(board);
-  local is_thread = (not parent);
+  local is_thread = not parent;
 
   local capcode, capcode_board;
   if name == "##" and pico.account.current then
