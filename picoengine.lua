@@ -24,6 +24,7 @@ db:e("PRAGMA busy_timeout = 10000");
 db:e("PRAGMA foreign_keys = ON");
 db:e("PRAGMA recursive_triggers = ON");
 db:e("PRAGMA secure_delete = ON");
+db:e("PRAGMA case_sensitive_like = ON");
 
 --
 -- ACCOUNT MANAGEMENT FUNCTIONS

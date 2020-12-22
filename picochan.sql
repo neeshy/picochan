@@ -123,7 +123,8 @@ CREATE TABLE Webring (
 ) WITHOUT ROWID;
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
-  WHEN NEW.Parent IS NOT NULL AND (NEW.Email IS NULL OR NEW.Email NOT LIKE '%sage%')
+  WHEN NEW.Parent IS NOT NULL AND (NEW.Email IS NULL
+    OR NOT (NEW.Email = 'sage' OR NEW.Email LIKE 'sage %' OR NEW.Email LIKE '% sage' OR NEW.Email LIKE '% sage %'))
    AND (SELECT Autosage FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent) = FALSE
    AND ((SELECT BumpLimit FROM Boards WHERE Name = NEW.Board) IS NULL
     OR (SELECT ReplyCount FROM Posts WHERE Board = NEW.Board AND Number = NEW.Parent)
@@ -133,8 +134,8 @@ BEGIN
 END;
 
 CREATE TRIGGER user_autosage AFTER INSERT ON Posts
- WHEN NEW.Parent IS NULL
-  AND NEW.Email IS NOT NULL AND NEW.Email LIKE '%sage%'
+  WHEN NEW.Parent IS NULL AND NEW.Email IS NOT NULL
+   AND (NEW.Email = 'sage' OR NEW.Email LIKE 'sage %' OR NEW.Email LIKE '% sage' OR NEW.Email LIKE '% sage %')
 BEGIN
   UPDATE Posts SET Autosage = TRUE WHERE ROWID = NEW.ROWID;
 END;
