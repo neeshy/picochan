@@ -563,9 +563,9 @@ function pico.file.delete(filename, reason)
 end
 
 function pico.file.list(board, number)
-  return db:q("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
+  return db:q("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
               "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
-              "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC",
+              "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC",
               board, number);
 end
 
@@ -608,9 +608,9 @@ function pico.post.thread(board, number)
   thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
                        "Capcode, CapcodeBoard, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
                        "WHERE Board = ? AND Number = ?", board, number);
-  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, FileRefs.Spoiler " ..
+  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
                           "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
-                          "WHERE FileRefs.Board = ? AND FileRefs.Number = ? ORDER BY FileRefs.Sequence ASC");
+                          "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
 
   db:e("BEGIN TRANSACTION");
   for i = 0, #thread_tbl do
