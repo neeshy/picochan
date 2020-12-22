@@ -366,8 +366,8 @@ function pico.board.catalog(name)
     return nil, "Board does not exist";
   end
 
-  local sql = "SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number LEFT JOIN Files ON Files.Name = FileRefs.File " ..
+  local sql = "SELECT Board, Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Posts LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               (name and "AND Posts.Board = ? "
                      or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
