@@ -119,8 +119,7 @@ CREATE TABLE Captchas (
 
 CREATE TABLE Webring (
   Endpoint              TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
-  Type                  TEXT            NOT NULL                                DEFAULT 'known',
-  CHECK(Type IN ('following', 'known', 'blacklist'))
+  Type                  TEXT            NOT NULL                                DEFAULT 'known' CHECK(Type IN ('following', 'known', 'blacklist'))
 ) WITHOUT ROWID;
 
 CREATE TRIGGER bump_thread AFTER INSERT ON Posts
