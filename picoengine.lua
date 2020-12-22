@@ -362,22 +362,20 @@ function pico.board.index(name, page)
 end
 
 function pico.board.catalog(name)
-  if not pico.board.exists(name) then
+  if name and not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
 
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number LEFT JOIN Files ON Files.Name = FileRefs.File " ..
-              "WHERE (Sequence = 1 OR Sequence IS NULL) AND Posts.Board = ? AND Parent IS NULL "..
-              "ORDER BY Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000", name);
-end
-
-function pico.board.overboard()
-  return db:q("SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+  local sql = "SELECT Posts.Board, Posts.Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
               "FROM Posts LEFT JOIN FileRefs ON Posts.Board = FileRefs.Board AND Posts.Number = FileRefs.Number LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
-              "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) " ..
-              "AND Parent IS NULL ORDER BY LastBumpDate DESC LIMIT 100");
+              (name and "AND Posts.Board = ? "
+                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
+              "AND Parent IS NULL ORDER BY " ..
+              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
+                     or "LastBumpDate DESC LIMIT 100");
+  return name and db:q(sql, name)
+               or db:q(sql);
 end
 
 -- To get number of posts per hour over the last 12 hours:

@@ -1556,7 +1556,7 @@ end
 
 handlers["/Overboard"] = function()
   overboard_header();
-  html.rendercatalog(pico.board.overboard());
+  html.rendercatalog(pico.board.catalog());
   html.finish();
 end;
 
