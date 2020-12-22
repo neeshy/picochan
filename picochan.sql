@@ -141,8 +141,8 @@ END;
 
 CREATE TRIGGER increment_post_number AFTER INSERT ON Posts
 BEGIN
-  UPDATE Posts SET Number = (SELECT MaxPostNumber + 1 FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
+  UPDATE Posts SET Number = (SELECT MaxPostNumber FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
   UPDATE Posts SET ReplyCount = ReplyCount + 1 WHERE NEW.Parent IS NOT NULL AND Board = NEW.Board AND Number = NEW.Parent;
 END;
 
