@@ -152,7 +152,7 @@ BEGIN
   UPDATE Threads SET LastBumpDate = (SELECT Date FROM Posts WHERE ROWID = NEW.ROWID)
   WHERE Board = NEW.Board AND Number = NEW.Parent
    AND (NEW.Email IS NULL OR NOT (NEW.Email = 'sage' OR NEW.Email LIKE 'sage %' OR NEW.Email LIKE '% sage' OR NEW.Email LIKE '% sage %'))
-   AND (SELECT Autosage FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent) = FALSE
+   AND NOT (SELECT Autosage FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
    AND ((SELECT BumpLimit FROM Boards WHERE Name = NEW.Board) IS NULL
     OR (SELECT ReplyCount FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
        <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board));
@@ -160,7 +160,7 @@ END;
 
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NULL
-   AND (SELECT ThreadCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
+   AND NOT (SELECT ThreadCaptcha FROM Boards WHERE Name = NEW.Board)
    AND (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL AND Date > (STRFTIME('%s', 'now') - 3600))
        > (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board)
@@ -171,7 +171,7 @@ BEGIN
 END;
 
 CREATE TRIGGER auto_enable_captcha_per_post AFTER INSERT ON Posts
-  WHEN (SELECT PostCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
+  WHEN NOT (SELECT PostCaptcha FROM Boards WHERE Name = NEW.Board)
    AND (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Date > (STRFTIME('%s', 'now') - 3600))
        > (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board)
@@ -182,7 +182,7 @@ BEGIN
 END;
 
 CREATE TRIGGER delete_cyclical BEFORE INSERT ON Posts
-  WHEN (SELECT Cycle FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent) = TRUE
+  WHEN (SELECT Cycle FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
    AND (SELECT PostLimit FROM Boards WHERE Name = NEW.Board) IS NOT NULL
    AND (SELECT ReplyCount FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
        >= (SELECT PostLimit FROM Boards WHERE Name = NEW.Board)
@@ -196,7 +196,7 @@ CREATE TRIGGER slide_thread BEFORE INSERT ON Threads
        >= (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
   DELETE FROM Threads
-  WHERE Board = NEW.Board AND Sticky = FALSE
+  WHERE Board = NEW.Board AND NOT Sticky
         AND LastBumpDate = (SELECT MIN(LastBumpDate) FROM Threads WHERE Board = NEW.Board);
 END;
 

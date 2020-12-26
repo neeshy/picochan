@@ -635,7 +635,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     -- 4. Ensure that the post being referred to is not the same as the referrer.
     if ref ~= number then
       db:e("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
-           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) = TRUE " ..
+           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) " ..
            "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
            board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
     end
@@ -841,7 +841,7 @@ function pico.thread.catalog(name)
               "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               (name and "AND Posts.Board = ? "
-                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
+                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
               "AND Parent IS NULL ORDER BY " ..
               (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
                      or "LastBumpDate DESC LIMIT 100");
