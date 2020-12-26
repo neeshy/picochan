@@ -329,56 +329,6 @@ function pico.board.configure(board_tbl)
   return true, "Board configured successfully";
 end
 
-function pico.thread.index(name, page)
-  if name and not pico.board.exists(name) then
-    return nil, "Board does not exist";
-  end
-
-  page = page or 1;
-  local pagesize = pico.global.get("indexpagesize");
-  local windowsize = pico.global.get("indexwindowsize");
-
-  local index_tbl = {};
-  local sql = "SELECT Board, Number FROM Threads " ..
-              (name and "WHERE Board = ? " or "") ..
-              "ORDER BY " ..
-              (name and "Sticky DESC, " or "") ..
-              "LastBumpDate DESC LIMIT ? OFFSET ?";
-  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
-                           or db:q(sql, pagesize, (page - 1) * pagesize);
-
-  for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
-                        "ORDER BY Number ASC",
-                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1);
-    index_tbl[i][1]["RepliesOmitted"] = index_tbl[1]["ReplyCount"] - windowsize;
-
-    for j = 1, #index_tbl[i] do
-      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
-    end
-  end
-
-  return index_tbl;
-end
-
-function pico.thread.catalog(name)
-  if name and not pico.board.exists(name) then
-    return nil, "Board does not exist";
-  end
-
-  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
-              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
-              (name and "AND Posts.Board = ? "
-                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
-              "AND Parent IS NULL ORDER BY " ..
-              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
-                     or "LastBumpDate DESC LIMIT 100");
-  return name and db:q(sql, name)
-               or db:q(sql);
-end
-
 -- To get number of posts per hour over the last 12 hours:
 --   * interval = 1 (hour)
 --   * intervals = 12 (12 hours)
@@ -597,39 +547,6 @@ function pico.post.refs(board, number)
   return db:q1("SELECT Referrer FROM Refs WHERE Board = ? AND Referee = ?", board, number);
 end
 
--- Return entire thread (parent + all replies + all file info) as a table
-function pico.thread.tbl(board, number)
-  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?",
-             board, number) then
-    return nil, "Post is not a thread or does not exist";
-  end
-
-  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
-                          board, number, number);
-  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
-                          "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
-                          "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
-
-  db:e("BEGIN TRANSACTION");
-  for i = 1, #thread_tbl do
-    local post_tbl = thread_tbl[i];
-    post_tbl["Files"] = {};
-    stmt:bind_values(post_tbl["Board"], post_tbl["Number"]);
-
-    while stmt:step() == sqlite3.ROW do
-      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt:get_named_values();
-    end
-
-    stmt:reset();
-  end
-  db:e("END TRANSACTION");
-
-  stmt:finalize();
-
-  return thread_tbl;
-end
-
 -- Create a post and return its number
 -- 'files' is an array with a collection of file hashes to attach to the post
 function pico.post.create(board, parent, name, email, subject, comment, files, captcha_id, captcha_text, bypasschecks)
@@ -843,6 +760,93 @@ function pico.post.spoiler(board, number, file, spoil, reason)
   pico.log.insert(board, "%s file %s from /%s/%d for reason: %s",
       spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
   return true, "File " .. (spoil and "spoilered" or "unspoilered") .. " sucessfully";
+end
+
+--
+-- THREAD ACCESS AND MODIFICATION FUNCTIONS
+--
+
+-- Return entire thread (parent + all replies + all file info) as a table
+function pico.thread.tbl(board, number)
+  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?",
+             board, number) then
+    return nil, "Post is not a thread or does not exist";
+  end
+
+  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
+                          board, number, number);
+  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
+                          "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
+                          "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
+
+  db:e("BEGIN TRANSACTION");
+  for i = 1, #thread_tbl do
+    local post_tbl = thread_tbl[i];
+    post_tbl["Files"] = {};
+    stmt:bind_values(post_tbl["Board"], post_tbl["Number"]);
+
+    while stmt:step() == sqlite3.ROW do
+      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt:get_named_values();
+    end
+
+    stmt:reset();
+  end
+  db:e("END TRANSACTION");
+
+  stmt:finalize();
+
+  return thread_tbl;
+end
+
+function pico.thread.index(name, page)
+  if name and not pico.board.exists(name) then
+    return nil, "Board does not exist";
+  end
+
+  page = page or 1;
+  local pagesize = pico.global.get("indexpagesize");
+  local windowsize = pico.global.get("indexwindowsize");
+
+  local index_tbl = {};
+  local sql = "SELECT Board, Number FROM Threads " ..
+              (name and "WHERE Board = ? " or "") ..
+              "ORDER BY " ..
+              (name and "Sticky DESC, " or "") ..
+              "LastBumpDate DESC LIMIT ? OFFSET ?";
+  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
+                           or db:q(sql, pagesize, (page - 1) * pagesize);
+
+  for i = 1, #thread_ops do
+    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
+                        "ORDER BY Number ASC",
+                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1);
+    index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize;
+
+    for j = 1, #index_tbl[i] do
+      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
+    end
+  end
+
+  return index_tbl;
+end
+
+function pico.thread.catalog(name)
+  if name and not pico.board.exists(name) then
+    return nil, "Board does not exist";
+  end
+
+  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
+              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
+              (name and "AND Posts.Board = ? "
+                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
+              "AND Parent IS NULL ORDER BY " ..
+              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
+                     or "LastBumpDate DESC LIMIT 100");
+  return name and db:q(sql, name)
+               or db:q(sql);
 end
 
 -- toggle sticky, lock, autosage, or cycle
