@@ -564,17 +564,17 @@ function html.renderindex(index_tbl, board, page, prev, next)
   overboard = board == "Overboard";
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>");
-    html.renderpost(index_tbl[i][0], overboard);
+    html.renderpost(index_tbl[i][1], overboard);
 
     printf("<span class='index-thread-summary'>");
-    if index_tbl[i]["RepliesOmitted"] > 0 then
-      printf("%d replies omitted. ", index_tbl[i]["RepliesOmitted"]);
+    if index_tbl[i][1]["RepliesOmitted"] > 0 then
+      printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"]);
     end
 
-    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][0]["Board"], index_tbl[i][0]["Number"]);
+    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"]);
     printf("</span>");
 
-    for j = 1, #index_tbl[i] do
+    for j = 2, #index_tbl[i] do
       html.renderpost(index_tbl[i][j], overboard);
     end
 
@@ -1202,9 +1202,9 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
           cgi.headers["Status"] = "400 Bad Request";
           html.error("Action failed", "Invalid request");
         end
-        result, msg = pico.post.movethread(board, post, POST["destination"], POST["reason"]);
+        result, msg = pico.thread.move(board, post, POST["destination"], POST["reason"]);
       else
-        result, msg = pico.post.toggle(operation, board, post, POST["reason"]);
+        result, msg = pico.thread.toggle(operation, board, post, POST["reason"]);
       end
 
       if not result then
@@ -1556,7 +1556,7 @@ end
 
 handlers["/Overboard"] = function()
   overboard_header();
-  html.rendercatalog(pico.board.catalog());
+  html.rendercatalog(pico.thread.catalog());
   html.finish();
 end;
 
@@ -1571,14 +1571,14 @@ handlers["/Overboard/index"] = function(page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local index_tbl = pico.board.index(nil, page);
+  local index_tbl = pico.thread.index(nil, page);
   if #index_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
   html.renderindex(index_tbl, "Overboard", page, page > 1,
-    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(nil, page + 1) ~= 0);
+    #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1641,7 +1641,7 @@ end
 handlers["/([%l%d]+)/?"] = function(board)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
-  html.rendercatalog(pico.board.catalog(board_tbl["Name"]));
+  html.rendercatalog(pico.thread.catalog(board_tbl["Name"]));
   html.finish();
 end;
 
@@ -1657,14 +1657,14 @@ handlers["/([%l%d]+)/index"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local index_tbl = pico.board.index(board_tbl["Name"], page);
+  local index_tbl = pico.thread.index(board_tbl["Name"], page);
   if #index_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
   html.renderindex(index_tbl, board_tbl["Name"], page, page > 1,
-    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(board_tbl["Name"], page + 1) ~= 0);
+    #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board_tbl["Name"], page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1678,7 +1678,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
     html.error("Board Not Found", "The board you specified does not exist.");
   end
 
-  local thread_tbl, msg = pico.post.thread(board_tbl["Name"], post);
+  local thread_tbl, msg = pico.thread.tbl(board_tbl["Name"], post);
 
   if not thread_tbl then
     local post_tbl = pico.post.tbl(board_tbl["Name"], post);
@@ -1692,9 +1692,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
     end
   end
 
-  html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[0]["Subject"] and #thread_tbl[0]["Subject"] > 0)
-                                             and html.striphtml(thread_tbl[0]["Subject"])
-                                             or html.striphtml(thread_tbl[0]["Comment"]:sub(1, 64)));
+  html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[1]["Subject"] and #thread_tbl[1]["Subject"] > 0)
+                                             and html.striphtml(thread_tbl[1]["Subject"])
+                                             or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)));
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();
@@ -1702,7 +1702,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   html.form.postform(board_tbl, post);
   printf("<hr />");
 
-  for i = 0, #thread_tbl do
+  for i = 1, #thread_tbl do
     html.renderpost(thread_tbl[i]);
   end
 
@@ -1715,7 +1715,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   printf("<span id='thread-reply'>");
   printf("<a href='#postform'>[Reply]</a>");
-  printf("%d replies", thread_tbl[0]["ReplyCount"]);
+  printf("%d replies", thread_tbl[1]["ReplyCount"]);
   printf("</span>");
 
   printf("</div>");

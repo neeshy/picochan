@@ -14,6 +14,7 @@ local pico = {};
       pico.board.stats = {};
       pico.file = {};
       pico.post = {};
+      pico.thread = {};
       pico.log = {};
       pico.captcha = {};
       pico.webring = {};
@@ -328,7 +329,7 @@ function pico.board.configure(board_tbl)
   return true, "Board configured successfully";
 end
 
-function pico.board.index(name, page)
+function pico.thread.index(name, page)
   if name and not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
@@ -338,23 +339,22 @@ function pico.board.index(name, page)
   local windowsize = pico.global.get("indexwindowsize");
 
   local index_tbl = {};
-  local sql = "SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-              "Capcode, CapcodeBoard, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts WHERE " ..
-              (name and "Board = ? AND " or "") ..
-              "Parent IS NULL ORDER BY " ..
+  local sql = "SELECT Board, Number FROM Threads " ..
+              (name and "WHERE Board = ? " or "") ..
+              "ORDER BY " ..
               (name and "Sticky DESC, " or "") ..
               "LastBumpDate DESC LIMIT ? OFFSET ?";
   local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
                            or db:q(sql, pagesize, (page - 1) * pagesize);
 
   for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM (SELECT Board, Number, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment FROM Posts " ..
-                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) ORDER BY Number ASC",
-                        thread_ops[i]["Board"], thread_ops[i]["Number"], windowsize);
-    index_tbl[i][0] = thread_ops[i];
-    index_tbl[i]["RepliesOmitted"] = thread_ops[i]["ReplyCount"] - windowsize;
+    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
+                        "ORDER BY Number ASC",
+                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1);
+    index_tbl[i][1]["RepliesOmitted"] = index_tbl[1]["ReplyCount"] - windowsize;
 
-    for j = 0, #index_tbl[i] do
+    for j = 1, #index_tbl[i] do
       index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
     end
   end
@@ -362,13 +362,13 @@ function pico.board.index(name, page)
   return index_tbl;
 end
 
-function pico.board.catalog(name)
+function pico.thread.catalog(name)
   if name and not pico.board.exists(name) then
     return nil, "Board does not exist";
   end
 
-  local sql = "SELECT Board, Number, Date, LastBumpDate, Subject, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Posts LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
+  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               (name and "AND Posts.Board = ? "
                      or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard = TRUE) ") ..
@@ -400,7 +400,7 @@ function pico.board.stats.totalposts(board)
 end
 
 function pico.board.stats.lastbumpdate(board)
-  return db:r1("SELECT LastBumpDate FROM Posts WHERE Board = ? ORDER BY LastBumpDate DESC", board);
+  return db:r1("SELECT LastBumpDate FROM Threads WHERE Board = ? ORDER BY LastBumpDate DESC", board);
 end
 
 --
@@ -585,7 +585,7 @@ function pico.post.recent(page)
 end
 
 function pico.post.tbl(board, number, omit_files)
-  local post_tbl = db:r("SELECT * FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  local post_tbl = db:r("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) WHERE Board = ? AND Number = ?", board, number);
   if post_tbl and not omit_files then
     post_tbl["Files"] = pico.file.list(board, number);
   end
@@ -598,23 +598,21 @@ function pico.post.refs(board, number)
 end
 
 -- Return entire thread (parent + all replies + all file info) as a table
-function pico.post.thread(board, number)
-  if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL",
+function pico.thread.tbl(board, number)
+  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?",
              board, number) then
     return nil, "Post is not a thread or does not exist";
   end
 
-  local thread_tbl = db:q("SELECT Board, Number, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment FROM Posts " ..
-                          "WHERE Board = ? AND Parent = ? ORDER BY Number ASC", board, number);
-  thread_tbl[0] = db:r("SELECT Board, Number, Date, LastBumpDate, Name, Email, Subject, " ..
-                       "Capcode, CapcodeBoard, Comment, Sticky, Lock, Autosage, Cycle, ReplyCount FROM Posts " ..
-                       "WHERE Board = ? AND Number = ?", board, number);
+  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
+                          board, number, number);
   local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
                           "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
                           "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
 
   db:e("BEGIN TRANSACTION");
-  for i = 0, #thread_tbl do
+  for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Files"] = {};
     stmt:bind_values(post_tbl["Board"], post_tbl["Number"]);
@@ -848,22 +846,22 @@ function pico.post.spoiler(board, number, file, spoil, reason)
 end
 
 -- toggle sticky, lock, autosage, or cycle
-function pico.post.toggle(attribute, board, number, reason)
+function pico.thread.toggle(attribute, board, number, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?", board, number) then
-    return false, "Post does not exist";
+  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number) then
+    return false, "Thread does not exist";
   end
 
   if attribute == "sticky" then
-    db:e("UPDATE Posts SET Sticky = NOT Sticky WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Threads SET Sticky = NOT Sticky WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "lock" then
-    db:e("UPDATE Posts SET Lock = NOT Lock WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Threads SET Lock = NOT Lock WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "autosage" then
-    db:e("UPDATE Posts SET Autosage = NOT Autosage WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Threads SET Autosage = NOT Autosage WHERE Board = ? AND Number = ?", board, number);
   elseif attribute == "cycle" then
-    db:e("UPDATE Posts SET Cycle = NOT Cycle WHERE Board = ? AND Number = ?", board, number);
+    db:e("UPDATE Threads SET Cycle = NOT Cycle WHERE Board = ? AND Number = ?", board, number);
   else
     return false, "Invalid attribute";
   end
@@ -879,21 +877,21 @@ end
 --    2. Repost the post to the new board.
 --    3. Keep a lookup table of the old post number and the new post number.
 -- 3. Delete the old thread.
-function pico.post.movethread(board, number, newboard, reason)
+function pico.thread.move(board, number, newboard, reason)
   local auth, msg = permit("admin gvol", "post", board);
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ? AND Parent IS NULL", board, number) then
+  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number) then
     return false, "Post does not exist or is not a thread";
   elseif not pico.board.exists(newboard) then
     return false, "Destination board does not exist";
   end
 
-  local thread_tbl = pico.post.thread(board, number);
+  local thread_tbl = pico.thread.tbl(board, number);
   local number_lut = {};
   local newthread;
 
-  for i = 0, #thread_tbl do
+  for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>([0-9]+)", number_lut);
     post_tbl["Parent"] = post_tbl["Parent"] and newthread;
@@ -909,12 +907,12 @@ function pico.post.movethread(board, number, newboard, reason)
                                        post_tbl["Files"], nil, nil, true);
     number_lut[tostring(post_tbl["Number"])] = ">>" .. tostring(newnumber);
 
-    if i == 0 then
+    if i == 1 then
       newthread = newnumber;
     end
   end
 
-  db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
+  db:e("DELETE FROM Threads WHERE Board = ? AND Number = ?", board, number);
   pico.log.insert(nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
   return true, "Thread moved successfully";
 end
