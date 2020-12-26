@@ -26,7 +26,7 @@ CREATE TABLE Boards (
 
 CREATE TABLE Posts (
   Board                 TEXT            NOT NULL,
-  Number                INTEGER                                                 DEFAULT NULL    CHECK(Number IS NULL OR Number > 0),
+  Number                INTEGER         NOT NULL                                DEFAULT 0       CHECK(Number >= 0),
   Parent                INTEGER                                                 DEFAULT NULL,
   Date                  DATETIME        NOT NULL                                DEFAULT 0,
   Name                  TEXT            NOT NULL                                DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
