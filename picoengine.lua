@@ -626,18 +626,20 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     end
   end
 
-  for ref in comment:gmatch(">>([0-9]+)") do
-    ref = tonumber(ref);
+  if not email or not (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
+    for ref in comment:gmatch(">>([0-9]+)") do
+      ref = tonumber(ref);
 
-    -- 1. Ensure that the reference doesn't already exist.
-    -- 2. Ensure that the post being referred to does exist.
-    -- 3. Ensure that the post being referred to is in the same thread as the referrer.
-    -- 4. Ensure that the post being referred to is not the same as the referrer.
-    if ref ~= number then
-      db:e("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
-           "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) " ..
-           "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
-           board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
+      -- 1. Ensure that the reference doesn't already exist.
+      -- 2. Ensure that the post being referred to does exist.
+      -- 3. Ensure that the post being referred to is in the same thread as the referrer.
+      -- 4. Ensure that the post being referred to is not the same as the referrer.
+      if ref ~= number then
+        db:e("INSERT INTO Refs SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM Refs WHERE Board = ? AND Referee = ? AND Referrer = ?) = 0 " ..
+             "AND (SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?) " ..
+             "AND ((SELECT Parent FROM Posts WHERE Board = ? AND Number = ?) = ? OR (? = ?))",
+             board, ref, number, board, ref, number, board, ref, board, ref, parent, ref, parent);
+      end
     end
   end
 
