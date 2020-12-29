@@ -450,7 +450,7 @@ function pico.file.add(path)
   local hash = sha.hash("sha512", data);
   local filename = hash .. "." .. extension;
 
-  if db:b("SELECT TRUE FROM Files WHERE Name = ?", filename) then
+  if pico.file.exists(filename) then
     return filename, "File already existed and was not changed";
   end
 
@@ -500,8 +500,10 @@ function pico.file.delete(filename, reason)
   local auth, msg = permit("admin gvol");
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Files WHERE Name = ?", filename) then
+  if not pico.file.exists(filename) then
     return false, "File does not exist";
+  elseif db:b("SELECT TRUE FROM Banners WHERE File = ?", filename) then
+    return false, "File is used as a banner";
   end
 
   db:e("DELETE FROM Files WHERE Name = ?", filename);
@@ -518,6 +520,10 @@ function pico.file.list(board, number)
               "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
               "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC",
               board, number);
+end
+
+function pico.file.exists(name)
+  return db:b("SELECT TRUE FROM Files WHERE Name = ?", name);
 end
 
 --
