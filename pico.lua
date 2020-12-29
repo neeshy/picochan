@@ -1129,6 +1129,7 @@ handlers["/Mod/webring/add"] = function()
   end
 
   html.form.endpoint_add();
+  html.cfinish();
 end;
 
 handlers["/Mod/webring/remove"] = function()
@@ -1146,6 +1147,7 @@ handlers["/Mod/webring/remove"] = function()
   end
 
   html.form.endpoint_remove();
+  html.cfinish();
 end;
 
 handlers["/Mod/webring/config"] = function()
