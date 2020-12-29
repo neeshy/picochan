@@ -226,7 +226,8 @@ function html.unstriphtml(s)
 end
 
 function html.picofmt(post_tbl)
-  if post_tbl["Email"] and post_tbl["Email"]:match("nofo") then
+  local email = post_tbl["Email"];
+  if email and (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
     return html.striphtml(post_tbl["Comment"]);
   end
 
