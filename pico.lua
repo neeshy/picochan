@@ -296,7 +296,6 @@ function html.picofmt(post_tbl)
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
   s = s:gsub("&gt;&gt;(%d+)", handle_refs);
 
-  s = s:gsub("(.?.?.?.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#~@]-[a-zA-Z0-9%.%%%-%+%(%)/%?&;:,#@])[^a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#~@]", handle_url);
   s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
@@ -307,6 +306,8 @@ function html.picofmt(post_tbl)
   s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
   s = s:gsub("([\r\n])(&lt;.-)([\r\n])", "%1<span class='pinktext'>%2</span>%3");
+
+  s = s:gsub("(.?.?.?.)(https?://[a-zA-Z0-9%.%%%-%+%(%)_/=%?&;:,#~@]+)", handle_url);
 
   s = s:gsub("^[\r\n]+", "");
   s = s:gsub("[\r\n]+$", "");
