@@ -12,6 +12,7 @@ local pico = {};
       pico.account = {};
       pico.board = {};
       pico.board.stats = {};
+      pico.board.banner = {};
       pico.file = {};
       pico.post = {};
       pico.thread = {};
@@ -327,6 +328,42 @@ function pico.board.configure(board_tbl)
 
   pico.log.insert(board_tbl["Name"], "Modified board configuration");
   return true, "Board configured successfully";
+end
+
+function pico.board.banner.get(board)
+  if not pico.board.exists(board) then
+    return nil, "Board does not exist";
+  end
+
+  local file = db:r1("SELECT File FROM Banners WHERE Board = ? ORDER BY RANDOM() LIMIT 1", board);
+  if not file then
+    return nil, "Banner does not exist";
+  end
+  return file;
+end
+
+function pico.board.banner.add(board, file)
+  if not pico.board.exists(board) then
+    return false, "Board does not exist";
+  elseif not pico.file.exists(file) then
+    return false, "File does not exist";
+  end
+
+  db:e("INSERT INTO Banners (Board, File) VALUES (?, ?)", board, file);
+  pico.log.insert(board, "Added banner %s", file);
+  return true, "Banner added successfully";
+end
+
+function pico.board.banner.delete(board, file, reason)
+  if not pico.board.exists(board) then
+    return false, "Board does not exist";
+  elseif not pico.file.exists(file) then
+    return false, "File does not exist";
+  end
+
+  db:e("DELETE FROM Banners WHERE Board = ? AND File = ?", board, file);
+  pico.log.insert(board, "Deleted banner %s for reason: %s", file, reason);
+  return true, "Banner deleted successfully";
 end
 
 -- To get number of posts per hour over the last 12 hours:

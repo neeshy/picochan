@@ -90,6 +90,15 @@ CREATE TABLE Files (
   CHECK((Width IS NOT NULL AND Height IS NOT NULL) OR (Width IS NULL AND Height IS NULL))
 ) WITHOUT ROWID;
 
+CREATE TABLE Banners (
+  Board                 TEXT            NOT NULL,
+  File                  TEXT            NOT NULL,
+
+  PRIMARY KEY (Board, File),
+  FOREIGN KEY (Board) REFERENCES Boards (Name) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (File) REFERENCES Files (Name) ON UPDATE CASCADE ON DELETE CASCADE
+) WITHOUT ROWID;
+
 CREATE TABLE GlobalConfig (
   Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
   Value                 NUMERIC         NOT NULL

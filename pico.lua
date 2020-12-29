@@ -90,11 +90,12 @@ function html.begin(...)
   printf(    "<a class='invisible' href='' accesskey='r'></a>");
   printf(    "<a class='invisible' href='#postform' accesskey='p'></a>");
   printf(    "</nav>");
+  printf(    "<div id='content'>");
 end
 
 function html.finish()
   printf("<!-- %d ms generation time -->", os.clock() * 1000);
-  printf("</body></html>");
+  printf("</div></body></html>");
 end
 
 function html.error(title, ...)
@@ -697,6 +698,23 @@ function html.form.board_config(board)
   printf("</form></fieldset>");
 end
 
+function html.form.banner_add()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf("<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
+  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.banner_delete()
+  printf("<fieldset><form method='POST'>");
+  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf("<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
+  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
+  printf("</form></fieldset>");
+end
+
 function html.form.account_create()
   printf("<fieldset><form id='account-create' method='POST'>");
   printf("<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
@@ -923,6 +941,8 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/board/create'>Create a board</a>");
   html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>");
   html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
+  html.list.entry("<a href='/Mod/banner/add'>Add a banner to a board</a>");
+  html.list.entry("<a href='/Mod/banner/delete'>Delete a banner from a board</a>");
   html.list.finish();
   html.container.barheader("Webring");
   html.list.begin("unordered");
@@ -1111,6 +1131,42 @@ handlers["/Mod/board/config"] = function()
     html.form.board_config_select();
   end
 
+  html.cfinish();
+end;
+
+handlers["/Mod/banner/add"] = function()
+  account_check();
+  html.brc("add a banner", "Add a banner");
+
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "board", "file") then
+      local status, msg = pico.board.banner.add(POST["board"], POST["file"]);
+      printf("%s%s", (not status) and "Cannot add banner: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
+  end
+
+  html.form.banner_add();
+  html.cfinish();
+end;
+
+handlers["/Mod/banner/delete"] = function()
+  account_check();
+  html.brc("delete a banner", "Delete a banner");
+
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "board", "file", "reason") then
+      local status, msg = pico.board.banner.delete(POST["board"], POST["file"], POST["reason"]);
+      printf("%s%s", (not status) and "Cannot delete banner: " or "", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
+  end
+
+  html.form.banner_delete();
   html.cfinish();
 end;
 
@@ -1633,6 +1689,10 @@ local function board_header(board_tbl)
   end
 
   html.begin("/%s/", board_tbl["Name"]);
+  local banner = pico.board.banner.get(board_tbl["Name"]);
+  if banner then
+    printf("<img id='banner' src='/Media/%s' height=100 />", banner);
+  end
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();
@@ -1699,6 +1759,10 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[1]["Subject"] and #thread_tbl[1]["Subject"] > 0)
                                              and html.striphtml(thread_tbl[1]["Subject"])
                                              or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)));
+  local banner = pico.board.banner.get(board_tbl["Name"]);
+  if banner then
+    printf("<img id='banner' src='/Media/%s' height=100 />", banner);
+  end
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();

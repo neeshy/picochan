@@ -50,10 +50,20 @@ nav#topbar>ul>span#logged-in-notification {
     margin-right: 1.5ch;
 }
 
+div#content {
+    margin-top: 30px;
+}
+
+img#banner {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 h1.redheader, h1#boardtitle {
     text-align: center;
     color: #C22;
-    margin-top: 40px;
+    margin-top: 5px;
 }
 
 h2#boardsubtitle {
