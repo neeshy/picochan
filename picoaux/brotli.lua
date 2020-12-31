@@ -11,6 +11,8 @@ ffi.cdef[[
   size_t BrotliEncoderMaxCompressedSize(size_t input_size);
 ]];
 
+local size_t = ffi.typeof("size_t[1]");
+
 local mode_lut = {
   ["generic"] = 0,
   ["text"] = 1,
@@ -24,7 +26,7 @@ function brotli.compress(data, quality, mode)
   assert(quality >= 2, "value of parameter 'quality' must >= 2");
   mode = assert(mode_lut[mode or "generic"], "incorrect data type for parameter 'mode'");
 
-  local bufsize = ffi.new("size_t[1]");
+  local bufsize = size_t();
   bufsize[0] = ffi.brotlienc.BrotliEncoderMaxCompressedSize(#data);
   local buf = ffi.new("uint8_t[?]", ffi.cast("int", bufsize[0]));
   local ret = ffi.brotlienc.BrotliEncoderCompress(quality, 22, mode, #data, data, bufsize, buf);

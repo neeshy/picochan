@@ -38,6 +38,8 @@ ffi.cdef[[
 
 local zlib_version = ffi.z.zlibVersion();
 
+local zlib_stream = ffi.typeof("z_stream[1]");
+
 local zlib_error_lut = {
   [0] = "Z_OK",
   [1] = "Z_STREAM_END",
@@ -57,7 +59,7 @@ function zlib.compress(data, complevel, windowbits, memlevel)
   memlevel = memlevel and assert(tonumber(memlevel), "incorrect datatype for parameter 'memlevel'") or 8;
 
   local err;
-  local strm = ffi.new("z_stream[1]");
+  local strm = zlib_stream();
   strm[0].zalloc = nil;
   strm[0].zfree = nil;
   strm[0].opaque = nil;
