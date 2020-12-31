@@ -218,7 +218,7 @@ end
 function html.unstriphtml(s)
   s = tostring(s);
   local ret = s
-    :gsub("\"", "&quot;")
+    :gsub("&quot;", "\"")
     :gsub("&#39;", "'")
     :gsub("&gt;", ">")
     :gsub("&lt;", "<")
