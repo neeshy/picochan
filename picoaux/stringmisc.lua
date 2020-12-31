@@ -4,7 +4,7 @@ require("picoaux.mathmisc");
 
 function string.random(length, pattern)
   local length = length or 64;
-  local pattern = pattern or "a-zA-Z0-9"
+  local pattern = pattern or "%w";
   local result = "";
   local ascii = {};
   local dict = "";

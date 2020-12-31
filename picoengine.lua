@@ -35,7 +35,7 @@ db:e("PRAGMA case_sensitive_like = ON");
 pico.account.current = nil;
 
 local function valid_account_name(name)
-  return (type(name) == "string") and (#name <= 16 and #name >= 1) and (not name:match("[^a-zA-Z0-9]"));
+  return (type(name) == "string") and (#name <= 16 and #name >= 1) and (not name:match("[^%w]"));
 end
 
 local function valid_account_type(type)
@@ -182,7 +182,7 @@ function pico.account.login(name, password)
     return nil, "Invalid username or password";
   end
 
-  local key = string.random(16, "a-zA-Z0-9");
+  local key = string.random(16);
   db:e("INSERT INTO Sessions (Key, Account) VALUES (?, ?)", key, name);
 
   pico.account.register_login(key);
@@ -243,7 +243,7 @@ end
 --
 
 local function valid_board_name(name)
-  return (type(name) == "string") and (not name:match("[^a-z0-9]"))
+  return (type(name) == "string") and (not name:match("[^%l%d]"))
          and (#name >= 1 and #name <= 8);
 end
 
@@ -670,7 +670,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   end
 
   if not email or not (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
-    for ref in comment:gmatch(">>([0-9]+)") do
+    for ref in comment:gmatch(">>(%d+)") do
       ref = tonumber(ref);
 
       -- 1. Ensure that the reference doesn't already exist.
@@ -942,7 +942,7 @@ function pico.thread.move(board, number, newboard, reason)
 
   for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i];
-    post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>([0-9]+)", number_lut);
+    post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>(%d+)", number_lut);
     post_tbl["Parent"] = post_tbl["Parent"] and newthread;
 
     local files_tbl = pico.file.list(post_tbl["Board"], post_tbl["Number"]);
@@ -996,7 +996,7 @@ function pico.captcha.create()
     yy[i] = math.csrandom(-15, 15);
     rr[i] = math.csrandom(-30, 30);
     ss[i] = math.csrandom(-30, 30);
-    cc[i] = string.random(1, "a-z");
+    cc[i] = string.random(1, "%l");
     bx[i] = (150 + 1.1 * xx[i]);
     by[i] = (40 + 2 * yy[i]);
   end
