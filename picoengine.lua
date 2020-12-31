@@ -503,8 +503,8 @@ function pico.file.add(path)
                "gm convert -flatten -strip - -filter Box -quality 60 " ..
                "-thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    local p = io.popen("ffprobe -hide_banner Media/" .. filename ..
-                       " 2>&1 | grep 'Video:' | head -n1 | grep -o '[1-9][0-9]*x[1-9][0-9]*'", "r");
+    local p = io.popen("ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
+                       "Media/" .. filename, "r");
     local dimensions = string.tokenize(p:read("*l"), "x");
     p:close();
 
