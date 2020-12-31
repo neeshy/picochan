@@ -813,8 +813,7 @@ end
 
 -- Return entire thread (parent + all replies + all file info) as a table
 function pico.thread.tbl(board, number)
-  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?",
-             board, number) then
+  if not pico.thread.exists(board, number) then
     return nil, "Post is not a thread or does not exist";
   end
 
@@ -899,7 +898,7 @@ function pico.thread.toggle(attribute, board, number, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number) then
+  if not pico.thread.exists(board, number) then
     return false, "Thread does not exist";
   end
 
@@ -930,7 +929,7 @@ function pico.thread.move(board, number, newboard, reason)
   local auth, msg = permit("admin gvol", "post", board);
   if not auth then return auth, msg end;
 
-  if not db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number) then
+  if not pico.thread.exists(board, number) then
     return false, "Post does not exist or is not a thread";
   elseif not pico.board.exists(newboard) then
     return false, "Destination board does not exist";
@@ -964,6 +963,10 @@ function pico.thread.move(board, number, newboard, reason)
   db:e("DELETE FROM Threads WHERE Board = ? AND Number = ?", board, number);
   pico.log.insert(nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
   return true, "Thread moved successfully";
+end
+
+function pico.thread.exists(board, number)
+  return db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number);
 end
 
 --
