@@ -263,7 +263,9 @@ function html.picofmt(post_tbl)
       ["("] = ")",
       ["<"] = ">",
       ["{"] = "}",
-      ["["] = "]"
+      ["["] = "]",
+      ["\""] = "\"",
+      ["'"] = "'"
     };
     url = html.unstriphtml(url);
     prev = html.unstriphtml(previous):sub(-1);
@@ -273,15 +275,15 @@ function html.picofmt(post_tbl)
       local i = 1;
       local count = 1;
       for c in url:gmatch(".") do
-        if c == prev then
-          count = count + 1;
-        elseif c == balance then
+        if c == balance then
           if count == 1 then
             append = url:sub(i);
             url = url:sub(1, i - 1);
             break;
           end
           count = count - 1;
+        elseif c == prev then
+          count = count + 1;
         end
         i = i + 1;
       end
@@ -308,7 +310,7 @@ function html.picofmt(post_tbl)
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
   s = s:gsub("([\r\n])(&lt;.-)([\r\n])", "%1<span class='pinktext'>%2</span>%3");
 
-  s = s:gsub("(.?.?.?.)(https?://[%w%.%%%-%+%(%)_/=%?&;:,#~@]+)", handle_url);
+  s = s:gsub("(.?.?.?.?.?.)(https?://[%w%.%%%-%+%(%)_/=%?&;:,#~@]+)", handle_url);
 
   s = s:gsub("^[\r\n]+", "");
   s = s:gsub("[\r\n]+$", "");
