@@ -454,6 +454,23 @@ span.spoiler:hover {
     color: #FFF;
 }
 
+div.thread code {
+    width: max-content;
+}
+
+code {
+    display: block;
+    background-color: #BBB;
+    padding: 1ch;
+    border: 1px solid #000;
+}
+
+code.inline {
+    display: inline-block;
+    padding: 0.5ch;
+    margin-bottom: 0.7ch;
+}
+
 div#thread-view-links a {
     margin-right: 1.3ch;
 }
