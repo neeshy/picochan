@@ -303,8 +303,7 @@ function html.picofmt(post_tbl)
   s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
   s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
   s = s:gsub("__([^\r\n]-)__", "<u>%1</u>");
-  s = s:gsub("==([^%s])==", "<span class='redtext'>%1</span>");
-  s = s:gsub("==([^%s][^\r\n]-[^%s])==", "<span class='redtext'>%1</span>");
+  s = s:gsub("==([^\r\n]-)==", "<span class='redtext'>%1</span>");
   s = s:gsub("%*%*([^\r\n]-)%*%*", "<span class='spoiler'>%1</span>");
   s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
