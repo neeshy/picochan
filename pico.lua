@@ -268,7 +268,7 @@ function html.picofmt(post_tbl)
       ["'"] = "'"
     };
     url = html.unstriphtml(url);
-    prev = html.unstriphtml(previous):sub(-1);
+    local prev = html.unstriphtml(previous):sub(-1);
     local balance = balance_tbl[prev];
     local append = "";
     if balance then
