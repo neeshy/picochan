@@ -129,12 +129,12 @@ function html.container.barheader(...)
   printf("<h2 class='barheader'>%s</h2>", string.format(...));
 end
 
-function html.list.begin(class)
-  printf("<".."%sl>", (class == "ordered") and "o" or "u");
+function html.list.begin(ordered)
+  printf("<".."%sl>", ordered and "o" or "u");
 end
 
-function html.list.finish(class)
-  printf("</%sl>", (class == "ordered") and "o" or "u");
+function html.list.finish(ordered)
+  printf("</%sl>", ordered and "o" or "u");
 end
 
 function html.list.entry(...)
@@ -903,7 +903,7 @@ handlers["/Mod"] = function()
   printf("You are logged in as <b>%s</b>. Your account type is <b>%s</b>.",
          pico.account.current["Name"], pico.account.current["Type"]);
   html.container.barheader("Global");
-  html.list.begin("unordered");
+  html.list.begin();
   html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>");
   html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>");
   html.list.entry("<a href='/Mod/global/url'>Change site URL</a>");
@@ -917,18 +917,18 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/maxfilesize'>Change the maximum file size</a>");
   html.list.finish();
   html.container.barheader("Miscellaneous Tools");
-  html.list.begin("unordered");
+  html.list.begin();
   html.list.entry("<a href='/Mod/tools/multidelete'>Multi-delete by range</a>");
   html.list.entry("<a href='/Mod/tools/pattdelete'>Pattern delete</a>");
   html.list.finish();
   html.container.barheader("Accounts");
-  html.list.begin("unordered");
+  html.list.begin();
   html.list.entry("<a href='/Mod/account/create'>Create an account</a>");
   html.list.entry("<a href='/Mod/account/delete'>Delete an account</a>");
   html.list.entry("<a href='/Mod/account/config'>Configure an account</a>");
   html.list.finish();
   html.container.barheader("Boards");
-  html.list.begin("unordered");
+  html.list.begin();
   html.list.entry("<a href='/Mod/board/create'>Create a board</a>");
   html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>");
   html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
@@ -936,7 +936,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/banner/delete'>Delete a banner from a board</a>");
   html.list.finish();
   html.container.barheader("Webring");
-  html.list.begin("unordered");
+  html.list.begin();
   html.list.entry("<a href='/Mod/webring/add'>Add a webring endpoint</a>");
   html.list.entry("<a href='/Mod/webring/remove'>Remove a webring endpoint</a>");
   html.list.entry("<a href='/Mod/webring/config'>Configure a webring endpoint</a>");
