@@ -886,7 +886,7 @@ function pico.thread.catalog(name)
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               (name and "AND Posts.Board = ? "
                      or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
-              "AND Parent IS NULL ORDER BY " ..
+              "ORDER BY " ..
               (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
                      or "LastBumpDate DESC LIMIT 100");
   return name and db:q(sql, name)
