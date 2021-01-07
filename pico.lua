@@ -267,29 +267,17 @@ function html.picofmt(post_tbl)
       ["\""] = "\"",
       ["'"] = "'"
     };
-    url = html.unstriphtml(url);
     local prev = html.unstriphtml(previous):sub(-1);
     local balance = balance_tbl[prev];
     local append = "";
     if balance then
-      local i = 1;
-      local count = 1;
-      for c in url:gmatch(".") do
-        if c == balance then
-          if count == 1 then
-            append = url:sub(i);
-            url = url:sub(1, i - 1);
-            break;
-          end
-          count = count - 1;
-        elseif c == prev then
-          count = count + 1;
-        end
-        i = i + 1;
+      local raw = prev .. html.unstriphtml(url);
+      local first, second = raw:match("(%b" .. prev .. balance .. ")(.-)$");
+      if first then
+        url = html.striphtml(first:sub(2, -2));
+        append = html.striphtml(balance .. second);
       end
     end
-    url = html.striphtml(url);
-    append = html.striphtml(append);
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
   end
 
