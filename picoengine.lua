@@ -374,12 +374,12 @@ end
 --   * intervals = 7 (7 * 24 hours = 1 week)
 function pico.board.stats.threadrate(board, interval, intervals)
   return math.ceil(db:r1("SELECT (COUNT(*) / ?) FROM Posts WHERE Board = ? AND Parent IS NULL AND Date > (STRFTIME('%s', 'now') - (? * 3600))",
-                        intervals, board, interval * intervals));
+                         intervals, board, interval * intervals));
 end
 
 function pico.board.stats.postrate(board, interval, intervals)
   return math.ceil(db:r1("SELECT (COUNT(*) / ?) FROM Posts WHERE Board = ? AND Date > (STRFTIME('%s', 'now') - (? * 3600))",
-                        intervals, board, interval * intervals));
+                         intervals, board, interval * intervals));
 end
 
 function pico.board.stats.totalposts(board)
@@ -787,7 +787,7 @@ function pico.post.unlink(board, number, file, reason)
 
   db:e("DELETE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?", board, number, file);
   pico.log.insert(board, "Unlinked file %s from /%s/%d for reason: %s",
-      file, board, number, reason);
+                  file, board, number, reason);
   return true, "File unlinked successfully";
 end
 
@@ -803,7 +803,7 @@ function pico.post.spoiler(board, number, file, spoil, reason)
   db:q("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
        spoil and 1 or 0, board, number, file);
   pico.log.insert(board, "%s file %s from /%s/%d for reason: %s",
-      spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
+                  spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
   return true, "File " .. (spoil and "spoilered" or "unspoilered") .. " sucessfully";
 end
 
@@ -915,7 +915,7 @@ function pico.thread.toggle(attribute, board, number, reason)
   end
 
   pico.log.insert(board, "Toggled attribute '%s' on /%s/%d for reason: %s",
-      attribute, board, number, reason);
+                  attribute, board, number, reason);
   return true, "Attribute toggled successfully";
 end
 
@@ -977,7 +977,7 @@ end
 function pico.log.insert(board, ...)
   local account = pico.account.current and pico.account.current["Name"];
   db:e("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
-      account, board, string.format(...));
+       account, board, string.format(...));
 end
 
 function pico.log.retrieve(page)
@@ -1142,7 +1142,7 @@ function pico.webring.endpoint.configure(endpoint_tbl)
   db:q("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
        endpoint_tbl["Type"] or "known", endpoint_tbl["Endpoint"]);
   pico.log.insert(nil, "Modified webring endpoint configuration for '%s'",
-      endpoint_tbl["Endpoint"]);
+                  endpoint_tbl["Endpoint"]);
   return true, "Endpoint configured successfully";
 end
 

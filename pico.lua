@@ -335,10 +335,10 @@ function html.threadflags(post_tbl)
       or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
     printf("<span class='thread-flags'>");
     printf(" %s %s %s %s ",
-      post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a>"  or "",
-      post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a>"    or "",
-      post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2193;</a>" or "",
-      post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x27f3;</a>"    or "");
+           post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a>"  or "",
+           post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a>"    or "",
+           post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2193;</a>" or "",
+           post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x27f3;</a>"    or "");
     printf("</span>");
   end
 end
@@ -1629,7 +1629,7 @@ handlers["/Overboard/index"] = function(page)
   end
 
   html.renderindex(index_tbl, "Overboard", page, page > 1,
-    #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1719,7 +1719,7 @@ handlers["/([%l%d]+)/index"] = function(board, page)
   end
 
   html.renderindex(index_tbl, board_tbl["Name"], page, page > 1,
-    #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board_tbl["Name"], page + 1) ~= 0);
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board_tbl["Name"], page + 1) ~= 0);
   html.finish();
 end;
 
