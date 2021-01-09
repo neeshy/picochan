@@ -944,9 +944,10 @@ function pico.thread.move(board, number, newboard, reason)
     post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>(%d+)", number_lut);
     post_tbl["Parent"] = post_tbl["Parent"] and newthread;
 
-    local files_tbl = pico.file.list(post_tbl["Board"], post_tbl["Number"]);
     for j = 1, #post_tbl["Files"] do
-      post_tbl["Files"][j] = post_tbl["Files"][j]["Name"];
+      post_tbl["Files"][j] = {["Name"] = post_tbl["Files"][j]["DownloadName"],
+                              ["Hash"] = post_tbl["Files"][j]["Name"],
+                              ["Spoiler"] = post_tbl["Files"][j]["Spoiler"]};
     end
 
     local newnumber = pico.post.create(newboard, post_tbl["Parent"],
