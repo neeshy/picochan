@@ -1,4 +1,4 @@
-#!/usr/local/bin/haserl -u16384
+#!/usr/local/bin/haserl -u262144
 <% -- Picochan CGI/HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
