@@ -439,7 +439,7 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread");
   printf("<div class='post-header'>");
 
-  if separate then
+  if separate or (overboard and not post_tbl["Parent"]) then
     printf("<span class='post-thread-link'>");
     if post_tbl["Parent"] then
       printf("<a href='/%s/%d'>/%s/%d</a>",
