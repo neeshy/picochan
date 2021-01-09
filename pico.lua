@@ -1546,7 +1546,7 @@ handlers["/Post"] = function()
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
       end
 
-      files[#files + 1] = {Name = name, Hash = hash, Spoiler = spoiler};
+      files[#files + 1] = {["Name"] = name, ["Hash"] = hash, ["Spoiler"] = spoiler};
     end
   end
 
