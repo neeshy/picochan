@@ -5,7 +5,7 @@
 local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
 local json = require("picoaux.json");
-local request = require("picoaux.request");
+local curl = require("picoaux.curl");
 local date = require("picoaux.date");
 
 require("picoaux.iomisc");
@@ -30,6 +30,7 @@ if jit.os == "BSD" then
   openbsd.unveil("/dev/urandom", "r");
   openbsd.unveil("/tmp/", "rwc");
   openbsd.unveil("/usr/local/", "x");
+  openbsd.unveil("/etc/ssl/", "rx");
   openbsd.unveil("/bin/sh", "x");
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns");
 end
@@ -1428,36 +1429,32 @@ handlers["/Boards"] = function()
   local known = pico.webring.tbl()["known"];
   local webring_boards = {};
 
-  for i = 1, #known do
-    local response = request.send(known[i], {["timeout"] = 1});
-    if response then
-      local status = response["code"];
-      if status == 200 or status == 301 then
-        local status, boards = pcall(function()
-          local webring = assert(json.decode(response["body"]));
-          local site_name = assert(webring["name"]);
-          local site_boards = assert(webring["boards"]);
-          local boards = {};
-          for j = 1, #site_boards do
-            local board = {};
-            board["site_name"] = site_name;
-            board["name"] = html.striphtml(site_boards[j]["uri"]) or "";
-            board["title"] = html.striphtml(site_boards[j]["title"]) or "";
-            board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or "";
-            board["path"] = html.striphtml(site_boards[j]["path"]) or "";
-            board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or "";
-            board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or "";
-            board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"]);
-            board["last"] = board["last"] and html.date(board["last"], true) or "";
+  for headers, body in curl.multi_request(known) do
+    if headers["status"] == 200 then
+      local status, boards = pcall(function()
+        local webring = assert(json.decode(body));
+        local site_name = assert(webring["name"]);
+        local site_boards = assert(webring["boards"]);
+        local boards = {};
+        for j = 1, #site_boards do
+          local board = {};
+          board["site_name"] = site_name;
+          board["name"] = html.striphtml(site_boards[j]["uri"]) or "";
+          board["title"] = html.striphtml(site_boards[j]["title"]) or "";
+          board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or "";
+          board["path"] = html.striphtml(site_boards[j]["path"]) or "";
+          board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or "";
+          board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or "";
+          board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"]);
+          board["last"] = board["last"] and html.date(board["last"], true) or "";
 
-            boards[#boards + 1] = board;
-          end
-          return boards;
-        end);
-        if status then
-          for j = 1, #boards do
-            webring_boards[#webring_boards + 1] = boards[j];
-          end
+          boards[#boards + 1] = board;
+        end
+        return boards;
+      end);
+      if status then
+        for j = 1, #boards do
+          webring_boards[#webring_boards + 1] = boards[j];
         end
       end
     end
