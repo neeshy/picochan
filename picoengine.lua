@@ -724,7 +724,7 @@ function pico.post.multidelete(board, include, exclude, reason)
         return false, "Invalid range specification";
       end
 
-      local start, finish = table.unpack(spec_tbl);
+      local start, finish = unpack(spec_tbl);
       start, finish = tonumber(start), tonumber(finish);
       if not start or not finish then
         return false, "Invalid range specification";
@@ -760,7 +760,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   end
   sql[#sql + 1] = ")";
 
-  db:e(table.concat(sql, " "), table.unpack(sqlp));
+  db:e(table.concat(sql, " "), unpack(sqlp));
   pico.log.insert(board, "Deleted posts {%s} excluding {%s} for reason: %s", include, exclude, reason);
   return true, "Posts deleted successfully";
 end
