@@ -498,19 +498,19 @@ function pico.file.add(path)
   local p, width, height;
   if class == "video" then
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec convert -strip - -filter Box -thumbnail 200x200 JPEG:Media/thumb/" .. filename);
+               "exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename);
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec convert -flatten -strip - -filter Box -quality 60 " ..
+               "exec convert -flatten -strip - -filter Catrom -quality 60 " ..
                "-thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
     p = io.popen("ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r");
   elseif class == "image" or extension == "pdf" then
     os.execute("exec convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
-               " -filter Box -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
+               " -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
                "Media/thumb/" .. filename);
     os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
-               "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
+               "[0] -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
     p = io.popen("identify -format '%wx%h' Media/" .. filename .. "[0]", "r");
   end
