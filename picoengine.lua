@@ -498,21 +498,21 @@ function pico.file.add(path)
   local p, width, height;
   if class == "video" then
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec gm convert -strip - -filter Box -thumbnail 200x200 JPEG:Media/thumb/" .. filename);
+               "exec convert -strip - -filter Box -thumbnail 200x200 JPEG:Media/thumb/" .. filename);
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec gm convert -flatten -strip - -filter Box -quality 60 " ..
+               "exec convert -flatten -strip - -filter Box -quality 60 " ..
                "-thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
     p = io.popen("ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r");
   elseif class == "image" or extension == "pdf" then
-    os.execute("exec gm convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
+    os.execute("exec convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
                " -filter Box -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
                "Media/thumb/" .. filename);
-    os.execute("exec gm convert -background '#222' -flatten -strip Media/" .. filename ..
+    os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
                "[0] -filter Box -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    p = io.popen("gm identify -format '%wx%h' Media/" .. filename .. "[0]", "r");
+    p = io.popen("identify -format '%wx%h' Media/" .. filename .. "[0]", "r");
   end
 
   if p then
@@ -1005,7 +1005,7 @@ function pico.captcha.create()
   end
 
   local p = assert(io.popen(string.format(
-    "gm convert -size 290x70 xc:white -bordercolor black -border 5 " ..
+    "convert -size 290x70 xc:white -bordercolor black -border 5 " ..
     "-fill black -stroke black -strokewidth 1 -pointsize 40 " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
@@ -1015,7 +1015,7 @@ function pico.captcha.create()
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-fill none -strokewidth 3 " ..
     "-draw 'bezier %f,%d %f,%d %f,%d %f,%d' " ..
-    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 0 JPEG:-",
+    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 1 JPEG:-",
     xx[1], yy[1], rr[1], ss[1], cc[1],
     xx[2], yy[2], rr[2], ss[2], cc[2],
     xx[3], yy[3], rr[3], ss[3], cc[3],

@@ -12,13 +12,13 @@ Picochan is very easy to install. Its dependencies are:
   sqlite            3.27.2           https://sqlite.org
   brotli            1.0.7            https://brotli.org
   ffmpeg            4.1.3            https://ffmpeg.org
-  graphicsmagick    1.3.31           http://graphicsmagick.org
+  imagemagick       7.0.10.58        https://imagemagick.org
   curl              7.72.0           https://curl.se
 
 On a freshly installed OpenBSD 6.6 system, Picochan was made to work by
 first installing the following packages through pkg_add:
 
-  luajit sqlite3 brotli ffmpeg GraphicsMagick curl
+  luajit sqlite3 brotli ffmpeg ImageMagick curl
 
 Finally, you must download, compile and install haserl.
 

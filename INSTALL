@@ -11,7 +11,7 @@ Picochan is very easy to install. Its dependencies are:
   sqlite            3.32.3           https://sqlite.org
   luajit            2.0.5            https://luajit.org
   corefonts         1-r7             http://corefonts.sourceforge.net
-  graphicsmagick    1.3.35           http://graphicsmagick.org
+  imagemagick       7.0.10.52        https://imagemagick.org
   ffmpeg            4.2.4            https://ffmpeg.org
   curl              7.72.0           https://curl.se
   haserl            0.9.35           http://haserl.sourceforge.net
@@ -27,7 +27,7 @@ do not enable the dav1d USE-flag for ffmpeg).
   dev-db/sqlite
   dev-lang/luajit           USE="lua52compat"
   media-fonts/corefonts
-  media-gfx/graphicsmagick  USE="jpeg png webp svg openmp threads bzip2 zlib"
+  media-gfx/imagemagick     USE="jpeg png webp svg openmp bzip2 zlib"
   media-video/ffmpeg        USE="dav1d vpx x264 x265 gpl"
   net-misc/curl             USE="ssl"
 
