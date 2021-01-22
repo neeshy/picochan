@@ -36,6 +36,7 @@ if jit.os == "BSD" then
 end
 
 local sitename = pico.global.get("sitename") or "Picochan";
+local defaultboardview = pico.global.get("defaultboardview") or "catalog";
 pico.account.register_login(COOKIE["session_key"]);
 
 cgi.initialize();
@@ -795,6 +796,11 @@ function html.form.globalconfig(varname)
       printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t);
     end
     printf("</select>");
+  elseif varname == "defaultboardview" then
+    printf("<select id='value' name='value' form='globalconfig' autofocus>");
+    printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "");
+    printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "");
+    printf("</select>");
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
            html.striphtml(pico.global.get(varname) or "") or "");
@@ -911,6 +917,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>");
   html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>");
   html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>");
+  html.list.entry("<a href='/Mod/global/defaultboardview'>Change default board view</a>");
   html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>");
   html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>");
   html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>");
@@ -1567,13 +1574,11 @@ local function overboard_header()
   printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href=''>[Update]</a><hr />");
 end
 
-handlers["/Overboard"] = function()
+handlers["/Overboard/catalog"] = function()
   overboard_header();
   html.rendercatalog(pico.thread.catalog());
   html.finish();
 end;
-
-handlers["/Overboard/catalog"] = handlers["/Overboard"];
 
 handlers["/Overboard/index"] = function(page)
   overboard_header();
@@ -1617,14 +1622,12 @@ local function board_header(board_tbl)
          board_tbl["Name"], board_tbl["Name"]);
 end
 
-handlers["/([%l%d]+)/?"] = function(board)
+handlers["/([%l%d]+)/catalog"] = function(board)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
   html.rendercatalog(pico.thread.catalog(board_tbl["Name"]));
   html.finish();
 end;
-
-handlers["/([%l%d]+)/catalog"] = handlers["/([%l%d]+)/?"];
 
 handlers["/([%l%d]+)/index"] = function(board, page)
   local board_tbl = pico.board.tbl(board);
@@ -1648,6 +1651,15 @@ handlers["/([%l%d]+)/index"] = function(board, page)
 end;
 
 handlers["/([%l%d]+)/index/(%d+)"] = handlers["/([%l%d]+)/index"];
+
+if defaultboardview == "index" then
+  handlers["/Overboard"] = handlers["/Overboard/index"];
+  handlers["/Overboard/(%d+)"] = handlers["/Overboard/index"];
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/index"];
+else
+  handlers["/Overboard"] = handlers["/Overboard/catalog"];
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"];
+end
 
 handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   local board_tbl = pico.board.tbl(board);

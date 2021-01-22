@@ -246,6 +246,7 @@ CREATE INDEX boards_displayoverboard ON Boards (DisplayOverboard);
 INSERT INTO Accounts (Name, Type, PwHash) VALUES ('setup', 'admin', '$argon2id$v=19$m=65536,t=16,p=4$dnFMZDFSRkhMWXFKdGV4TA$B3+O7QbPE/e42Js3sr4ldhtPP4ibRpas1KZquqidMDysu4NdvdX3EA2/X9rdb2LjzB/UDj8dwfKWQxLbcgVZFg');
 INSERT INTO GlobalConfig VALUES ('sitename', 'Picochan');
 INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
+INSERT INTO GlobalConfig VALUES ('defaultboardview', 'catalog');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
 INSERT INTO GlobalConfig VALUES ('theme', 'picochan');
 INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);
