@@ -507,7 +507,7 @@ function pico.file.add(path)
                  "Media/" .. filename, "r");
   elseif class == "image" or extension == "pdf" then
     os.execute("exec convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
-               " -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
+               " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
                "Media/thumb/" .. filename);
     os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
                "[0] -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
