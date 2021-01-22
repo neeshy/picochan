@@ -917,7 +917,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/logpagesize'>Change mod log page size</a>");
   html.list.entry("<a href='/Mod/global/maxfilesize'>Change the maximum file size</a>");
   html.list.finish();
-  html.container.barheader("Miscellaneous Tools");
+  html.container.barheader("Moderator Tools");
   html.list.begin();
   html.list.entry("<a href='/Mod/tools/multidelete'>Multi-delete by range</a>");
   html.list.entry("<a href='/Mod/tools/pattdelete'>Pattern delete</a>");
