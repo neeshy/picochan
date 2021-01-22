@@ -1003,6 +1003,42 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   html.cfinish();
 end;
 
+handlers["/Mod/tools/multidelete"] = function()
+  account_check();
+  html.brc("multidelete", "Multidelete");
+
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "board", "ispec", "reason") then
+      local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
+      printf("%s", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
+  end
+
+  html.form.mod_multidelete();
+  html.cfinish();
+end;
+
+handlers["/Mod/tools/pattdelete"] = function()
+  account_check();
+  html.brc("pattern delete", "Pattern delete");
+
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "pattern", "reason") then
+      local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
+      printf("%s", msg);
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
+  end
+
+  html.form.mod_pattdelete();
+  html.cfinish();
+end;
+
 handlers["/Mod/account/create"] = function()
   account_check();
   html.brc("create account", "Create account");
@@ -1307,42 +1343,6 @@ handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l
 handlers["/Mod/post/(autosage)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
 handlers["/Mod/post/(cycle)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
 
-handlers["/Mod/tools/multidelete"] = function()
-  account_check();
-  html.brc("multidelete", "Multidelete");
-
-  if next(POST) ~= nil then
-    if tbl_validate(POST, "board", "ispec", "reason") then
-      local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
-      printf("%s", msg);
-    else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
-    end
-  end
-
-  html.form.mod_multidelete();
-  html.cfinish();
-end;
-
-handlers["/Mod/tools/pattdelete"] = function()
-  account_check();
-  html.brc("pattern delete", "Pattern delete");
-
-  if next(POST) ~= nil then
-    if tbl_validate(POST, "pattern", "reason") then
-      local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
-      printf("%s", msg);
-    else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
-    end
-  end
-
-  html.form.mod_pattdelete();
-  html.cfinish();
-end;
-
 handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
   account_check();
   html.brc("delete file", "Delete file");
@@ -1522,116 +1522,6 @@ handlers["/Boards"] = function()
   html.cfinish();
 end;
 
-handlers["/Post"] = function()
-  local files = {};
-
-  board_tbl = pico.board.tbl(POST["board"]);
-  if not board_tbl then
-    cgi.headers["Status"] = "400 Bad Request";
-    html.error("Board Not Found", "The board you specified does not exist.");
-  end
-
-  -- step 1. add all the files of the post (if any) to pico's file registration
-  for i = 1, board_tbl["PostMaxFiles"] do
-    local name = POST["file" .. i .. "_name"];
-    if name and name ~= "" then
-      local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
-
-      local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
-      if not hash then
-        cgi.headers["Status"] = "400 Bad Request";
-        html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
-      end
-
-      files[#files + 1] = {["Name"] = name, ["Hash"] = hash, ["Spoiler"] = spoiler};
-    end
-  end
-
-  -- step 2. create the post itself
-  local number, msg = pico.post.create(
-    POST["board"], tonumber(POST["parent"]),
-    POST["name"] ~= "" and POST["name"] or nil,
-    POST["email"] ~= "" and POST["email"] or nil,
-    POST["subject"] ~= "" and POST["subject"] or nil,
-    POST["comment"], files,
-    POST["captchaid"], POST["captcha"]
-  );
-
-  if not number then
-    cgi.headers["Status"] = "400 Bad Request";
-    html.error("Posting Error", "Cannot make post: %s", msg);
-  end
-
-  cgi.headers["Status"] = "303 See Other";
-
-  if not POST["parent"] then
-    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. number;
-  else
-    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
-  end
-end;
-
-handlers["/Theme"] = function()
-  html.brc("change theme configuration", "Change theme configuration");
-
-  if next(POST) ~= nil then
-    if tbl_validate(POST, "theme") then
-      if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
-        cgi.headers["Status"] = "400 Bad Request";
-        html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
-      end
-
-      cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
-      cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/";
-      cgi.finalize();
-    else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
-    end
-  end
-
-  html.form.themeconfig();
-  html.cfinish();
-end;
-
-local function overboard_header()
-  html.begin("overboard");
-  html.redheader("%s Overboard", sitename);
-  html.announce();
-  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href=''>[Update]</a><hr />");
-end
-
-handlers["/Overboard"] = function()
-  overboard_header();
-  html.rendercatalog(pico.thread.catalog());
-  html.finish();
-end;
-
-handlers["/Overboard/catalog"] = handlers["/Overboard"];
-
-handlers["/Overboard/index"] = function(page)
-  overboard_header();
-  page = tonumber(page) or 1;
-
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
-  end
-
-  local index_tbl = pico.thread.index(nil, page);
-  if #index_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
-  end
-
-  html.renderindex(index_tbl, "Overboard", page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
-  html.finish();
-end;
-
-handlers["/Overboard/index/(%d+)"] = handlers["/Overboard/index"];
-
 handlers["/Recent"] = function(page)
   html.begin("recent posts");
   html.redheader("Recent Posts");
@@ -1669,6 +1559,43 @@ handlers["/Recent"] = function(page)
 end;
 
 handlers["/Recent/(%d+)"] = handlers["/Recent"];
+
+local function overboard_header()
+  html.begin("overboard");
+  html.redheader("%s Overboard", sitename);
+  html.announce();
+  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href=''>[Update]</a><hr />");
+end
+
+handlers["/Overboard"] = function()
+  overboard_header();
+  html.rendercatalog(pico.thread.catalog());
+  html.finish();
+end;
+
+handlers["/Overboard/catalog"] = handlers["/Overboard"];
+
+handlers["/Overboard/index"] = function(page)
+  overboard_header();
+  page = tonumber(page) or 1;
+
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local index_tbl = pico.thread.index(nil, page);
+  if #index_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  html.renderindex(index_tbl, "Overboard", page, page > 1,
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
+  html.finish();
+end;
+
+handlers["/Overboard/index/(%d+)"] = handlers["/Overboard/index"];
 
 local function board_header(board_tbl)
   if not board_tbl then
@@ -1776,6 +1703,79 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   printf("</div>");
   html.finish();
+end;
+
+handlers["/Theme"] = function()
+  html.brc("change theme configuration", "Change theme configuration");
+
+  if next(POST) ~= nil then
+    if tbl_validate(POST, "theme") then
+      if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
+        cgi.headers["Status"] = "400 Bad Request";
+        html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
+      end
+
+      cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
+      cgi.headers["Status"] = "303 See Other";
+      cgi.headers["Location"] = "/";
+      cgi.finalize();
+    else
+      cgi.headers["Status"] = "400 Bad Request";
+      html.error("Action failed", "Invalid request");
+    end
+  end
+
+  html.form.themeconfig();
+  html.cfinish();
+end;
+
+handlers["/Post"] = function()
+  local files = {};
+
+  board_tbl = pico.board.tbl(POST["board"]);
+  if not board_tbl then
+    cgi.headers["Status"] = "400 Bad Request";
+    html.error("Board Not Found", "The board you specified does not exist.");
+  end
+
+  -- step 1. add all the files of the post (if any) to pico's file registration
+  for i = 1, board_tbl["PostMaxFiles"] do
+    local name = POST["file" .. i .. "_name"];
+    if name and name ~= "" then
+      local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
+
+      local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
+      if not hash then
+        cgi.headers["Status"] = "400 Bad Request";
+        html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
+      end
+
+      files[#files + 1] = {["Name"] = name, ["Hash"] = hash, ["Spoiler"] = spoiler};
+    end
+  end
+
+  -- step 2. create the post itself
+  local number, msg = pico.post.create(
+    POST["board"], tonumber(POST["parent"]),
+    POST["name"] ~= "" and POST["name"] or nil,
+    POST["email"] ~= "" and POST["email"] or nil,
+    POST["subject"] ~= "" and POST["subject"] or nil,
+    POST["comment"], files,
+    POST["captchaid"], POST["captcha"]
+  );
+
+  if not number then
+    cgi.headers["Status"] = "400 Bad Request";
+    html.error("Posting Error", "Cannot make post: %s", msg);
+  end
+
+  cgi.headers["Status"] = "303 See Other";
+
+  if not POST["parent"] then
+    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. number;
+  else
+    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
+  end
 end;
 
 handlers["/webring.json"] = function()
