@@ -424,9 +424,29 @@ local function identify_file(data)
     return "flac";
   elseif data:sub(1,4) == "%PDF" then
     return "pdf";
+  elseif data:sub(1,4) == "\x25\x21\x50\x53" then
+    return "ps";
   elseif data:sub(1,4) == "PK\x03\x04"
      and data:sub(31,58) == "mimetypeapplication/epub+zip" then
     return "epub";
+  elseif data:sub(1,3) == "\x1F\x8B\x08" then
+    return "gz";
+  elseif data:sub(1,3) == "BZh" then
+    return "bz2";
+  elseif data:sub(1,5) == "\xFD7zXZ" then
+    return "xz";
+  elseif data:sub(1,4) == "\x04\x22\x4D\x18" then
+    return "lz4";
+  elseif data:sub(1,4) == "\x28\xB5\x2F\xFD" then
+    return "zst";
+  elseif data:sub(258,262) == "ustar" then
+    return "tar";
+  elseif data:sub(1,4) == "PK\x03\x04" then
+    return "zip";
+  elseif data:sub(1,6) == "7z\xBC\xAF\x27\x1C" then
+    return "7z";
+  elseif data:sub(1,6) == "Rar!\x1A\x07" then
+    return "rar";
   elseif data:find("DOCTYPE svg", 1, true)
       or data:find("<svg", 1, true) then
     return "svg";
@@ -456,8 +476,18 @@ function pico.file.class(extension)
     ["ogg"]  = "audio",
     ["flac"] = "audio",
     ["pdf"]  = "document",
+    ["ps"]   = "document",
     ["epub"] = "document",
-    ["txt"]  = "document"
+    ["txt"]  = "document",
+    ["gz"]   = "archive",
+    ["bz2"]  = "archive",
+    ["xz"]   = "archive",
+    ["lz4"]  = "archive",
+    ["zst"]  = "archive",
+    ["tar"]  = "archive",
+    ["zip"]  = "archive",
+    ["7z"]   = "archive",
+    ["rar"]  = "archive"
   };
 
   return lookup[extension] or extension;
@@ -505,9 +535,9 @@ function pico.file.add(path)
 
     p = io.popen("ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r");
-  elseif class == "image" or extension == "pdf" then
-    os.execute("exec convert -strip Media/" .. filename .. (extension == "pdf" and "[0]" or "") ..
-               " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "svg") and "PNG:" or "") ..
+  elseif class == "image" or extension == "pdf" or extension == "ps" then
+    os.execute("exec convert -strip Media/" .. filename .. ((extension == "pdf" or extension == "ps") and "[0]" or "") ..
+               " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "ps" or extension == "svg") and "PNG:" or "") ..
                "Media/thumb/" .. filename);
     os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
                "[0] -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);

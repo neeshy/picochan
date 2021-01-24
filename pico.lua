@@ -417,13 +417,16 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("</label>");
       elseif spoiler then
         printf("<a href='/Media/%s'><image class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
-      elseif extension == "pdf" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[PDF]' /></a>",
-               filename, filename, thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200));
+      elseif extension == "pdf" or extension == "ps" then
+        local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
+               filename, filename, width, height, extension:upper());
       elseif extension == "epub" then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
       elseif extension == "txt" then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename);
+      elseif class == "archive" then
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename);
       elseif class == "video" then
         printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename);
       elseif class == "audio" then
@@ -521,7 +524,7 @@ function html.rendercatalog(catalog_tbl)
         local extension = pico.file.extension(post_tbl["File"]);
         local class = pico.file.class(extension);
 
-        if class == "image" or class == "video" or extension == "pdf" then
+        if class == "image" or class == "video" or extension == "pdf" or extension == "ps" then
           if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
             printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
                    post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70));
@@ -530,6 +533,8 @@ function html.rendercatalog(catalog_tbl)
           end
         elseif class == "audio" then
           printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
+        elseif class == "archive" then
+          printf("<img alt='***' src='/Static/archive.png' width=100 height=70 />");
         elseif extension == "epub" then
           printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
         elseif extension == "txt" then
