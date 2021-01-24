@@ -270,14 +270,20 @@ function html.picofmt(post_tbl)
       ["'"] = "'"
     };
     local prev = html.unstriphtml(previous):sub(-1);
+    local raw = html.unstriphtml(url);
     local balance = balance_tbl[prev];
     local append = "";
     if balance then
-      local raw = prev .. html.unstriphtml(url);
-      local first, second = raw:match("(%b" .. prev .. balance .. ")(.-)$");
+      local first, second = (prev .. raw):match("(%b" .. prev .. balance .. ")(.-)$");
       if first then
         url = html.striphtml(first:sub(2, -2));
         append = html.striphtml(balance .. second);
+      end
+    else
+      local last = raw:match("[!,%.:;%?]$");
+      if last then
+        url = html.striphtml(raw:sub(1, -2));
+        append = last;
       end
     end
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
