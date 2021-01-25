@@ -36,6 +36,7 @@ if jit.os == "BSD" then
 end
 
 local sitename = pico.global.get("sitename") or "Picochan";
+local defaultpostname = pico.global.get("defaultpostname") or "Anonymous";
 local defaultboardview = pico.global.get("defaultboardview") or "catalog";
 pico.account.register_login(COOKIE["session_key"]);
 
@@ -468,9 +469,9 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   printf("<span class='post-name'>");
   if post_tbl["Email"] and post_tbl["Email"] ~= "" then
     printf("<a class='post-email' href='mailto:%s'>%s</a>",
-           html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"]));
+           html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"] or defaultpostname));
   else
-    printf("%s", html.striphtml(post_tbl["Name"]));
+    printf("%s", html.striphtml(post_tbl["Name"] or defaultpostname));
   end
   printf("</span>");
 

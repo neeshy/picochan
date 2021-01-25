@@ -636,7 +636,6 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     capcode_board = pico.account.current["Board"];
   end
 
-  name = (name ~= "") and name or pico.global.get("defaultpostname");
   comment = comment or "";
 
   if not bypasschecks then
@@ -652,7 +651,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       return nil, "Post contained too many newlines";
     elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
       return nil, "Post contained too many double newlines";
-    elseif #name > 64 then
+    elseif name and #name > 64 then
       return nil, "Name too long";
     elseif email and #email > 64 then
       return nil, "Email too long";

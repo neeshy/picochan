@@ -29,7 +29,7 @@ CREATE TABLE Posts (
   Number                INTEGER         NOT NULL                                DEFAULT 0       CHECK(Number >= 0),
   Parent                INTEGER                                                 DEFAULT NULL,
   Date                  DATETIME        NOT NULL                                DEFAULT 0,
-  Name                  TEXT            NOT NULL                                DEFAULT 'Anonymous' CHECK(LENGTH(Name) <= 64),
+  Name                  TEXT                                                    DEFAULT NULL    CHECK(Name IS NULL OR LENGTH(Name) <= 64),
   Email                 TEXT                                                    DEFAULT NULL    CHECK(Email IS NULL OR LENGTH(Email) <= 64),
   Subject               TEXT                                                    DEFAULT NULL    CHECK(Subject IS NULL OR LENGTH(Subject) <= 64),
   Capcode               TEXT                                                    DEFAULT NULL,
