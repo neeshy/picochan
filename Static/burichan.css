@@ -287,7 +287,7 @@ div.catalog-thread-lastbumpdate {
 
 div.catalog-thread-subject {
     font-weight: bold;
-    color: #28F;
+    color: #016;
 }
 
 div.index-thread span.index-thread-summary {
@@ -325,17 +325,17 @@ div.post-header span.post-thread-link {
 
 div.post-header span.post-subject {
     font-weight: bold;
-    color: #28F;
+    color: #016;
 }
 
 div.post-header span.post-name {
     font-weight: bold;
-    color: #0D0;
+    color: #174;
 }
 
 div.post-header span.post-capcode {
     font-weight: normal;
-    color: #F22;
+    color: #26A;
 }
 
 div.post-header span.post-number a {
@@ -426,16 +426,16 @@ div.post-comment a, div.catalog-thread-comment a {
 }
 
 span.greentext {
-    color: #0C0;
+    color: #792;
 }
 
 span.pinktext {
-    color: #F64;
+    color: #D78;
 }
 
 span.kiketext {
-    color: #33D;
-    background-color: #FFF;
+    color: #36A;
+    background-color: #F8F8F8;
 }
 
 span.redtext {
