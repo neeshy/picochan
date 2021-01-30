@@ -290,7 +290,31 @@ function html.picofmt(post_tbl)
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
   end
 
+  local function handle_code(b, i, t)
+    i = string.char(i);
+    return function(prefix, block, suffix)
+      b[#b + 1] = block;
+      return prefix .. t .. i .. "</code>" .. (suffix or "");
+    end;
+  end
+
+  local function insert_code(b)
+    return function()
+      if #b > 0 then
+        return table.remove(b, 1);
+      end
+      return "";
+    end;
+  end
+
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
+
+  local blocks = {};
+  local iblocks = {};
+  s = s:gsub(string.char(27), "");
+  s = s:gsub(string.char(28), "");
+  s = s:gsub("([\r\n])`[\r\n]*(.-)[\r\n]*`([\r\n])", handle_code(blocks, 27, "<code>"));
+  s = s:gsub("([^\r\n])`([^\r\n]-)`", handle_code(iblocks, 28, "<code class='inline'>"));
 
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
@@ -305,13 +329,15 @@ function html.picofmt(post_tbl)
   s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
   s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
   s = s:gsub("([\r\n])(&lt;.-)([\r\n])", "%1<span class='pinktext'>%2</span>%3");
-  s = s:gsub("([\r\n])`[\r\n]*(.-)[\r\n]*`([\r\n])", "%1<code>%2</code>%3");
-  s = s:gsub("([^\r\n])`([^\r\n]-)`", "%1<code class='inline'>%2</code>");
 
   s = s:gsub("(.-)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
 
   s = s:gsub("^[\r\n]+", "");
   s = s:gsub("[\r\n]+$", "");
+
+  s = s:gsub(string.char(27), insert_code(blocks));
+  s = s:gsub(string.char(28), insert_code(iblocks));
+
   return s;
 end
 
