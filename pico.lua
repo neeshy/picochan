@@ -290,12 +290,19 @@ function html.picofmt(post_tbl)
     return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
   end
 
-  local function handle_code(b, i, t)
-    i = string.char(i);
-    return function(prefix, block, suffix)
-      b[#b + 1] = block;
-      return prefix .. t .. i .. "</code>" .. (suffix or "");
-    end;
+  local blocks = {};
+  local iblocks = {};
+  local blockchar = string.char(27);
+  local iblockchar = string.char(28);
+
+  local function handle_code(block)
+    blocks[#blocks + 1] = block;
+    return "<code>" .. blockchar .. "</code>";
+  end
+
+  local function handle_code_inline(prefix, block)
+    iblocks[#iblocks + 1] = block;
+    return prefix .. "<span class='code'>" .. iblockchar .. "</span>";
   end
 
   local function insert_code(b)
@@ -309,12 +316,9 @@ function html.picofmt(post_tbl)
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
 
-  local blocks = {};
-  local iblocks = {};
-  s = s:gsub(string.char(27), "");
-  s = s:gsub(string.char(28), "");
-  s = s:gsub("([\r\n])`[\r\n]*(.-)[\r\n]*`([\r\n])", handle_code(blocks, 27, "<code>"));
-  s = s:gsub("([^\r\n])`([^\r\n]-)`", handle_code(iblocks, 28, "<code class='inline'>"));
+  s = s:gsub("[" .. blockchar .. iblockchar .. "]", "");
+  s = s:gsub("[\r\n]`[\r\n]*(.-)[\r\n]*`[\r\n]", handle_code);
+  s = s:gsub("([^\r\n])`([^\r\n]-)`", handle_code_inline);
 
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
@@ -335,8 +339,8 @@ function html.picofmt(post_tbl)
   s = s:gsub("^[\r\n]+", "");
   s = s:gsub("[\r\n]+$", "");
 
-  s = s:gsub(string.char(27), insert_code(blocks));
-  s = s:gsub(string.char(28), insert_code(iblocks));
+  s = s:gsub(blockchar, insert_code(blocks));
+  s = s:gsub(iblockchar, insert_code(iblocks));
 
   return s;
 end
