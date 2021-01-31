@@ -359,6 +359,8 @@ function pico.board.banner.delete(board, file, reason)
     return false, "Board does not exist";
   elseif not pico.file.exists(file) then
     return false, "File does not exist";
+  elseif not db:b("SELECT TRUE FROM Banners WHERE Board = ? AND File = ?", board, file) then
+    return false, "Banner does not exist";
   end
 
   db:e("DELETE FROM Banners WHERE Board = ? AND File = ?", board, file);
