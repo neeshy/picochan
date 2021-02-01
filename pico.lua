@@ -735,69 +735,71 @@ end
 
 function html.form.banner_add()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf("<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
   printf("</form></fieldset>");
 end
 
 function html.form.banner_delete()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf("<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
 end
 
 function html.form.account_create()
   printf("<fieldset><form id='account-create' method='POST'>");
-  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf("<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />");
-  printf("<label for='type'>Type</label><select form='account-create' id='type' name='type'>");
-  printf(  "<option value='admin'>Administrator</option>");
-  printf(  "<option value='bo'>Board Owner</option>");
-  printf(  "<option value='gvol'>Global Volunteer</option>");
-  printf(  "<option value='lvol' selected>Local Volunteer</option>");
-  printf("</select><br />");
-  printf("<label for='board'>Board</label><input id='board' name='board' type='text' /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />");
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />");
+  printf(  "<label for='type'>Type</label>");
+  printf(  "<select form='account-create' id='type' name='type'>");
+  printf(    "<option value='admin'>Administrator</option>");
+  printf(    "<option value='bo'>Board Owner</option>");
+  printf(    "<option value='gvol'>Global Volunteer</option>");
+  printf(    "<option value='lvol' selected>Local Volunteer</option>");
+  printf(  "</select><br />");
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />");
   printf("</form></fieldset>");
 end
 
 function html.form.account_delete()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
 end
 
 function html.form.account_config()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"]);
-  printf("<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />");
+  printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"]);
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />");
   printf("</form></fieldset>");
 end
 
 function html.form.endpoint_add()
   printf("<fieldset><form id='endpoint-add' method='POST'>");
-  printf("<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
-  printf("<label for='type'>Type</label><select form='endpoint-add' id='type' name='type'>");
-  printf(  "<option value='following' selected>Following</option>");
-  printf(  "<option value='known'>Known Only</option>");
-  printf(  "<option value='blacklist'>Blacklisted</option>");
-  printf("</select><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
+  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
+  printf(  "<label for='type'>Type</label>");
+  printf(  "<select form='endpoint-add' id='type' name='type'>");
+  printf(    "<option value='following' selected>Following</option>");
+  printf(    "<option value='known'>Known Only</option>");
+  printf(    "<option value='blacklist'>Blacklisted</option>");
+  printf(  "</select><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
   printf("</form></fieldset>");
 end
 
 function html.form.endpoint_remove()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
+  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
 end
 
@@ -813,7 +815,8 @@ function html.form.endpoint_config(endpoint)
 
   printf("<fieldset><form method='POST'>");
   printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl["Endpoint"]));
-  printf(  "<label for='Type'>Type</label><select id='Type' name='Type'>");
+  printf(  "<label for='Type'>Type</label>");
+  printf(  "<select id='Type' name='Type'>");
   printf(    "<option value='following'%s>Following</option>", endpoint_tbl["Type"] == "following" and " selected" or "");
   printf(    "<option value='known'%s>Known Only</option>", endpoint_tbl["Type"] == "known" and " selected" or "");
   printf(    "<option value='blacklist'%s>Blacklisted</option>", endpoint_tbl["Type"] == "blacklist" and " selected" or "");
@@ -875,34 +878,34 @@ end
 
 function html.form.mod_action_reason()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />");
-  printf("<input type='submit' value='Continue' />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />");
+  printf(  "<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
 
 function html.form.mod_move_thread()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<input type='submit' value='Continue' />");
+  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
 
 function html.form.mod_multidelete()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf("<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />");
-  printf("<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<input type='submit' value='Continue' />");
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
+  printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />");
+  printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
 
 function html.form.mod_pattdelete()
   printf("<fieldset><form method='POST'>");
-  printf("<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />");
-  printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf("<input type='submit' value='Continue' />");
+  printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<input type='submit' value='Continue' />");
   printf("</form></fieldset>");
 end
 
