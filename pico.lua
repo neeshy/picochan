@@ -741,11 +741,22 @@ function html.form.banner_add()
   printf("</form></fieldset>");
 end
 
-function html.form.banner_delete()
+function html.form.banner_delete_select()
   printf("<fieldset><form method='POST'>");
   printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
+  printf("</form></fieldset>");
+end
+
+function html.form.banner_delete(board, banners)
+  printf("<fieldset><form method='POST'>");
+  printf(  "<input type='hidden' name='board' value='%s' />", board);
+  printf(  "<label for='file'>File</label><br />");
+  for i = 1, #banners do
+    printf("<input id='%s' name='file' type='radio' value='%s' %s/>", banners[i], banners[i], i == 1 and "checked " or "");
+    printf("<label for='%s'><img src='/Media/%s' alt='%s' /></label><br />", banners[i], banners[i], banners[i]);
+  end
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />");
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
   printf("</form></fieldset>");
 end
@@ -1237,16 +1248,31 @@ handlers["/Mod/banner/delete"] = function()
   html.brc("delete a banner", "Delete a banner");
 
   if next(POST) ~= nil then
-    if tbl_validate(POST, "board", "file", "reason") then
-      local status, msg = pico.board.banner.delete(POST["board"], POST["file"], POST["reason"]);
-      printf("%s%s", (not status) and "Cannot delete banner: " or "", msg);
+    if tbl_validate(POST, "board") then
+      if pico.board.exists(POST["board"]) then
+        local banners = pico.board.banner.list(POST["board"]);
+        if #banners > 0 then
+          if tbl_validate(POST, "file", "reason") then
+            local status, msg = pico.board.banner.delete(POST["board"], POST["file"], POST["reason"]);
+            printf("%s%s", (not status) and "Cannot delete banner: " or "", msg);
+          end
+          html.form.banner_delete(POST["board"], banners);
+        else
+          printf("Cannot delete banners: Board contains no banners");
+          html.form.banner_delete_select();
+        end
+      else
+        printf("Cannot delete banners: Board does not exist");
+        html.form.banner_delete_select();
+      end
     else
       cgi.headers["Status"] = "400 Bad Request";
       html.error("Action failed", "Invalid request");
     end
+  else
+    html.form.banner_delete_select();
   end
 
-  html.form.banner_delete();
   html.cfinish();
 end;
 

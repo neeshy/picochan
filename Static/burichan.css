@@ -150,7 +150,7 @@ form label {
     background-color: #BBB;
     text-align: left;
     display: inline-block;
-    width: 18ch;
+    min-width: 18ch;
     vertical-align: top;
     margin-right: 5px;
     padding-right: 5px;
@@ -181,6 +181,24 @@ form button, form input[type=submit] {
     padding-bottom: 1px;
     padding-left: 5px;
     padding-right: 5px;
+}
+
+form input[type="radio"] {
+    vertical-align: middle;
+    margin-left: 18ch;
+}
+
+form input[type="radio"]+label {
+    vertical-align: middle;
+    margin-bottom: 1ch;
+    padding: 8px;
+}
+
+form input[type="radio"]+label img {
+    display: block;
+    max-height: 100px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 form textarea {

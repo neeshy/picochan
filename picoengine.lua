@@ -342,6 +342,14 @@ function pico.board.banner.get(board)
   return file;
 end
 
+function pico.board.banner.list(board)
+  if not pico.board.exists(board) then
+    return nil, "Board does not exist";
+  end
+
+  return db:q1("SELECT File FROM Banners WHERE Board = ?", board);
+end
+
 function pico.board.banner.add(board, file)
   if not pico.board.exists(board) then
     return false, "Board does not exist";
