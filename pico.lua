@@ -1625,56 +1625,6 @@ local function overboard_header()
   printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href='/Overboard/recent'>[Recent]</a> <a href=''>[Update]</a><hr />");
 end
 
-handlers["/Overboard/catalog"] = function()
-  overboard_header();
-  html.rendercatalog(pico.thread.catalog());
-  html.finish();
-end;
-
-handlers["/Overboard/index"] = function(page)
-  overboard_header();
-
-  page = tonumber(page) or 1;
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
-  end
-
-  local index_tbl = pico.thread.index(nil, page);
-  if #index_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
-  end
-
-  html.renderindex(index_tbl, "Overboard", page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
-  html.finish();
-end;
-
-handlers["/Overboard/index/(%d+)"] = handlers["/Overboard/index"];
-
-handlers["/Overboard/recent"] = function(page)
-  overboard_header();
-
-  page = tonumber(page) or 1;
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
-  end
-
-  local recent_tbl = pico.post.recent(nil, page);
-  if #recent_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
-  end
-
-  html.renderrecent(recent_tbl, "Overboard", page, page > 1,
-                    #recent_tbl == pico.global.get("recentpagesize") and #pico.post.recent(nil, page + 1) ~= 0);
-  html.finish();
-end;
-
-handlers["/Overboard/recent/(%d+)"] = handlers["/Overboard/recent"];
-
 local function board_header(board_tbl)
   if not board_tbl then
     cgi.headers["Status"] = "404 Not Found";
@@ -1695,6 +1645,12 @@ local function board_header(board_tbl)
          board_tbl["Name"], board_tbl["Name"], board_tbl["Name"]);
 end
 
+handlers["/(Overboard)/catalog"] = function()
+  overboard_header();
+  html.rendercatalog(pico.thread.catalog());
+  html.finish();
+end;
+
 handlers["/([%l%d]+)/catalog"] = function(board)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
@@ -1702,9 +1658,13 @@ handlers["/([%l%d]+)/catalog"] = function(board)
   html.finish();
 end;
 
-handlers["/([%l%d]+)/index"] = function(board, page)
-  local board_tbl = pico.board.tbl(board);
-  board_header(board_tbl);
+handlers["/(Overboard)/index"] = function(board, page)
+  local overboard = board == "Overboard";
+  if overboard then
+    overboard_header();
+  else
+    board_header(pico.board.tbl(board));
+  end
 
   page = tonumber(page) or 1;
   if page <= 0 then
@@ -1712,22 +1672,28 @@ handlers["/([%l%d]+)/index"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local index_tbl = pico.thread.index(board, page);
+  local index_tbl = pico.thread.index(not overboard and board or nil, page);
   if #index_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
   html.renderindex(index_tbl, board, page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board, page + 1) ~= 0);
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(nil, page + 1) ~= 0);
   html.finish();
 end;
 
-handlers["/([%l%d]+)/index/(%d+)"] = handlers["/([%l%d]+)/index"];
+handlers["/(Overboard)/index/(%d+)"] = handlers["/(Overboard)/index"];
+handlers["/([%l%d]+)/index"] = handlers["/(Overboard)/index"];
+handlers["/([%l%d]+)/index/(%d+)"] = handlers["/(Overboard)/index"];
 
-handlers["/([%l%d]+)/recent"] = function(board, page)
-  local board_tbl = pico.board.tbl(board);
-  board_header(board_tbl);
+handlers["/(Overboard)/recent"] = function(board, page)
+  local overboard = board == "Overboard";
+  if overboard then
+    overboard_header();
+  else
+    board_header(pico.board.tbl(board));
+  end
 
   page = tonumber(page) or 1;
   if page <= 0 then
@@ -1735,7 +1701,7 @@ handlers["/([%l%d]+)/recent"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local recent_tbl = pico.post.recent(board, page);
+  local recent_tbl = pico.post.recent(not overboard and board or nil, page);
   if #recent_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
@@ -1746,18 +1712,20 @@ handlers["/([%l%d]+)/recent"] = function(board, page)
   html.finish();
 end;
 
-handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/([%l%d]+)/recent"];
+handlers["/(Overboard)/recent/(%d+)"] = handlers["/(Overboard)/recent"];
+handlers["/([%l%d]+)/recent"] = handlers["/(Overboard)/recent"];
+handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/(Overboard)/recent"];
 
 if defaultboardview == "index" then
-  handlers["/Overboard"] = handlers["/Overboard/index"];
-  handlers["/Overboard/(%d+)"] = handlers["/Overboard/index"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/index"];
+  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/index"];
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/index"];
 elseif defaultboardview == "recent" then
-  handlers["/Overboard"] = handlers["/Overboard/recent"];
-  handlers["/Overboard/(%d+)"] = handlers["/Overboard/recent"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/recent"];
+  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/recent"];
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/recent"];
 else
-  handlers["/Overboard"] = handlers["/Overboard/catalog"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/catalog"];
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"];
 end
 
