@@ -330,6 +330,70 @@ function pico.board.configure(board_tbl)
   return true, "Board configured successfully";
 end
 
+function pico.board.catalog(name)
+  if name and not pico.board.exists(name) then
+    return nil, "Board does not exist";
+  end
+
+  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
+              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
+              (name and "AND Posts.Board = ? "
+                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
+              "ORDER BY " ..
+              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
+                     or "LastBumpDate DESC LIMIT 100");
+  return name and db:q(sql, name)
+               or db:q(sql);
+end
+
+function pico.board.index(name, page)
+  if name and not pico.board.exists(name) then
+    return nil, "Board does not exist";
+  end
+
+  page = tonumber(page) or 1;
+  local pagesize = pico.global.get("indexpagesize");
+  local windowsize = pico.global.get("indexwindowsize");
+
+  local index_tbl = {};
+  local sql = "SELECT Board, Number FROM Threads " ..
+              (name and "WHERE Board = ? " or "") ..
+              "ORDER BY " ..
+              (name and "Sticky DESC, " or "") ..
+              "LastBumpDate DESC LIMIT ? OFFSET ?";
+  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
+                           or db:q(sql, pagesize, (page - 1) * pagesize);
+
+  for i = 1, #thread_ops do
+    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
+                        "ORDER BY Number ASC",
+                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1);
+    index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize;
+
+    for j = 1, #index_tbl[i] do
+      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
+    end
+  end
+
+  return index_tbl;
+end
+
+function pico.board.recent(name, page)
+  page = tonumber(page) or 1;
+  local pagesize = pico.global.get("recentpagesize");
+  local sql = "SELECT * FROM Posts " ..
+              (name and "WHERE Board = ? " or "") ..
+              "ORDER BY Date DESC LIMIT ? OFFSET ?";
+  local recent_tbl = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
+                           or db:q(sql, pagesize, (page - 1) * pagesize);
+  for i = 1, #recent_tbl do
+    recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"]);
+  end
+  return recent_tbl;
+end
+
 function pico.board.banner.get(board)
   if not pico.board.exists(board) then
     return nil, "Board does not exist";
@@ -605,20 +669,6 @@ end
 -- POST ACCESS, CREATION AND DELETION FUNCTIONS
 --
 
-function pico.post.recent(name, page)
-  page = tonumber(page) or 1;
-  local pagesize = pico.global.get("recentpagesize");
-  local sql = "SELECT * FROM Posts " ..
-              (name and "WHERE Board = ? " or "") ..
-              "ORDER BY Date DESC LIMIT ? OFFSET ?";
-  local recent_tbl = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
-                           or db:q(sql, pagesize, (page - 1) * pagesize);
-  for i = 1, #recent_tbl do
-    recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"]);
-  end
-  return recent_tbl;
-end
-
 function pico.post.tbl(board, number, omit_files)
   local post_tbl = db:r("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) WHERE Board = ? AND Number = ?", board, number);
   if post_tbl and not omit_files then
@@ -883,56 +933,6 @@ function pico.thread.tbl(board, number)
   stmt:finalize();
 
   return thread_tbl;
-end
-
-function pico.thread.index(name, page)
-  if name and not pico.board.exists(name) then
-    return nil, "Board does not exist";
-  end
-
-  page = tonumber(page) or 1;
-  local pagesize = pico.global.get("indexpagesize");
-  local windowsize = pico.global.get("indexwindowsize");
-
-  local index_tbl = {};
-  local sql = "SELECT Board, Number FROM Threads " ..
-              (name and "WHERE Board = ? " or "") ..
-              "ORDER BY " ..
-              (name and "Sticky DESC, " or "") ..
-              "LastBumpDate DESC LIMIT ? OFFSET ?";
-  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
-                           or db:q(sql, pagesize, (page - 1) * pagesize);
-
-  for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
-                        "ORDER BY Number ASC",
-                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1);
-    index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize;
-
-    for j = 1, #index_tbl[i] do
-      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"]);
-    end
-  end
-
-  return index_tbl;
-end
-
-function pico.thread.catalog(name)
-  if name and not pico.board.exists(name) then
-    return nil, "Board does not exist";
-  end
-
-  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
-              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
-              (name and "AND Posts.Board = ? "
-                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
-              "ORDER BY " ..
-              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
-                     or "LastBumpDate DESC LIMIT 100");
-  return name and db:q(sql, name)
-               or db:q(sql);
 end
 
 -- toggle sticky, lock, autosage, or cycle
