@@ -727,7 +727,7 @@ function html.form.board_config(board)
   local board_tbl = pico.board.tbl(board);
 
   printf("<fieldset><form method='POST'>");
-  printf(  "<input type='hidden' name='Name' value='%s' />", board_tbl["Name"]);
+  printf(  "<input type='hidden' name='Name' value='%s' />", board);
   printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]));
   printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""));
   printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
@@ -1400,12 +1400,12 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
           cgi.headers["Location"] = "/" .. POST["destination"];
         elseif operation == "delete" then
           cgi.headers["Location"] =
-            post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                                or ("/" .. board_tbl["Name"]);
+            post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
+                                or ("/" .. board);
         else
           cgi.headers["Location"] =
-            post_tbl["Parent"] and ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Parent"])
-                                or ("/" .. board_tbl["Name"] .. "/" .. post_tbl["Number"]);
+            post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
+                                or ("/" .. board .. "/" .. post_tbl["Number"]);
         end
 
         cgi.finalize();
@@ -1698,7 +1698,7 @@ end
 handlers["/([%l%d]+)/catalog"] = function(board)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
-  html.rendercatalog(pico.thread.catalog(board_tbl["Name"]));
+  html.rendercatalog(pico.thread.catalog(board));
   html.finish();
 end;
 
@@ -1712,14 +1712,14 @@ handlers["/([%l%d]+)/index"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local index_tbl = pico.thread.index(board_tbl["Name"], page);
+  local index_tbl = pico.thread.index(board, page);
   if #index_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
-  html.renderindex(index_tbl, board_tbl["Name"], page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board_tbl["Name"], page + 1) ~= 0);
+  html.renderindex(index_tbl, board, page, page > 1,
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.thread.index(board, page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1769,28 +1769,28 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
     html.error("Board Not Found", "The board you specified does not exist.");
   end
 
-  local thread_tbl, msg = pico.thread.tbl(board_tbl["Name"], post);
+  local thread_tbl, msg = pico.thread.tbl(board, post);
 
   if not thread_tbl then
-    local post_tbl = pico.post.tbl(board_tbl["Name"], post);
+    local post_tbl = pico.post.tbl(board, post);
     if not post_tbl then
       cgi.headers["Status"] = "404 Not Found";
       html.error("Thread Not Found", "Cannot display thread: %s", msg);
     else
       cgi.headers["Status"] = "301 Moved Permanently";
-      cgi.headers["Location"] = string.format("/%s/%d#%d", board_tbl["Name"], post_tbl["Parent"], post_tbl["Number"]);
+      cgi.headers["Location"] = string.format("/%s/%d#%d", board, post_tbl["Parent"], post_tbl["Number"]);
       cgi.finalize();
     end
   end
 
-  html.begin("/%s/ - %s", board_tbl["Name"], (thread_tbl[1]["Subject"] and #thread_tbl[1]["Subject"] > 0)
-                                             and html.striphtml(thread_tbl[1]["Subject"])
-                                             or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)));
-  local banner = pico.board.banner.get(board_tbl["Name"]);
+  html.begin("/%s/ - %s", board, (thread_tbl[1]["Subject"] and #thread_tbl[1]["Subject"] > 0)
+                                 and html.striphtml(thread_tbl[1]["Subject"])
+                                 or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)));
+  local banner = pico.board.banner.get(board);
   if banner then
     printf("<img id='banner' src='/Media/%s' height=100 />", banner);
   end
-  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
+  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board, html.striphtml(board_tbl["Title"]));
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
   html.announce();
   printf("<a id='new-post' href='#postform'>[Make a Post]</a>");
@@ -1803,9 +1803,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   printf("<hr />");
   printf("<div id='thread-view-links'>");
-  printf("<a href='/%s/catalog'>[Catalog]</a>", board_tbl["Name"]);
-  printf("<a href='/%s/index'>[Index]</a>", board_tbl["Name"]);
-  printf("<a href='/%s/recent'>[Recent]</a>", board_tbl["Name"]);
+  printf("<a href='/%s/catalog'>[Catalog]</a>", board);
+  printf("<a href='/%s/index'>[Index]</a>", board);
+  printf("<a href='/%s/recent'>[Recent]</a>", board);
   printf("<a href='/Overboard'>[Overboard]</a>");
   printf("<a href=''>[Update]</a>");
 
