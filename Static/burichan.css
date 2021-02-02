@@ -266,10 +266,6 @@ hr {
     clear: both;
 }
 
-hr.recent-page-separator {
-    margin-bottom: 0;
-}
-
 hr.invisible-separator {
     visibility: hidden;
     padding:0;

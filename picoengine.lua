@@ -605,10 +605,14 @@ end
 -- POST ACCESS, CREATION AND DELETION FUNCTIONS
 --
 
-function pico.post.recent(page)
+function pico.post.recent(name, page)
   page = tonumber(page) or 1;
   local pagesize = pico.global.get("recentpagesize");
-  local recent_tbl = db:q("SELECT * FROM Posts ORDER BY Date DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize);
+  local sql = "SELECT * FROM Posts " ..
+              (name and "WHERE Board = ? " or "") ..
+              "ORDER BY Date DESC LIMIT ? OFFSET ?";
+  local recent_tbl = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
+                           or db:q(sql, pagesize, (page - 1) * pagesize);
   for i = 1, #recent_tbl do
     recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"]);
   end
@@ -886,7 +890,7 @@ function pico.thread.index(name, page)
     return nil, "Board does not exist";
   end
 
-  page = page or 1;
+  page = tonumber(page) or 1;
   local pagesize = pico.global.get("indexpagesize");
   local windowsize = pico.global.get("indexwindowsize");
 

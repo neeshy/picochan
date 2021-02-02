@@ -75,9 +75,8 @@ function html.begin(...)
   printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>");
   printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>");
   printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>");
-  printf(      "<li class='system'><a href='/Recent' accesskey='4'>recent</a></li>");
-  printf(      "<li class='system'><a href='/Overboard' accesskey='5'>overboard</a></li>");
-  printf(      "<li class='system'><a href='/Theme' accesskey='6'>theme</a></li>");
+  printf(      "<li class='system'><a href='/Overboard' accesskey='4'>overboard</a></li>");
+  printf(      "<li class='system'><a href='/Theme' accesskey='5'>theme</a></li>");
 
   local boards = pico.board.list();
   for i = 1, #boards do
@@ -630,6 +629,24 @@ function html.renderindex(index_tbl, board, page, prev, next)
   printf("</div>");
 end
 
+function html.renderrecent(recent_tbl, board, page, prev, next)
+  for i = 1, #recent_tbl do
+    html.renderpost(recent_tbl[i], true, true);
+    printf("<hr class='invisible-separator'>");
+  end
+
+  printf("<hr />");
+  printf("<div class='page-switcher'>");
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+  if prev then
+    printf("<a class='page-switcher-prev' href='/%s/recent/%d'>[Prev]</a>", board, page - 1);
+  end
+  if next then
+    printf("<a class='page-switcher-next' href='/%s/recent/%d'>[Next]</a>", board, page + 1);
+  end
+  printf("</div>");
+end
+
 function html.brc(title, redheader)
   html.begin(title);
   html.redheader(redheader);
@@ -856,6 +873,7 @@ function html.form.globalconfig(varname)
     printf("<select id='value' name='value' form='globalconfig' autofocus>");
     printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "");
     printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "");
+    printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "");
     printf("</select>");
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
@@ -1600,49 +1618,11 @@ handlers["/Boards"] = function()
   html.cfinish();
 end;
 
-handlers["/Recent"] = function(page)
-  html.begin("recent posts");
-  html.redheader("Recent Posts");
-  html.announce();
-  printf("<a href=''>[Update]</a><hr class='recent-page-separator' />");
-
-  page = tonumber(page) or 1;
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
-  end
-
-  local recent_tbl = pico.post.recent(page);
-  if #recent_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
-  end
-
-  for i = 1, #recent_tbl do
-    html.renderpost(recent_tbl[i], true, true);
-    printf("<hr class='invisible-separator'>");
-  end
-
-  printf("<hr />");
-  printf("<div class='page-switcher'>");
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
-  if page > 1 then
-    printf("<a class='page-switcher-prev' href='/Recent/%d'>[Prev]</a>", page - 1);
-  end
-  if #recent_tbl == pico.global.get("recentpagesize") and #pico.post.recent(page + 1) ~= 0 then
-    printf("<a class='page-switcher-next' href='/Recent/%d'>[Next]</a>", page + 1);
-  end
-  printf("</div>");
-  html.finish();
-end;
-
-handlers["/Recent/(%d+)"] = handlers["/Recent"];
-
 local function overboard_header()
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
   html.announce();
-  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href=''>[Update]</a><hr />");
+  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href='/Overboard/recent'>[Recent]</a> <a href=''>[Update]</a><hr />");
 end
 
 handlers["/Overboard/catalog"] = function()
@@ -1653,8 +1633,8 @@ end;
 
 handlers["/Overboard/index"] = function(page)
   overboard_header();
-  page = tonumber(page) or 1;
 
+  page = tonumber(page) or 1;
   if page <= 0 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too low: %s", page);
@@ -1673,6 +1653,28 @@ end;
 
 handlers["/Overboard/index/(%d+)"] = handlers["/Overboard/index"];
 
+handlers["/Overboard/recent"] = function(page)
+  overboard_header();
+
+  page = tonumber(page) or 1;
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local recent_tbl = pico.post.recent(nil, page);
+  if #recent_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  html.renderrecent(recent_tbl, "Overboard", page, page > 1,
+                    #recent_tbl == pico.global.get("recentpagesize") and #pico.post.recent(nil, page + 1) ~= 0);
+  html.finish();
+end;
+
+handlers["/Overboard/recent/(%d+)"] = handlers["/Overboard/recent"];
+
 local function board_header(board_tbl)
   if not board_tbl then
     cgi.headers["Status"] = "404 Not Found";
@@ -1689,8 +1691,8 @@ local function board_header(board_tbl)
   html.announce();
   printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
   html.form.postform(board_tbl, nil);
-  printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href=''>[Update]</a><hr />",
-         board_tbl["Name"], board_tbl["Name"]);
+  printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href='/%s/recent'>[Recent]</a> <a href=''>[Update]</a><hr />",
+         board_tbl["Name"], board_tbl["Name"], board_tbl["Name"]);
 end
 
 handlers["/([%l%d]+)/catalog"] = function(board)
@@ -1703,8 +1705,8 @@ end;
 handlers["/([%l%d]+)/index"] = function(board, page)
   local board_tbl = pico.board.tbl(board);
   board_header(board_tbl);
-  page = tonumber(page) or 1;
 
+  page = tonumber(page) or 1;
   if page <= 0 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too low: %s", page);
@@ -1723,10 +1725,37 @@ end;
 
 handlers["/([%l%d]+)/index/(%d+)"] = handlers["/([%l%d]+)/index"];
 
+handlers["/([%l%d]+)/recent"] = function(board, page)
+  local board_tbl = pico.board.tbl(board);
+  board_header(board_tbl);
+
+  page = tonumber(page) or 1;
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too low: %s", page);
+  end
+
+  local recent_tbl = pico.post.recent(board, page);
+  if #recent_tbl == 0 and page ~= 1 then
+    cgi.headers["Status"] = "404 Not Found";
+    html.error("Page not found", "Page number too high: %s", page);
+  end
+
+  html.renderrecent(recent_tbl, board, page, page > 1,
+                    #recent_tbl == pico.global.get("recentpagesize") and #pico.post.recent(nil, page + 1) ~= 0);
+  html.finish();
+end;
+
+handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/([%l%d]+)/recent"];
+
 if defaultboardview == "index" then
   handlers["/Overboard"] = handlers["/Overboard/index"];
   handlers["/Overboard/(%d+)"] = handlers["/Overboard/index"];
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/index"];
+elseif defaultboardview == "recent" then
+  handlers["/Overboard"] = handlers["/Overboard/recent"];
+  handlers["/Overboard/(%d+)"] = handlers["/Overboard/recent"];
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/recent"];
 else
   handlers["/Overboard"] = handlers["/Overboard/catalog"];
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"];
@@ -1776,6 +1805,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<div id='thread-view-links'>");
   printf("<a href='/%s/catalog'>[Catalog]</a>", board_tbl["Name"]);
   printf("<a href='/%s/index'>[Index]</a>", board_tbl["Name"]);
+  printf("<a href='/%s/recent'>[Recent]</a>", board_tbl["Name"]);
   printf("<a href='/Overboard'>[Overboard]</a>");
   printf("<a href=''>[Update]</a>");
 
