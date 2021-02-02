@@ -1622,7 +1622,10 @@ local function overboard_header()
   html.begin("overboard");
   html.redheader("%s Overboard", sitename);
   html.announce();
-  printf("<a href='/Overboard/catalog'>[Catalog]</a> <a href='/Overboard/index'>[Index]</a> <a href='/Overboard/recent'>[Recent]</a> <a href=''>[Update]</a><hr />");
+  printf("<a href='/Overboard/catalog'>[Catalog]</a> ");
+  printf("<a href='/Overboard/index'>[Index]</a> ");
+  printf("<a href='/Overboard/recent'>[Recent]</a> ");
+  printf("<a href=''>[Update]</a><hr />");
 end
 
 local function board_header(board_tbl)
@@ -1641,8 +1644,10 @@ local function board_header(board_tbl)
   html.announce();
   printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
   html.form.postform(board_tbl, nil);
-  printf("<a href='/%s/catalog'>[Catalog]</a> <a href='/%s/index'>[Index]</a> <a href='/%s/recent'>[Recent]</a> <a href=''>[Update]</a><hr />",
-         board_tbl["Name"], board_tbl["Name"], board_tbl["Name"]);
+  printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl["Name"]);
+  printf("<a href='/%s/index'>[Index]</a> ", board_tbl["Name"]);
+  printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl["Name"]);
+  printf("<a href=''>[Update]</a><hr />");
 end
 
 handlers["/(Overboard)/catalog"] = function()
@@ -1770,19 +1775,17 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   end
 
   printf("<hr />");
-  printf("<div id='thread-view-links'>");
-  printf("<a href='/%s/catalog'>[Catalog]</a>", board);
-  printf("<a href='/%s/index'>[Index]</a>", board);
-  printf("<a href='/%s/recent'>[Recent]</a>", board);
-  printf("<a href='/Overboard'>[Overboard]</a>");
+  printf("<a href='/%s/catalog'>[Catalog]</a> ", board);
+  printf("<a href='/%s/index'>[Index]</a> ", board);
+  printf("<a href='/%s/recent'>[Recent]</a> ", board);
+  printf("<a href='/Overboard'>[Overboard]</a> ");
   printf("<a href=''>[Update]</a>");
 
   printf("<span id='thread-reply'>");
-  printf("<a href='#postform'>[Reply]</a>");
+  printf("<a href='#postform'>[Reply]</a> ");
   printf("%d replies", thread_tbl[1]["ReplyCount"]);
   printf("</span>");
 
-  printf("</div>");
   html.finish();
 end;
 

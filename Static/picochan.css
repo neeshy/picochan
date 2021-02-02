@@ -487,10 +487,6 @@ code, span.code {
     border: 1px solid #000;
 }
 
-div#thread-view-links a {
-    margin-right: 1.3ch;
-}
-
 span#thread-reply {
     float: right;
 }
