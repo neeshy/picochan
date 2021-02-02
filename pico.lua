@@ -65,6 +65,7 @@ function html.begin(...)
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
   printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme);
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/style.css' />");
   printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />");
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
@@ -864,7 +865,7 @@ function html.form.globalconfig(varname)
   elseif varname == "theme" then
     printf("<select id='value' name='value' form='globalconfig' autofocus>");
     local theme = pico.global.get("theme");
-    local themes = io.popen("ls ./Static/*.css | awk -F/ '{sub(/\\.css$/, \"\"); print $3}'");
+    local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'");
     for t in themes:lines() do
       printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t);
     end
@@ -889,7 +890,7 @@ function html.form.themeconfig()
 
   printf("<select id='theme' name='theme' form='themeconfig' autofocus>");
   local theme = pico.global.get("theme");
-  local themes = io.popen("ls ./Static/*.css | awk -F/ '{sub(/\\.css$/, \"\"); print $3}'");
+  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'");
   for t in themes:lines() do
     local selected;
     if COOKIE["theme"] then
