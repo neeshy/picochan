@@ -295,7 +295,7 @@ function html.picofmt(post_tbl)
 
   local function handle_code(b, c, t, e)
     return function(block)
-      b[#b + 1] = t .. block .. e;
+      b[#b + 1] = t .. block:gsub("\n\29", ""):gsub("\29", "") .. e;
       return c;
     end;
   end
@@ -311,10 +311,13 @@ function html.picofmt(post_tbl)
 
   local s = "\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", "")) .. "\n";
 
-  s = s:gsub("[\27\28]", "");
-  s = s:gsub("`\n`", "`\n\n`");
+  s = s:gsub("[\27\28\29]", "");
+  s = s:gsub("`\n`", "`\n\29\n`");
   s = s:gsub("\n`\n+(.-)\n+`\n", handle_code(blocks, "\27", "<code>", "</code>"));
   s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\28", "<span class='code'>", "</span>"));
+  s = s:gsub("\29\n\28", "\28");
+  s = s:gsub("\28\n\29", "\28");
+  s = s:gsub("\29", "");
 
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
