@@ -295,14 +295,11 @@ function html.picofmt(post_tbl)
   local blockchar = string.char(27);
   local iblockchar = string.char(28);
 
-  local function handle_code(block)
-    blocks[#blocks + 1] = block;
-    return "<code>" .. blockchar .. "</code>";
-  end
-
-  local function handle_code_inline(prefix, block)
-    iblocks[#iblocks + 1] = block;
-    return prefix .. "<span class='code'>" .. iblockchar .. "</span>";
+  local function handle_code(b, c, t, e)
+    return function(block)
+      b[#b + 1] = block;
+      return t .. c .. e;
+    end;
   end
 
   local function insert_code(b)
@@ -317,8 +314,9 @@ function html.picofmt(post_tbl)
   local s = "\n" .. html.striphtml(post_tbl["Comment"]):gsub("\r", "") .. "\n";
 
   s = s:gsub("[" .. blockchar .. iblockchar .. "]", "");
-  s = s:gsub("\n`\n*(.-)\n*`\n", handle_code);
-  s = s:gsub("([^\n])`([^\n]-)`", handle_code_inline);
+  s = s:gsub("`\n`", "`\n\n`");
+  s = s:gsub("\n`\n+(.-)\n+`\n", handle_code(blocks, blockchar, "<code>", "</code>"));
+  s = s:gsub("`([^\n]-)`", handle_code(iblocks, iblockchar, "<span class='code'>", "</span>"));
 
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
