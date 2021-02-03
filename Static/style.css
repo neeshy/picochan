@@ -234,6 +234,7 @@ form#postform a.close-button {
 }
 
 form#postform label {
+    min-width: min-content;
     width: 7ch;
 }
 
