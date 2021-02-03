@@ -314,30 +314,30 @@ function html.picofmt(post_tbl)
     end;
   end
 
-  local s = "\n" .. html.striphtml(post_tbl["Comment"]) .. "\n";
+  local s = "\n" .. html.striphtml(post_tbl["Comment"]):gsub("\r", "") .. "\n";
 
   s = s:gsub("[" .. blockchar .. iblockchar .. "]", "");
-  s = s:gsub("[\r\n]`[\r\n]*(.-)[\r\n]*`[\r\n]", handle_code);
-  s = s:gsub("([^\r\n])`([^\r\n]-)`", handle_code_inline);
+  s = s:gsub("\n`\n*(.-)\n*`\n", handle_code);
+  s = s:gsub("([^\n])`([^\n]-)`", handle_code_inline);
 
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
   s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
   s = s:gsub("&gt;&gt;(%d+)", handle_refs);
 
-  s = s:gsub("&#39;&#39;&#39;([^\r\n]-)&#39;&#39;&#39;", "<b>%1</b>");
-  s = s:gsub("&#39;&#39;([^\r\n]-)&#39;&#39;", "<i>%1</i>");
-  s = s:gsub("~~([^\r\n]-)~~", "<s>%1</s>");
-  s = s:gsub("__([^\r\n]-)__", "<u>%1</u>");
-  s = s:gsub("==([^\r\n]-)==", "<span class='redtext'>%1</span>");
-  s = s:gsub("%*%*([^\r\n]-)%*%*", "<span class='spoiler'>%1</span>");
-  s = s:gsub("%(%(%([^\r\n]-%)%)%)", "<span class='kiketext'>%1</span>");
-  s = s:gsub("([\r\n])(&gt;.-)([\r\n])", "%1<span class='greentext'>%2</span>%3");
-  s = s:gsub("([\r\n])(&lt;.-)([\r\n])", "%1<span class='pinktext'>%2</span>%3");
+  s = s:gsub("&#39;&#39;&#39;([^\n]-)&#39;&#39;&#39;", "<b>%1</b>");
+  s = s:gsub("&#39;&#39;([^\n]-)&#39;&#39;", "<i>%1</i>");
+  s = s:gsub("~~([^\n]-)~~", "<s>%1</s>");
+  s = s:gsub("__([^\n]-)__", "<u>%1</u>");
+  s = s:gsub("==([^\n]-)==", "<span class='redtext'>%1</span>");
+  s = s:gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>");
+  s = s:gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>");
+  s = s:gsub("\n(&gt;.-)\n", "\n<span class='greentext'>%1</span>\n");
+  s = s:gsub("\n(&lt;.-)\n", "\n<span class='pinktext'>%1</span>\n");
 
   s = s:gsub("(.-)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
 
-  s = s:gsub("^[\r\n]+", "");
-  s = s:gsub("[\r\n]+$", "");
+  s = s:gsub("^\n+", "");
+  s = s:gsub("\n+$", "");
 
   s = s:gsub(blockchar, insert_code(blocks));
   s = s:gsub(iblockchar, insert_code(iblocks));
