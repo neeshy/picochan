@@ -309,7 +309,7 @@ function html.picofmt(post_tbl)
     end;
   end
 
-  local s = "\n" .. html.striphtml(post_tbl["Comment"]):gsub("\r", "") .. "\n";
+  local s = "\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", "")) .. "\n";
 
   s = s:gsub("[\27\28]", "");
   s = s:gsub("`\n`", "`\n\n`");
