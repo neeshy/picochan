@@ -415,6 +415,9 @@ function pico.board.banner.list(board)
 end
 
 function pico.board.banner.add(board, file)
+  local auth, msg = permit("admin bo", "board", board);
+  if not auth then return auth, msg end;
+
   if not pico.board.exists(board) then
     return false, "Board does not exist";
   elseif not pico.file.exists(file) then
@@ -427,6 +430,9 @@ function pico.board.banner.add(board, file)
 end
 
 function pico.board.banner.delete(board, file, reason)
+  local auth, msg = permit("admin bo", "board", board);
+  if not auth then return auth, msg end;
+
   if not pico.board.exists(board) then
     return false, "Board does not exist";
   elseif not pico.file.exists(file) then
