@@ -331,11 +331,12 @@ function html.picofmt(post_tbl)
 
   s = s:gsub("(.-)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
 
-  s = s:gsub("^\n+", "");
-  s = s:gsub("\n+$", "");
-
   s = s:gsub("\27", insert_code(blocks));
   s = s:gsub("\28", insert_code(iblocks));
+
+  s = s:gsub("^\n+", "");
+  s = s:gsub("\n+$", "");
+  s = s:gsub("\n", "\r\n");
 
   return s;
 end

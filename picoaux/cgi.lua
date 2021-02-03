@@ -18,10 +18,10 @@ end
 
 local function write_headers()
   for k, v in pairs(cgi.headers) do
-    io.write(k, ": ", v, "\n");
+    io.write(k, ": ", v, "\r\n");
   end
 
-  io.write("\n");
+  io.write("\r\n");
 end
 
 function cgi.initialize()
