@@ -271,12 +271,6 @@ hr {
     clear: both;
 }
 
-hr.invisible-separator {
-    visibility: hidden;
-    padding: 0;
-    margin: 0;
-}
-
 div.catalog-container {
     text-align: center;
 }
