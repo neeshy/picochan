@@ -369,11 +369,11 @@ function html.threadflags(post_tbl)
   if (post_tbl["Sticky"] == 1 or post_tbl["Lock"] == 1
       or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
     printf("<span class='thread-flags'>");
-    printf(" %s %s %s %s ",
-           post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a>"  or "",
-           post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a>"    or "",
-           post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2693;</a>" or "",
-           post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x1f503;</a>"   or "");
+    printf(" %s%s%s%s",
+           post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a> "  or "",
+           post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a> "    or "",
+           post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2693;</a> " or "",
+           post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x1f503;</a> "   or "");
     printf("</span>");
   end
 end
