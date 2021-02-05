@@ -60,7 +60,7 @@ function html.begin(...)
   local theme = (COOKIE["theme"] and io.fileexists("./Static/" .. COOKIE["theme"] .. ".css"))
                 and COOKIE["theme"] or (pico.global.get("theme") or "picochan");
 
-  printf("<!DOCTYPE html>\n");
+  printf("<!DOCTYPE html>\r\n");
   printf("<html>");
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
