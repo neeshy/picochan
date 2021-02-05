@@ -5,17 +5,6 @@ local brotli = require("picoaux.brotli");
 local zlib = require("picoaux.zlib");
 local cgi = {};
 
-local function httpencodinglist(s)
-  local ret = {};
-  local list = string.tokenize(s:gsub(" ", ""):gsub(";q=%n-\\.?%n-", ""), ",");
-
-  for i = 1, #list do
-    ret[list[i]] = true;
-  end
-
-  return ret;
-end
-
 local function write_headers()
   for k, v in pairs(cgi.headers) do
     io.write(k, ": ", v, "\r\n");
@@ -27,7 +16,14 @@ end
 function cgi.initialize()
   cgi.outputbuf = {};
   cgi.headers = {};
-  cgi.encodings = ENV["HTTP_ACCEPT_ENCODING"] and httpencodinglist(ENV["HTTP_ACCEPT_ENCODING"]) or {};
+  cgi.encodings = {};
+  encodings = ENV["HTTP_ACCEPT_ENCODING"];
+  if encodings then
+    local list = string.tokenize(encodings:gsub(" ", ""):gsub(";q=%n-\\.?%n-", ""), ",");
+    for i = 1, #list do
+      cgi.encodings[list[i]] = true;
+    end
+  end
 end
 
 function cgi.finalize()
