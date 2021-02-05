@@ -594,7 +594,7 @@ function pico.file.add(path)
   end
 
   local class = pico.file.class(extension);
-  local hash = sha.hash("sha512", data);
+  local hash = sha.hash("sha256", data);
   local filename = hash .. "." .. extension;
 
   if pico.file.exists(filename) then
