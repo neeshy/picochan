@@ -261,7 +261,9 @@ function html.picofmt(post_tbl)
     end
   end
 
-  local function handle_url(previous, url)
+  local urls = {};
+
+  local function handle_url(prev, url)
     local balance_tbl = {
       ["("] = ")",
       ["<"] = ">",
@@ -270,24 +272,24 @@ function html.picofmt(post_tbl)
       ["\""] = "\"",
       ["'"] = "'"
     };
-    local prev = html.unstriphtml(previous):sub(-1);
-    local raw = html.unstriphtml(url);
     local balance = balance_tbl[prev];
     local append = "";
     if balance then
-      local first, second = (prev .. raw):match("(%b" .. prev .. balance .. ")(.-)$");
+      local first, second = (prev .. url):match("(%b" .. prev .. balance .. ")(.-)$");
       if first then
-        url = html.striphtml(first:sub(2, -2));
-        append = html.striphtml(balance .. second);
+        url = first:sub(2, -2);
+        append = balance .. second;
       end
     else
-      local last = raw:match("[!,%.:;%?]$");
+      local last = url:match("[!,%.:;%?]$");
       if last then
-        url = html.striphtml(raw:sub(1, -2));
+        url = url:sub(1, -2);
         append = last;
       end
     end
-    return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
+    url = html.striphtml(url);
+    urls[#urls + 1] = string.format("<a href='%s'>%s</a>", url, url);
+    return string.format("%s\29%s", prev, append);
   end
 
   local blocks = {};
@@ -300,18 +302,22 @@ function html.picofmt(post_tbl)
     end;
   end
 
-  local function insert_code(b)
+  local function insert_escaped(t)
     return function()
-      if #b > 0 then
-        return table.remove(b, 1);
+      if #t > 0 then
+        return table.remove(t, 1);
       end
       return "";
     end;
   end
 
-  local s = "\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", "")) .. "\n";
+  local s = "\n" .. post_tbl["Comment"]:gsub("\r", "") .. "\n";
+  s = s:gsub("[\27\28\29]", "");
 
-  s = s:gsub("[\27\28]", "");
+  s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
+
+  s = html.striphtml(s);
+
   s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\27", "<code>", "</code>"));
   s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\28", "<span class='code'>", "</span>"));
 
@@ -329,10 +335,9 @@ function html.picofmt(post_tbl)
   s = s:gsub("\n(&gt;[^\n]*)", "\n<span class='greentext'>%1</span>");
   s = s:gsub("\n(&lt;[^\n]*)", "\n<span class='pinktext'>%1</span>");
 
-  s = s:gsub("(.-)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
-
-  s = s:gsub("\27", insert_code(blocks));
-  s = s:gsub("\28", insert_code(iblocks));
+  s = s:gsub("\27", insert_escaped(blocks));
+  s = s:gsub("\28", insert_escaped(iblocks));
+  s = s:gsub("\29", insert_escaped(urls));
 
   s = s:gsub("^\n+", "");
   s = s:gsub("\n+$", "");
