@@ -97,8 +97,8 @@ function html.begin(...)
 end
 
 function html.finish()
-  printf("<!-- %d ms generation time -->", os.clock() * 1000);
   printf("</div></body></html>");
+  printf("\r\n<!-- %d ms generation time -->", os.clock() * 1000);
 end
 
 function html.error(title, ...)
