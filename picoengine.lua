@@ -898,7 +898,7 @@ function pico.post.spoiler(board, number, file, spoil, reason)
     return false, "No such file in that particular post";
   end
 
-  db:q("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
+  db:e("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
        spoil and 1 or 0, board, number, file);
   pico.log.insert(board, "%s file %s from /%s/%d for reason: %s",
                   spoil and "Spoilered" or "Unspoilered", file, board, number, reason);
@@ -1156,7 +1156,7 @@ function pico.webring.endpoint.add(endpoint, type)
     return false, "Endpoint is already stored";
   end
 
-  db:q("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type);
+  db:e("INSERT INTO Webring (Endpoint, Type) VALUES (?, ?)", endpoint, type);
   pico.log.insert(nil, "Added webring endpoint '%s' with type: %s", endpoint, type);
 
   return true, "Endpoint successfully added";
@@ -1172,7 +1172,7 @@ function pico.webring.endpoint.remove(endpoint, reason)
     return false, "Endpoint does not exist";
   end
 
-  db:q("DELETE FROM Webring WHERE Endpoint = ?", endpoint);
+  db:e("DELETE FROM Webring WHERE Endpoint = ?", endpoint);
   pico.log.insert(nil, "Removed webring endpoint '%s' for reason: %s", endpoint, reason);
 
   return true, "Endpoint successfully removed";
@@ -1188,7 +1188,7 @@ function pico.webring.endpoint.configure(endpoint_tbl)
     return false, "Endpoint does not exist";
   end
 
-  db:q("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
+  db:e("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
        endpoint_tbl["Type"] or "known", endpoint_tbl["Endpoint"]);
   pico.log.insert(nil, "Modified webring endpoint configuration for '%s'",
                   endpoint_tbl["Endpoint"]);
