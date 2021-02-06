@@ -1109,7 +1109,7 @@ function pico.webring.tbl()
   tbl["blacklist"] = {};
   tbl["boards"] = {};
 
-  hosts = db:q("SELECT * FROM Webring");
+  local hosts = db:q("SELECT * FROM Webring");
   for i = 1, #hosts do
     local host = hosts[i];
     local type = host["Type"];
