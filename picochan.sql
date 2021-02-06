@@ -82,7 +82,7 @@ CREATE TABLE FileRefs (
 ) WITHOUT ROWID;
 
 CREATE TABLE Files (
-  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY                     CHECK(LENGTH(Name) BETWEEN 130 AND 133),
+  Name                  TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
   Size                  INTEGER         NOT NULL                                                CHECK(Size > 0),
   Width                 INTEGER                                                 DEFAULT NULL,
   Height                INTEGER                                                 DEFAULT NULL,
