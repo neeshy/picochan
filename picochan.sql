@@ -37,7 +37,7 @@ CREATE TABLE Posts (
   Comment               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Comment) <= 32768),
 
   PRIMARY KEY (Board, Number),
-  FOREIGN KEY (Board) REFERENCES Boards(Name) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (Board) REFERENCES Boards (Name) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
   CHECK((Capcode IN ('admin', 'gvol') AND CapcodeBoard IS NULL) OR (Capcode IN ('bo', 'lvol') AND Capcode IS NOT NULL))
 );
@@ -53,7 +53,7 @@ CREATE TABLE Threads (
   ReplyCount            INTEGER         NOT NULL                                DEFAULT 0       CHECK(ReplyCount >= 0),
 
   PRIMARY KEY (Board, Number),
-  FOREIGN KEY (Board) REFERENCES Boards(Name) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (Board) REFERENCES Boards (Name) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (Board, Number) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE
 ) WITHOUT ROWID;
 
