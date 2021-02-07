@@ -1009,7 +1009,7 @@ function pico.thread.move(board, number, newboard, reason)
     end
   end
 
-  db:e("DELETE FROM Threads WHERE Board = ? AND Number = ?", board, number);
+  db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number);
   pico.log.insert(nil, "Moved thread /%s/%d to /%s/%d for reason: %s", board, number, newboard, newthread, reason);
   return true, "Thread moved successfully";
 end
