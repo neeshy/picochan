@@ -4,7 +4,6 @@
 
 local ffi = require("ffi");
       ffi.z = ffi.load("z");
-
 local zlib = {};
 
 ffi.cdef[[

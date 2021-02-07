@@ -3,7 +3,6 @@
 
 local ffi = require("ffi");
       ffi.brotlienc = ffi.load("brotlienc");
-
 local brotli = {};
 
 ffi.cdef[[
