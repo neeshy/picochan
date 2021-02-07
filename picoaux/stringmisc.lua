@@ -30,7 +30,7 @@ function string.tokenize(input, delimiter)
   delimiter = delimiter or " ";
 
   if delimiter == "" then
-    return nil
+    return nil;
   end
   if input == nil then
     return {};
@@ -44,7 +44,7 @@ function string.tokenize(input, delimiter)
       pos = last + 1;
     else
       result[#result + 1] = input:sub(pos);
-      break
+      break;
     end
   end
 
