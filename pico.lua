@@ -1666,9 +1666,11 @@ end;
 
 handlers["/(Overboard)/index"] = function(board, page)
   local overboard = board == "Overboard";
+  local boardval;
   if overboard then
     overboard_header();
   else
+    boardval = board;
     board_header(pico.board.tbl(board));
   end
 
@@ -1678,14 +1680,14 @@ handlers["/(Overboard)/index"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local index_tbl = pico.board.index(not overboard and board or nil, page);
+  local index_tbl = pico.board.index(boardval, page);
   if #index_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
   html.renderindex(index_tbl, board, page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(nil, page + 1) ~= 0);
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0);
   html.finish();
 end;
 
@@ -1695,9 +1697,11 @@ handlers["/([%l%d]+)/index/(%d+)"] = handlers["/(Overboard)/index"];
 
 handlers["/(Overboard)/recent"] = function(board, page)
   local overboard = board == "Overboard";
+  local boardval;
   if overboard then
     overboard_header();
   else
+    boardval = board;
     board_header(pico.board.tbl(board));
   end
 
@@ -1707,14 +1711,14 @@ handlers["/(Overboard)/recent"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page);
   end
 
-  local recent_tbl = pico.board.recent(not overboard and board or nil, page);
+  local recent_tbl = pico.board.recent(boardval, page);
   if #recent_tbl == 0 and page ~= 1 then
     cgi.headers["Status"] = "404 Not Found";
     html.error("Page not found", "Page number too high: %s", page);
   end
 
   html.renderrecent(recent_tbl, board, page, page > 1,
-                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(nil, page + 1) ~= 0);
+                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0);
   html.finish();
 end;
 
