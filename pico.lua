@@ -1,5 +1,5 @@
 #!/usr/local/bin/haserl -u262144
-<% -- Picochan CGI/HTML Frontend
+-- Picochan CGI/HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
 local cgi = require("picoaux.cgi");
@@ -133,7 +133,7 @@ function html.container.barheader(...)
 end
 
 function html.list.begin(ordered)
-  printf("<".."%sl>", ordered and "o" or "u");
+  printf("<%sl>", ordered and "o" or "u");
 end
 
 function html.list.finish(ordered)
@@ -1883,4 +1883,3 @@ end
 
 cgi.headers["Status"] = "404 Not Found";
 html.error("Page Not Found", "The specified page does not exist.");
-%>
