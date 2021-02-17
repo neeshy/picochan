@@ -14,7 +14,7 @@ function cgi.finalize()
   local outputbuf = table.concat(cgi.outputbuf);
 
   local encodings = {};
-  local accept_encoding = ENV["HTTP_ACCEPT_ENCODING"];
+  local accept_encoding = os.getenv("HTTP_ACCEPT_ENCODING");
   if accept_encoding then
     local list = accept_encoding:gsub(" ", ""):gsub(";q=%n-\\.?%n-", ""):tokenize(",");
     for i = 1, #list do

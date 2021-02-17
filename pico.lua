@@ -1875,8 +1875,8 @@ end;
 for patt, func in pairs(handlers) do
   patt = "^" .. patt .. "$";
 
-  if ENV["PATH_INFO"]:match(patt) then
-    ENV["PATH_INFO"]:gsub(patt, func);
+  if os.getenv("PATH_INFO"):match(patt) then
+    os.getenv("PATH_INFO"):gsub(patt, func);
     cgi.finalize();
   end
 end
