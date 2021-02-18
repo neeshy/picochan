@@ -6,15 +6,16 @@ Picochan is very easy to install. Its dependencies are:
 
   DEPENDENCY        TESTED VERSION   DISTRIBUTION URL
   ----------------------------------------------------------------------------
-  brotli            1.0.7            https://brotli.org
-  argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
-  sqlite            3.32.3           https://sqlite.org
+  haserl            0.9.35           http://git.picochanwvqfa2xsrfzlul4x4aqtog2eljll5qnj5iagpbhx2vmfqnid.onion/haserl/
   luajit            2.0.5            https://luajit.org
+  sqlite            3.34.0           https://sqlite.org
+  argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
+  zlib              1.2.11           https://zlib.net
+  brotli            1.0.9            https://brotli.org
   corefonts         1-r7             http://corefonts.sourceforge.net
-  imagemagick       7.0.10.52        https://imagemagick.org
-  ffmpeg            4.2.4            https://ffmpeg.org
-  curl              7.72.0           https://curl.se
-  haserl            0.9.35           http://haserl.sourceforge.net
+  ffmpeg            4.3.1            https://ffmpeg.org
+  imagemagick       7.0.11.0         https://imagemagick.org
+  curl              7.75.0           https://curl.se
 
 On a freshly installed Gentoo system, Picochan was made to work by first
 installing the following packages through portage. The relevant USE flags are
@@ -22,8 +23,9 @@ also given (your results may vary if you do not follow the USE flags listed,
 for example, thumbnails for AV1-encoded videos may not be generated if you
 do not enable the dav1d USE-flag for ffmpeg).
 
-  app-arch/brotli
   app-crypt/argon2
+  app-arch/zlib
+  app-arch/brotli
   dev-db/sqlite
   dev-lang/luajit           USE="lua52compat"
   media-fonts/corefonts
@@ -45,31 +47,6 @@ the /bin/sh symlink with a less insecure shell, such as app-shells/dash.
 Additionally, you must also install haserl which is not available through the
 gentoo repositories. Fortunately, on Linux it is easy and quick to compile by
 yourself.
-
----> HASERL <---
-
-Download the source tarball through the distribution URL provided.
-When compiling haserl, make sure to use the following configure options. A
-failure to use these options will most likely result in picochan not working.
-
-  $ ./configure --enable-luashell \
-                --disable-luacshell \
-                --disable-bashshell \
-                --disable-bash-extensions \
-                --enable-subshell=lua \
-                --with-lua=luajit
-  $ make
-  # make install
-
-At this stage, on certain systems including OpenBSD, compilation will fail due
-to "lua2c.c" failing to compile. This is caused by faulty GNU build scripts.
-If this is the case:
-
-  $ cd src
-  $ cc -I/usr/local/include/luajit* -o lua2c lua2c.c -lluajit-5.1
-  $ cd ..
-  $ make
-  # make install
 
 ---> FINAL PREPARATIONS <---
 
