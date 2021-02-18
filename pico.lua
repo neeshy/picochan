@@ -1829,7 +1829,7 @@ handlers["/Post"] = function()
 
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, board_tbl["PostMaxFiles"] do
-    local name = POST["file" .. i .. "_name"];
+    local name = HASERL["file" .. i .. "_filename"];
     if name and name ~= "" then
       local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
 
