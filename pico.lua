@@ -1036,7 +1036,7 @@ handlers["/Mod/login"] = function()
 
   html.brc("login", "Moderator Login");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "username", "password") then
       local session_key, errmsg = pico.account.login(POST["username"], POST["password"]);
 
@@ -1071,7 +1071,7 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   account_check();
   html.brc("change global configuration", "Change global configuration");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name") then
       local result, msg = pico.global.set(POST["name"], POST["value"] ~= "" and POST["value"] or nil);
       printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
@@ -1089,7 +1089,7 @@ handlers["/Mod/tools/multidelete"] = function()
   account_check();
   html.brc("multidelete", "Multidelete");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "board", "ispec", "reason") then
       local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
       printf("%s", msg);
@@ -1107,7 +1107,7 @@ handlers["/Mod/tools/pattdelete"] = function()
   account_check();
   html.brc("pattern delete", "Pattern delete");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "pattern", "reason") then
       local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
       printf("%s", msg);
@@ -1125,7 +1125,7 @@ handlers["/Mod/account/create"] = function()
   account_check();
   html.brc("create account", "Create account");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name", "password", "type", "board") then
       printf("%s", select(2, pico.account.create(POST["name"], POST["password"], POST["type"], POST["board"])));
     else
@@ -1142,7 +1142,7 @@ handlers["/Mod/account/delete"] = function()
   account_check();
   html.brc("delete account", "Delete account");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name", "reason") then
       local status, msg = pico.account.delete(POST["name"], POST["reason"]);
       printf("%s%s", (not status) and "Cannot delete account: " or "", msg);
@@ -1160,7 +1160,7 @@ handlers["/Mod/account/config"] = function()
   account_check();
   html.brc("configure account", "Configure account");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name", "password") then
       printf("%s", select(2, pico.account.changepass(POST["name"], POST["password"])));
     else
@@ -1177,7 +1177,7 @@ handlers["/Mod/board/create"] = function()
   account_check();
   html.brc("create board", "Create board");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name", "title") then
       local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"] ~= "" and POST["subtitle"] or nil);
       printf("%s%s", (not status) and "Cannot create board: " or "", msg);
@@ -1195,7 +1195,7 @@ handlers["/Mod/board/delete"] = function()
   account_check();
   html.brc("delete board", "Delete board");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "name", "reason") then
       local status, msg = pico.board.delete(POST["name"], POST["reason"]);
       printf("%s%s", (not status) and "Cannot delete board: " or "", msg);
@@ -1213,7 +1213,7 @@ handlers["/Mod/board/config"] = function()
   account_check();
   html.brc("configure board", "Configure board");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "Name") then
       if pico.board.exists(POST["Name"]) then
         if tbl_validate(POST, "Title") then
@@ -1248,7 +1248,7 @@ handlers["/Mod/banner/add"] = function()
   account_check();
   html.brc("add a banner", "Add a banner");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "board", "file") then
       local status, msg = pico.board.banner.add(POST["board"], POST["file"]);
       printf("%s%s", (not status) and "Cannot add banner: " or "", msg);
@@ -1266,7 +1266,7 @@ handlers["/Mod/banner/delete"] = function()
   account_check();
   html.brc("delete a banner", "Delete a banner");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "board") then
       if pico.board.exists(POST["board"]) then
         local banners = pico.board.banner.list(POST["board"]);
@@ -1299,7 +1299,7 @@ handlers["/Mod/webring/add"] = function()
   account_check();
   html.brc("add webring endpoint", "Add webring endpoint");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "endpoint", "type") then
       local status, msg = pico.webring.endpoint.add(POST["endpoint"], POST["type"]);
       printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
@@ -1317,7 +1317,7 @@ handlers["/Mod/webring/remove"] = function()
   account_check();
   html.brc("remove webring endpoint", "Remove webring endpoint");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "endpoint", "reason") then
       local status, msg = pico.webring.endpoint.remove(POST["endpoint"], POST["reason"]);
       printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
@@ -1335,7 +1335,7 @@ handlers["/Mod/webring/config"] = function()
   account_check();
   html.brc("configure webring endpoint", "Configure webring endpoint");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "Endpoint") then
       if pico.webring.endpoint.exists(POST["Endpoint"]) then
         if tbl_validate(POST, "Type") then
@@ -1370,7 +1370,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
     html.error("Action failed", "Cannot find post %d on board %s", post, board);
   end
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "reason") then
       local result, msg;
 
@@ -1444,7 +1444,7 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
   account_check();
   html.brc("delete file", "Delete file");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "reason") then
       local result, msg = pico.file.delete(file, POST["reason"]);
 
@@ -1797,7 +1797,7 @@ end;
 handlers["/Theme"] = function()
   html.brc("change theme configuration", "Change theme configuration");
 
-  if next(POST) ~= nil then
+  if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(POST, "theme") then
       if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
         cgi.headers["Status"] = "400 Bad Request";
@@ -1820,6 +1820,11 @@ end;
 
 handlers["/Post"] = function()
   local files = {};
+
+  if os.getenv("REQUEST_METHOD") ~= "POST" then
+    cgi.headers["Status"] = "400 Bad Request";
+    html.error("Action failed", "Invalid request");
+  end
 
   board_tbl = pico.board.tbl(POST["board"]);
   if not board_tbl then
