@@ -1829,11 +1829,11 @@ handlers["/Post"] = function()
 
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, board_tbl["PostMaxFiles"] do
-    local name = HASERL["file" .. i .. "_filename"];
+    local name = FORM["file" .. i .. "_filename"];
     if name and name ~= "" then
       local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
 
-      local hash, msg = pico.file.add(HASERL["file" .. i .. "_path"]);
+      local hash, msg = pico.file.add(FORM["file" .. i .. "_path"]);
       if not hash then
         cgi.headers["Status"] = "400 Bad Request";
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
