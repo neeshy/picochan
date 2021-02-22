@@ -441,7 +441,7 @@ function curl.multi_request(urls)
   local header_buffer = {};
   local header_function = ffi.cast("curl_write_callback", function(buffer, size, nitems, outstream)
     local s = ffi.string(buffer, size * nitems);
-    local status = s:match("^HTTP/.-%s+(%d+)%s+.-\r\n$");
+    local status = s:match("^HTTP/[%d%.]+%s+(%d+)%s+.-\r\n$");
     if status then
       header_buffer = {["status"] = tonumber(status)};
     else
