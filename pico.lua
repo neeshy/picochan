@@ -330,7 +330,7 @@ function html.picofmt(post_tbl)
   s = s:gsub("\n(&gt;[^\n]*)", "\n<span class='greentext'>%1</span>");
   s = s:gsub("\n(&lt;[^\n]*)", "\n<span class='pinktext'>%1</span>");
 
-  s = s:gsub("(.?.?.?.?.?.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[%]%^_`{|}~]+)", handle_url);
+  s = s:gsub("(.?.?.?.?.?.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[\\%]%^_`{|}~]+)", handle_url);
 
   s = s:gsub("\27", insert_escaped(blocks));
   s = s:gsub("\28", insert_escaped(iblocks));
