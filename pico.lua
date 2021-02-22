@@ -310,7 +310,7 @@ function html.picofmt(post_tbl)
   end
 
   -- six newlines are used to guarentee the URL pattern can fully consume a prefix
-  local s = "\n\n\n\n\n\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", "")) .. "\n";
+  local s = "\n\n\n\n\n\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", ""));
   s = s:gsub("[\27\28]", "");
 
   s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\27", "<code>", "</code>"));
