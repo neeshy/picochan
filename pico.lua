@@ -239,24 +239,24 @@ function html.picofmt(post_tbl)
     local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number, true);
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>&gt;&gt;%d</a></s>", number);
+      return string.format("<s><a class='reference'>\24\24%d</a></s>", number);
     else
-      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;%d</a>",
+      return string.format("<a class='reference' href='/%s/%d#%d'>\24\24%d</a>",
                            ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
     end
   end
 
   local function handle_xbrefs(board, number)
     if not tonumber(number) then
-      return string.format("<a class='reference' href='/%s/'>&gt;&gt;&gt;/%s/</a>%s", board, board, number);
+      return string.format("<a class='reference' href='/%s/'>\24\24\24/%s/</a>%s", board, board, number);
     end
 
     local ref_post_tbl = pico.post.tbl(board, number, true);
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>&gt;&gt;&gt;/%s/%s</a></s>", board, number or "");
+      return string.format("<s><a class='reference'>\24\24\24/%s/%s</a></s>", board, number or "");
     else
-      return string.format("<a class='reference' href='/%s/%d#%d'>&gt;&gt;&gt;/%s/%d</a>",
+      return string.format("<a class='reference' href='/%s/%d#%d'>\24\24\24/%s/%d</a>",
                            board, ref_post_tbl["Parent"] or number, number, board, number);
     end
   end
@@ -264,11 +264,11 @@ function html.picofmt(post_tbl)
   local function handle_url(previous, url)
     local balance_tbl = {
       ["("] = ")",
-      ["<"] = ">",
+      ["\23"] = "\24",
       ["{"] = "}",
       ["["] = "]",
-      ["\""] = "\"",
-      ["'"] = "'"
+      ["\25"] = "\25",
+      ["\26"] = "\26"
     };
     local prev = html.unstriphtml(previous):sub(-1);
     local raw = html.unstriphtml(url);
@@ -309,28 +309,39 @@ function html.picofmt(post_tbl)
     end;
   end
 
-  -- six newlines are used to guarentee the URL pattern can fully consume a prefix
-  local s = "\n\n\n\n\n\n" .. html.striphtml(post_tbl["Comment"]:gsub("\r", ""));
-  s = s:gsub("[\27\28]", "");
+  local s = "\n" .. post_tbl["Comment"]:gsub("\r", "");
+
+  s = s:gsub("[\23-\28]", "");
+
+  s = s:gsub("&", "&amp;");
+  s = s:gsub("<", "\23");
+  s = s:gsub(">", "\24");
+  s = s:gsub("'", "\25");
+  s = s:gsub("\"", "\26");
 
   s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\27", "<code>", "</code>"));
   s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\28", "<span class='code'>", "</span>"));
 
-  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
-  s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
-  s = s:gsub("&gt;&gt;(%d+)", handle_refs);
+  s = s:gsub("\24\24\24/([%d%l]-)/(%d+)", handle_xbrefs);
+  s = s:gsub("\24\24\24/([%d%l]-)/(%s)", handle_xbrefs);
+  s = s:gsub("\24\24(%d+)", handle_refs);
 
-  s = s:gsub("&#39;&#39;&#39;([^\n]-)&#39;&#39;&#39;", "<b>%1</b>");
-  s = s:gsub("&#39;&#39;([^\n]-)&#39;&#39;", "<i>%1</i>");
+  s = s:gsub("\25\25\25([^\n]-)\25\25\25", "<b>%1</b>");
+  s = s:gsub("\25\25([^\n]-)\25\25", "<i>%1</i>");
   s = s:gsub("~~([^\n]-)~~", "<s>%1</s>");
   s = s:gsub("__([^\n]-)__", "<u>%1</u>");
   s = s:gsub("==([^\n]-)==", "<span class='redtext'>%1</span>");
   s = s:gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>");
   s = s:gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>");
-  s = s:gsub("\n(&gt;[^\n]*)", "\n<span class='greentext'>%1</span>");
-  s = s:gsub("\n(&lt;[^\n]*)", "\n<span class='pinktext'>%1</span>");
+  s = s:gsub("\n(\24[^\n]*)", "\n<span class='greentext'>%1</span>");
+  s = s:gsub("\n(\23[^\n]*)", "\n<span class='pinktext'>%1</span>");
 
-  s = s:gsub("(.?.?.?.?.?.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[\\%]%^_`{|}~]+)", handle_url);
+  s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[\\%]%^_`{|}~]+)", handle_url);
+
+  s = s:gsub("\23", "&lt;")
+  s = s:gsub("\24", "&gt;")
+  s = s:gsub("\25", "&#39;")
+  s = s:gsub("\26", "&quot;");
 
   s = s:gsub("\27", insert_escaped(blocks));
   s = s:gsub("\28", insert_escaped(iblocks));
