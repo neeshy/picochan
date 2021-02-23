@@ -1873,11 +1873,12 @@ handlers["/webring.json"] = function()
   printf("%s", json.encode(pico.webring.tbl()));
 end;
 
+local path_info = os.getenv("PATH_INFO");
 for patt, func in pairs(handlers) do
   patt = "^" .. patt .. "$";
 
-  if os.getenv("PATH_INFO"):match(patt) then
-    os.getenv("PATH_INFO"):gsub(patt, func);
+  if path_info:match(patt) then
+    path_info:gsub(patt, func);
     cgi.finalize();
   end
 end
