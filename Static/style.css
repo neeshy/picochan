@@ -172,6 +172,8 @@ form input[type=email],
 form input[type=password],
 form input[type=number],
 form input[type=checkbox] {
+    background-color: var(--textarea-background-color);
+    color: var(--textarea-color);
     height: 2.15ch;
     margin-right: 5px;
     margin-bottom: 5px;
@@ -180,6 +182,7 @@ form input[type=checkbox] {
 
 form button, form input[type=submit] {
     border: 1px solid var(--border-color);
+    background-color: var(--button-background-color);
     color: var(--button-color);
     padding-top: 1px;
     padding-bottom: 1px;
@@ -206,6 +209,8 @@ form input[type="radio"]+label img {
 }
 
 form textarea {
+    background-color: var(--textarea-background-color);
+    color: var(--textarea-color);
     margin-right: 5px;
     margin-bottom: 5px;
     border: 1px solid var(--border-color);
@@ -295,6 +300,7 @@ div.catalog-thread-info {
 }
 
 div.catalog-thread-lastbumpdate {
+    color: var(--post-date-color);
     font-size: 7.5pt;
 }
 
@@ -330,6 +336,7 @@ div.thread {
 
 div.post-container:target div.post {
     background-color: var(--post-target-color);
+    border-color: var(--post-target-border-color);
 }
 
 div.post-header span.post-thread-link {
@@ -344,6 +351,10 @@ div.post-header span.post-subject {
 div.post-header span.post-name {
     font-weight: bold;
     color: var(--post-name-color);
+}
+
+div.post-header span.post-date {
+    color: var(--post-date-color);
 }
 
 div.post-header span.post-capcode {
