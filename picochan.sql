@@ -40,7 +40,7 @@ CREATE TABLE Posts (
   FOREIGN KEY (Board) REFERENCES Boards (Name) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (Board, Parent) REFERENCES Posts (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (Board, Parent) REFERENCES Threads (Board, Number) ON UPDATE CASCADE ON DELETE CASCADE,
-  CHECK((Capcode IN ('admin', 'gvol') AND CapcodeBoard IS NULL) OR (Capcode IN ('bo', 'lvol') AND Capcode IS NOT NULL))
+  CHECK((Capcode IN ('admin', 'gvol') AND CapcodeBoard IS NULL) OR (Capcode IN ('bo', 'lvol') AND CapcodeBoard IS NOT NULL))
 );
 
 CREATE TABLE Threads (
