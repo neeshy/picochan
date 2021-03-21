@@ -31,7 +31,7 @@ CREATE TABLE Posts (
   Date                  DATETIME        NOT NULL                                DEFAULT 0,
   Name                  TEXT                                                    DEFAULT NULL    CHECK(Name IS NULL OR LENGTH(Name) <= 64),
   Email                 TEXT                                                    DEFAULT NULL    CHECK(Email IS NULL OR LENGTH(Email) <= 64),
-  Subject               TEXT                                                    DEFAULT NULL    CHECK(Subject IS NULL OR LENGTH(Subject) <= 64),
+  Subject               TEXT                                                    DEFAULT NULL    CHECK(Subject IS NULL OR LENGTH(Subject) <= 128),
   Capcode               TEXT                                                    DEFAULT NULL,
   CapcodeBoard          TEXT                                                    DEFAULT NULL,
   Comment               TEXT            NOT NULL                                DEFAULT ''      CHECK(LENGTH(Comment) <= 32768),
