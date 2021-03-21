@@ -289,7 +289,7 @@ function pico.board.delete(name, reason)
 end
 
 function pico.board.list()
-  return db:q("SELECT Name, Title, Subtitle FROM Boards ORDER BY MaxPostNumber DESC");
+  return db:q("SELECT Name, Title, Subtitle FROM Boards ORDER BY DisplayOverboard DESC, MaxPostNumber DESC");
 end
 
 function pico.board.exists(name)
