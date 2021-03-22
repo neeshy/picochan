@@ -11,8 +11,6 @@ Picochan is very easy to install. Its dependencies are:
   luajit            2.0.5            https://luajit.org
   sqlite            3.31.1           https://sqlite.org
   argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
-  zlib              1.2.3            https://zlib.net
-  brotli            1.0.7            https://brotli.org
   ffmpeg            4.3              https://ffmpeg.org
   imagemagick       7.0.10.62        https://imagemagick.org
   curl              7.72.0           https://curl.se
@@ -20,7 +18,7 @@ Picochan is very easy to install. Its dependencies are:
 On a freshly installed OpenBSD 6.6 system, Picochan was made to work by
 first installing the following packages through pkg_add:
 
-  luajit sqlite3 argon2 brotli ffmpeg ImageMagick curl
+  luajit sqlite3 argon2 ffmpeg ImageMagick curl
 
 Finally, you must download, compile and install haserl.
 

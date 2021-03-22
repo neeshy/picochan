@@ -10,8 +10,6 @@ Picochan is very easy to install. Its dependencies are:
   luajit            2.0.5            https://luajit.org
   sqlite            3.34.0           https://sqlite.org
   argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
-  zlib              1.2.11           https://zlib.net
-  brotli            1.0.9            https://brotli.org
   corefonts         1-r7             http://corefonts.sourceforge.net
   ffmpeg            4.3.1            https://ffmpeg.org
   imagemagick       7.0.11.0         https://imagemagick.org
@@ -24,8 +22,6 @@ for example, thumbnails for AV1-encoded videos may not be generated if you
 do not enable the dav1d USE-flag for ffmpeg).
 
   app-crypt/argon2
-  app-arch/zlib
-  app-arch/brotli
   dev-db/sqlite
   dev-lang/luajit           USE="lua52compat"
   media-fonts/corefonts
