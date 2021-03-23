@@ -422,6 +422,8 @@ function pico.board.banner.add(board, file)
     return false, "Board does not exist";
   elseif not pico.file.exists(file) then
     return false, "File does not exist";
+  elseif db:b("SELECT TRUE FROM Banners WHERE Board = ? AND File = ?", board, file) then
+    return false, "Banner already exists";
   end
 
   db:e("INSERT INTO Banners (Board, File) VALUES (?, ?)", board, file);
