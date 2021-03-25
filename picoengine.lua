@@ -673,6 +673,16 @@ function pico.file.exists(name)
   return db:b("SELECT TRUE FROM Files WHERE Name = ?", name);
 end
 
+function pico.file.create_refs(board, number, files)
+  if files ~= nil then
+    for i = 1, #files do
+      if files[i]["Hash"] and files[i]["Hash"] ~= "" then
+        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], files[i]["Spoiler"], i);
+      end
+    end
+  end
+end
+
 --
 -- POST ACCESS, CREATION AND DELETION FUNCTIONS
 --
@@ -692,12 +702,7 @@ end
 
 -- Create a post and return its number
 -- 'files' is an array with a collection of file hashes to attach to the post
-function pico.post.create(board, parent, name, email, subject, comment, files, captcha_id, captcha_text, bypasschecks)
-  if bypasschecks == true then
-    local auth, msg = permit("admin gvol");
-    if not auth then return auth, msg end;
-  end
-
+function pico.post.create(board, parent, name, email, subject, comment, files, captcha_id, captcha_text)
   local board_tbl = pico.board.tbl(board);
   local is_thread = not parent;
 
@@ -710,48 +715,46 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
   comment = comment or "";
 
-  if not bypasschecks then
-    if not board_tbl then
-      return nil, "Board does not exist";
-    elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
-      return nil, "Board is locked";
-    elseif board_tbl["PPHLimit"] and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
-      return nil, "Maximum post creation rate exceeded";
-    elseif #comment > board_tbl["PostMaxLength"] then
-      return nil, "Post text too long";
-    elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
-      return nil, "Post contained too many newlines";
-    elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
-      return nil, "Post contained too many double newlines";
-    elseif name and #name > 64 then
-      return nil, "Name too long";
-    elseif email and #email > 64 then
-      return nil, "Email too long";
-    elseif subject and #subject > 64 then
-      return nil, "Subject too long";
-    elseif (not files or #files == 0) and #comment == 0 then
-      return nil, "Post is blank";
-    elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
-           and not pico.captcha.check(captcha_id, captcha_text) then
-      return nil, "Captcha is required but no valid captcha supplied";
-    elseif is_thread then
-      if board_tbl["TPHLimit"] and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
-        return nil, "Maximum thread creation rate exceeded";
-      elseif #comment < board_tbl["ThreadMinLength"] then
-        return nil, "Thread text too short";
-      end
-    else
-      local parent_tbl = pico.post.tbl(board, parent);
-      if not parent_tbl then
-        return nil, "Parent thread does not exist";
-      elseif parent_tbl["Parent"] then
-        return nil, "Parent post is not a thread";
-      elseif parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
-        return nil, "Parent thread is locked";
-      elseif parent_tbl["Cycle"] ~= 1 and board_tbl["PostLimit"]
-             and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
-        return nil, "Thread full";
-      end
+  if not board_tbl then
+    return nil, "Board does not exist";
+  elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
+    return nil, "Board is locked";
+  elseif board_tbl["PPHLimit"] and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
+    return nil, "Maximum post creation rate exceeded";
+  elseif #comment > board_tbl["PostMaxLength"] then
+    return nil, "Post text too long";
+  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
+    return nil, "Post contained too many newlines";
+  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
+    return nil, "Post contained too many double newlines";
+  elseif name and #name > 64 then
+    return nil, "Name too long";
+  elseif email and #email > 64 then
+    return nil, "Email too long";
+  elseif subject and #subject > 64 then
+    return nil, "Subject too long";
+  elseif (not files or #files == 0) and #comment == 0 then
+    return nil, "Post is blank";
+  elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
+         and not pico.captcha.check(captcha_id, captcha_text) then
+    return nil, "Captcha is required but no valid captcha supplied";
+  elseif is_thread then
+    if board_tbl["TPHLimit"] and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
+      return nil, "Maximum thread creation rate exceeded";
+    elseif #comment < board_tbl["ThreadMinLength"] then
+      return nil, "Thread text too short";
+    end
+  else
+    local parent_tbl = pico.post.tbl(board, parent);
+    if not parent_tbl then
+      return nil, "Parent thread does not exist";
+    elseif parent_tbl["Parent"] then
+      return nil, "Parent post is not a thread";
+    elseif parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
+      return nil, "Parent thread is locked";
+    elseif parent_tbl["Cycle"] ~= 1 and board_tbl["PostLimit"]
+           and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
+      return nil, "Thread full";
     end
   end
 
@@ -760,14 +763,30 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", board, parent, name, email, subject, capcode, capcode_board, comment);
   local number = db:r1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board);
 
-  if files ~= nil then
-    for i = 1, #files do
-      if files[i]["Hash"] and files[i]["Hash"] ~= "" then
-        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], files[i]["Spoiler"], i);
-      end
-    end
-  end
+  pico.file.create_refs(board, number, files);
+  pico.post.create_refs(board, number, parent, email, comment);
 
+  db:e("END TRANSACTION");
+  return number;
+end
+
+function pico.post.set(board, parent, date, name, email, subject, capcode, capcode_board, comment, files)
+  local auth, msg = permit("admin gvol");
+  if not auth then return auth, msg end;
+
+  db:e("BEGIN TRANSACTION");
+  db:e("INSERT INTO Posts (Board, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment) " ..
+       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", board, parent, date, name, email, subject, capcode, capcode_board, comment);
+  local number = db:r1("SELECT MaxPostNumber FROM Boards WHERE Name = ?", board);
+
+  pico.file.create_refs(board, number, files);
+  pico.post.create_refs(board, number, parent, email, comment);
+
+  db:e("END TRANSACTION");
+  return number;
+end
+
+function pico.post.create_refs(board, number, parent, email, comment)
   if not email or not (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
     for ref in comment:gmatch(">>(%d+)") do
       ref = tonumber(ref);
@@ -784,9 +803,6 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
       end
     end
   end
-
-  db:e("END TRANSACTION");
-  return number;
 end
 
 function pico.post.delete(board, number, reason)
@@ -1000,10 +1016,10 @@ function pico.thread.move(board, number, newboard, reason)
                               ["Spoiler"] = post_tbl["Files"][j]["Spoiler"]};
     end
 
-    local newnumber = pico.post.create(newboard, post_tbl["Parent"],
-                                       post_tbl["Name"], post_tbl["Email"],
-                                       post_tbl["Subject"], post_tbl["Comment"],
-                                       post_tbl["Files"], nil, nil, true);
+    local newnumber = pico.post.set(newboard, post_tbl["Parent"], post_tbl["Date"],
+                                    post_tbl["Name"], post_tbl["Email"], post_tbl["Subject"],
+                                    post_tbl["Capcode"], post_tbl["CapcodeBoard"],
+                                    post_tbl["Comment"], post_tbl["Files"]);
     number_lut[tostring(post_tbl["Number"])] = ">>" .. tostring(newnumber);
 
     if i == 1 then

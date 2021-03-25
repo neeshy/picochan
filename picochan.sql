@@ -145,7 +145,8 @@ CREATE TRIGGER create_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NULL
 BEGIN
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
-  UPDATE Posts SET Number = (SELECT MaxPostNumber FROM Boards WHERE Name = NEW.Board), Date = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
+  UPDATE Posts SET Number = (SELECT MaxPostNumber FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
+  UPDATE Posts SET Date = STRFTIME('%s', 'now') WHERE NEW.Date = 0 AND ROWID = NEW.ROWID;
   INSERT INTO Threads (Board, Number, LastBumpDate, Autosage) VALUES (
     NEW.Board,
     (SELECT Number FROM Posts WHERE ROWID = NEW.ROWID),
@@ -157,7 +158,8 @@ CREATE TRIGGER bump_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NOT NULL
 BEGIN
   UPDATE Boards SET MaxPostNumber = MaxPostNumber + 1 WHERE Name = NEW.Board;
-  UPDATE Posts SET Number = (SELECT MaxPostNumber FROM Boards WHERE Name = NEW.Board), Date = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
+  UPDATE Posts SET Number = (SELECT MaxPostNumber FROM Boards WHERE Name = NEW.Board) WHERE ROWID = NEW.ROWID;
+  UPDATE Posts SET Date = STRFTIME('%s', 'now') WHERE NEW.Date = 0 AND ROWID = NEW.ROWID;
   UPDATE Threads SET ReplyCount = ReplyCount + 1 WHERE Board = NEW.Board AND Number = NEW.Parent;
   UPDATE Threads SET LastBumpDate = (SELECT Date FROM Posts WHERE ROWID = NEW.ROWID)
   WHERE Board = NEW.Board AND Number = NEW.Parent
