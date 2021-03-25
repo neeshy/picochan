@@ -933,14 +933,14 @@ function pico.thread.tbl(board, number)
     return nil, "Post is not a thread or does not exist";
   end
 
-  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
-                          board, number, number);
   local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
                           "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
                           "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC");
 
   db:e("BEGIN TRANSACTION");
+  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
+                          board, number, number);
   for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i];
     post_tbl["Files"] = {};
