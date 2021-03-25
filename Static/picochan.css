@@ -20,7 +20,7 @@
     --button-background-color: #F0F0F0;
     --button-color: #000;
     --textarea-background-color: #FFF;
-    --textarea-color: var(--text-color);
+    --textarea-color: #000;
     --link-color: #5CF;
     --title-color: #E44;
     --subtitle-color: #E00;
