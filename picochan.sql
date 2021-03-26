@@ -207,9 +207,11 @@ CREATE TRIGGER slide_thread BEFORE INSERT ON Threads
    AND (SELECT COUNT(*) FROM Threads WHERE Board = NEW.Board)
        >= (SELECT ThreadLimit FROM Boards WHERE Name = NEW.Board)
 BEGIN
-  DELETE FROM Threads
-  WHERE Board = NEW.Board AND NOT Sticky
-        AND LastBumpDate = (SELECT MIN(LastBumpDate) FROM Threads WHERE Board = NEW.Board);
+  DELETE FROM Posts
+  WHERE Board = NEW.Board AND Number =
+    (SELECT Number FROM Threads
+     WHERE LastBumpDate = (SELECT MIN(LastBumpDate) FROM Threads WHERE Board = NEW.Board AND NOT Sticky)
+           AND NOT Sticky ORDER BY Number ASC LIMIT 1);
 END;
 
 CREATE TRIGGER decrement_replycount BEFORE DELETE ON Posts
