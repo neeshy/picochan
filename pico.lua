@@ -549,6 +549,7 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   html.renderpostfiles(post_tbl, unprivileged);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
   printf("</div></div>");
+  printf("<hr class='invisible-separator'>");
 end
 
 function html.rendercatalog(catalog_tbl)
