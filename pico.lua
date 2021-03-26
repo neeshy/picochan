@@ -366,7 +366,7 @@ function html.modlinks(post_tbl)
     return;
   end
 
-  printf("<span class='mod-links'>");
+  printf(" <span class='mod-links'>");
   printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number);
 
   if not post_tbl["Parent"] then
@@ -383,13 +383,11 @@ end
 function html.threadflags(post_tbl)
   if (post_tbl["Sticky"] == 1 or post_tbl["Lock"] == 1
       or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
-    printf("<span class='thread-flags'>");
-    printf(" %s%s%s%s",
+    printf(" <span class='thread-flags'>%s%s%s%s</span>",
            post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a> "  or "",
            post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a> "    or "",
            post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2693;</a> " or "",
            post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x1f503;</a> "   or "");
-    printf("</span>");
   end
 end
 
@@ -493,21 +491,21 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   printf("<div class='post-header'>");
 
   if separate or (overboard and not post_tbl["Parent"]) then
-    printf("<span class='post-thread-link'>");
+    printf(" <span class='post-thread-link'>");
     if post_tbl["Parent"] then
       printf("<a href='/%s/%d'>/%s/%d</a>",
              post_tbl["Board"], post_tbl["Parent"], post_tbl["Board"], post_tbl["Parent"]);
     else
       printf("<a href='/%s/'>/%s/</a>", post_tbl["Board"], post_tbl["Board"]);
     end
-    printf("</span>-&gt; ");
+    printf("</span> -&gt;");
   end
 
   if post_tbl["Subject"] and post_tbl["Subject"] ~= "" then
-    printf("<span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]));
+    printf(" <span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]));
   end
 
-  printf("<span class='post-name'>");
+  printf(" <span class='post-name'>");
   if post_tbl["Email"] and post_tbl["Email"] ~= "" then
     printf("<a class='post-email' href='mailto:%s'>%s</a>",
            html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"] or defaultpostname));
@@ -529,11 +527,11 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
       capcode = "Board Volunteer (" .. post_tbl["CapcodeBoard"] .. ")";
     end
 
-    printf("<span class='post-capcode'>## %s</span>", capcode);
+    printf(" <span class='post-capcode'>## %s</span>", capcode);
   end
 
-  printf("<span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
-  printf("<span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
+  printf(" <span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
+  printf(" <span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
 
@@ -544,7 +542,7 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
   for i = 1, #reflist do
-    printf("<a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
+    printf(" <a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
            post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
   end
 

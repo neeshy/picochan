@@ -381,10 +381,6 @@ div.post-header a.referrer {
     font-size: 7.5pt;
 }
 
-div.post-header span {
-    margin-right: 1ch;
-}
-
 div.post-file {
     display: inline-block;
     margin: 0 1.3ch 1.3ch 0;
