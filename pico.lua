@@ -550,7 +550,6 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   html.renderpostfiles(post_tbl, unprivileged);
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
   printf("</div></div>");
-  printf("<hr class='invisible-separator'>");
 end
 
 function html.rendercatalog(catalog_tbl)
@@ -603,6 +602,8 @@ function html.rendercatalog(catalog_tbl)
     printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
 
     printf("</div>");
+
+    printf("<hr class='invisible-separator'>");
   end
 
   printf("</div>");
@@ -614,6 +615,8 @@ function html.renderindex(index_tbl, board, page, prev, next)
     printf("<div class='index-thread'>");
     html.renderpost(index_tbl[i][1], overboard);
 
+    printf("<hr class='invisible-separator'>");
+
     printf("<span class='index-thread-summary'>");
     if index_tbl[i][1]["RepliesOmitted"] > 0 then
       printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"]);
@@ -622,7 +625,9 @@ function html.renderindex(index_tbl, board, page, prev, next)
     printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"]);
     printf("</span>");
 
+
     for j = 2, #index_tbl[i] do
+      printf("<hr class='invisible-separator'>");
       html.renderpost(index_tbl[i][j], overboard);
     end
 
@@ -643,6 +648,7 @@ end
 function html.renderrecent(recent_tbl, board, page, prev, next)
   for i = 1, #recent_tbl do
     html.renderpost(recent_tbl[i], true, true);
+    printf("<hr class='invisible-separator'>");
   end
 
   printf("<hr />");
@@ -1786,6 +1792,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   for i = 1, #thread_tbl do
     html.renderpost(thread_tbl[i]);
+    printf("<hr class='invisible-separator'>");
   end
 
   printf("<hr />");
