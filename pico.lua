@@ -232,7 +232,10 @@ end
 function html.picofmt(post_tbl)
   local email = post_tbl["Email"];
   if email and (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
-    return html.striphtml(post_tbl["Comment"]);
+    local s = html.striphtml(post_tbl["Comment"]:gsub("\r", ""));
+    s = s:gsub("^\n+", "");
+    s = s:gsub("\n+$", "");
+    return s:gsub("\n", "<br />");
   end
 
   local function handle_refs(number)
@@ -348,7 +351,7 @@ function html.picofmt(post_tbl)
 
   s = s:gsub("^\n+", "");
   s = s:gsub("\n+$", "");
-  s = s:gsub("\n", "\r\n");
+  s = s:gsub("\n", "<br />");
 
   return s;
 end
