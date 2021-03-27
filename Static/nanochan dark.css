@@ -44,7 +44,7 @@ hr {
 }
 
 div.catalog-thread {
-    scrollbar-color: #333 #333;
+    scrollbar-color: #777 #333;
 }
 
 div.post-container:target div.post {
