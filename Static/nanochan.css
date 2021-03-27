@@ -25,11 +25,7 @@ div.container {
     border-color: #000;
 }
 
-h2.barheader {
-    background-color: #ACB;
-}
-
-th {
+h2.barheader, th, form label {
     background-color: #ACB;
 }
 
@@ -37,15 +33,11 @@ tr:nth-child(odd) {
     background-color: #BDC;
 }
 
-form label {
-    background-color: #ACB;
-}
-
 form input, form textarea {
     border-color: #000;
 }
 
-form#postform {
+div.post, div.catalog-thread, form#postform {
     background-color: #BDC;
     border-color: #000;
 }
@@ -55,29 +47,18 @@ hr {
 }
 
 div.catalog-thread {
-    background-color: #BDC;
-    border-color: #000;
     scrollbar-color: #9BA #ACB;
-}
-
-div.catalog-thread-subject {
-    color: #016;
-}
-
-div.post {
-    background-color: #BDC;
-    border-color: #000;
 }
 
 div.post-container:target div.post {
     background-color: #9BA;
 }
 
-div.post-header span.post-subject {
+div.catalog-thread-subject, div.post-header span.post-subject {
     color: #016;
 }
 
-div.post-header span.post-name {
+div.post-header span.post-name, span.greentext {
     color: #070;
 }
 
@@ -95,10 +76,6 @@ div.post-header span.post-number a:hover {
 
 div.post-comment a, div.catalog-thread-comment a {
     color: #C00;
-}
-
-span.greentext {
-    color: #070;
 }
 
 span.pinktext {

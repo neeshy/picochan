@@ -24,12 +24,12 @@ h2#boardsubtitle {
     color: #E00;
 }
 
-div.container {
+div.container, div.post, div.catalog-thread, form#postform {
     background-color: #222;
     border-color: #000;
 }
 
-h2.barheader {
+h2.barheader, tr:nth-child(odd), form label, div.post-container:target div.post {
     background-color: #333;
 }
 
@@ -37,20 +37,7 @@ th {
     background-color: #444;
 }
 
-tr:nth-child(odd) {
-    background-color: #333;
-}
-
-form label {
-    background-color: #333;
-}
-
 form input, form textarea {
-    border-color: #000;
-}
-
-form#postform {
-    background-color: #222;
     border-color: #000;
 }
 
@@ -59,25 +46,10 @@ hr {
 }
 
 div.catalog-thread {
-    background-color: #222;
-    border-color: #000;
     scrollbar-color: #444 #333;
 }
 
-div.catalog-thread-subject {
-    color: #28F;
-}
-
-div.post {
-    background-color: #222;
-    border-color: #000;
-}
-
-div.post-container:target div.post {
-    background-color: #333;
-}
-
-div.post-header span.post-subject {
+div.catalog-thread-subject, div.post-header span.post-subject {
     color: #28F;
 }
 
@@ -93,11 +65,7 @@ div.post-header span.post-number a {
     color: #DDD;
 }
 
-div.post-header span.post-number a:hover {
-    color: #F33;
-}
-
-div.post-comment a, div.catalog-thread-comment a {
+div.post-header span.post-number a:hover, div.post-comment a, div.catalog-thread-comment a {
     color: #F33;
 }
 

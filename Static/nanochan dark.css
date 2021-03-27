@@ -12,33 +12,25 @@ nav#topbar {
     border-bottom-color: #777;
 }
 
-h1.redheader, h1#boardtitle {
+h1.redheader, h1#boardtitle, div.catalog-thread-subject, div.post-header span.post-subject, span.redtext {
     color: #F44336;
 }
 
-h2#boardsubtitle {
+h2#boardsubtitle, div.catalog-thread-lastbumpdate, div.post-header span.post-date {
     color: #FFC107;
 }
 
-div.container {
+div.container, div.post, div.catalog-thread, form#postform {
     background-color: #333;
     border-color: #777;
 }
 
-h2.barheader {
+h2.barheader, tr:nth-child(odd)  {
     background-color: #444;
 }
 
 th {
     background-color: #222;
-}
-
-tr:nth-child(odd) {
-    background-color: #444;
-}
-
-form label {
-    background-color: #333;
 }
 
 form input, form textarea {
@@ -47,64 +39,24 @@ form input, form textarea {
     border-color: #777;
 }
 
-form#postform {
-    background-color: #333;
-    border-color: #777;
-}
-
 hr {
     border-bottom-color: #777;
 }
 
 div.catalog-thread {
-    background-color: #333;
-    border-color: #777;
     scrollbar-color: #333 #333;
-}
-
-div.catalog-thread-lastbumpdate {
-    color: #FFC107;
-}
-
-div.catalog-thread-subject {
-    color: #F44336;
-}
-
-div.post {
-    background-color: #333;
-    border-color: #777;
 }
 
 div.post-container:target div.post {
     border-color: #03A9F4;
 }
 
-div.post-header span.post-subject {
-    color: #F44336;
-}
-
 div.post-header span.post-name {
     color: #8BC34A;
 }
 
-div.post-header span.post-date {
-    color: #FFC107;
-}
-
 div.post-header span.post-capcode {
     color: #BA68C8;
-}
-
-div.post-header span.post-number a {
-    color: #03A9F4;
-}
-
-div.post-header span.post-number a:hover {
-    color: #03A9F4;
-}
-
-div.post-comment a, div.catalog-thread-comment a {
-    color: #03A9F4;
 }
 
 span.greentext {
@@ -118,10 +70,6 @@ span.pinktext {
 span.kiketext {
     background-color: #FFF;
     color: #33D;
-}
-
-span.redtext {
-    color: #F44336;
 }
 
 span.spoiler {
