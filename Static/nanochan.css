@@ -51,7 +51,7 @@ div.catalog-thread {
 }
 
 div.post-container:target div.post {
-    background-color: #9BA;
+    background-color: #9BA !important;
 }
 
 div.catalog-thread-subject, div.post-header span.post-subject {

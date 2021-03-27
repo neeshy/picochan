@@ -48,7 +48,11 @@ div.catalog-thread {
 }
 
 div.post-container:target div.post {
-    border-color: #03A9F4;
+    border: 1px solid #03A9F4 !important;
+}
+
+div.post-container:target div.thread {
+    background-color: #333 !important;
 }
 
 div.post-header span.post-name {

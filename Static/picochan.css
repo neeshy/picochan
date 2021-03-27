@@ -29,7 +29,7 @@ div.container, div.post, div.catalog-thread, form#postform {
     border-color: #000;
 }
 
-h2.barheader, tr:nth-child(odd), form label, div.post-container:target div.post {
+h2.barheader, tr:nth-child(odd), form label {
     background-color: #333;
 }
 
@@ -47,6 +47,10 @@ hr {
 
 div.catalog-thread {
     scrollbar-color: #444 #333;
+}
+
+div.post-container:target div.post {
+    background-color: #333 !important;
 }
 
 div.catalog-thread-subject, div.post-header span.post-subject {

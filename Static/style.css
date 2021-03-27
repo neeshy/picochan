@@ -312,7 +312,11 @@ div.thread {
     background: none !important;
     border: none;
     display: block;
-    padding-top: 0;
+    margin-top: 0;
+}
+
+div.post-container:target div.thread {
+    display: table;
 }
 
 div.post-header span.post-thread-link,
