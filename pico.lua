@@ -64,8 +64,8 @@ function html.begin(...)
   printf("<html>");
   printf(  "<head>");
   printf(    "<title>%s%s</title>", title, sitename);
-  printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme);
   printf(    "<link rel='stylesheet' type='text/css' href='/Static/style.css' />");
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme);
   printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />");
   printf(    "<meta charset='utf-8' />");
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");

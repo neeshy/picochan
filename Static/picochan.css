@@ -1,42 +1,133 @@
-:root {
-    --background-color: #111;
-    --container-color: #222;
-    --post-color: var(--container-color);
-    --post-target-color: #333;
-    --post-form-color: var(--post-color);
-    --label-color: var(--post-target-color);
-    --bar-header-color: var(--post-target-color);
-    --table-header-color: #444;
-    --table-row-color: var(--post-target-color);
-    --scrollbar-color: var(--table-header-color);
-    --scrollbar-background-color: var(--post-target-color);
-    --topbar-color: var(--container-color);
-    --system-link-color: var(--link-color);
-    --board-link-color: var(--link-color);
-    --border-color: #000;
-    --post-target-border-color: var(--border-color);
-    --text-color: #DDD;
-    --bold-color: #FFF;
-    --button-background-color: #F0F0F0;
-    --button-color: #000;
-    --textarea-background-color: #FFF;
-    --textarea-color: #000;
-    --link-color: #5CF;
-    --title-color: #E44;
-    --subtitle-color: #E00;
-    --post-name-color: #0D0;
-    --post-subject-color: #28F;
-    --post-date-color: var(--text-color);
-    --post-capcode-color: #F22;
-    --post-link-color: #F33;
-    --post-number-color: var(--text-color);
-    --post-number-hover-color: #F33;
-    --greentext-color: #0C0;
-    --pinktext-color: #F64;
-    --kiketext-color: #33D;
-    --kiketext-background-color: #FFF;
-    --redtext-color: #E33;
-    --spoiler-color: #000;
-    --spoiler-hover-color: #FFF;
-    --code-color: var(--table-header-color);
+body {
+    background-color: #111;
+    color: #DDD;
+}
+
+b {
+    color: #FFF;
+}
+
+a, a:visited {
+    color: #5CF;
+}
+
+nav#topbar {
+    background-color: #222;
+    border-bottom-color: #000;
+}
+
+h1.redheader, h1#boardtitle {
+    color: #E44;
+}
+
+h2#boardsubtitle {
+    color: #E00;
+}
+
+div.container {
+    background-color: #222;
+    border-color: #000;
+}
+
+h2.barheader {
+    background-color: #333;
+}
+
+th {
+    background-color: #444;
+}
+
+tr:nth-child(odd) {
+    background-color: #333;
+}
+
+form label {
+    background-color: #333;
+}
+
+form input, form textarea {
+    border-color: #000;
+}
+
+form#postform {
+    background-color: #222;
+    border-color: #000;
+}
+
+hr {
+    border-bottom-color: #000;
+}
+
+div.catalog-thread {
+    background-color: #222;
+    border-color: #000;
+    scrollbar-color: #444 #333;
+}
+
+div.catalog-thread-subject {
+    color: #28F;
+}
+
+div.post {
+    background-color: #222;
+    border-color: #000;
+}
+
+div.post-container:target div.post {
+    background-color: #333;
+}
+
+div.post-header span.post-subject {
+    color: #28F;
+}
+
+div.post-header span.post-name {
+    color: #0D0;
+}
+
+div.post-header span.post-capcode {
+    color: #F22;
+}
+
+div.post-header span.post-number a {
+    color: #DDD;
+}
+
+div.post-header span.post-number a:hover {
+    color: #F33;
+}
+
+div.post-comment a, div.catalog-thread-comment a {
+    color: #F33;
+}
+
+span.greentext {
+    color: #0C0;
+}
+
+span.pinktext {
+    color: #F64;
+}
+
+span.kiketext {
+    background-color: #FFF;
+    color: #33D;
+}
+
+span.redtext {
+    color: #E33;
+}
+
+span.spoiler {
+    background-color: #000;
+    color: #000;
+}
+
+span.spoiler:hover {
+    color: #FFF;
+}
+
+code, span.code {
+    background-color: #444;
+    border-color: #000;
 }

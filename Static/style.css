@@ -1,17 +1,10 @@
 body {
-    background-color: var(--background-color);
-    color: var(--text-color);
     font-family: monospace;
     margin: 0;
     padding: 0 1.3ch 1.3ch 1.3ch;
 }
 
-b {
-    color: var(--bold-color);
-}
-
 a, a:visited {
-    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -26,8 +19,8 @@ nav#topbar {
     top: 0;
     padding-top: 0.25ch;
     padding-bottom: 0.25ch;
-    background-color: var(--topbar-color);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
 }
 
 nav#topbar>ul {
@@ -42,12 +35,10 @@ nav#topbar>ul>li {
 }
 
 nav#topbar>ul>li.system>a {
-    color: var(--system-link-color);
     font-weight: bold;
 }
 
 nav#topbar>ul>li.board>a {
-    color: var(--board-link-color);
     font-weight: normal;
 }
 
@@ -68,7 +59,6 @@ img#banner {
 
 h1.redheader, h1#boardtitle {
     text-align: center;
-    color: var(--title-color);
     margin-top: 5px;
 }
 
@@ -76,7 +66,6 @@ h2#boardsubtitle {
     font-weight: normal;
     font-size: 10pt;
     text-align: center;
-    color: var(--subtitle-color);
     margin-top: -15px;
 }
 
@@ -89,8 +78,8 @@ div#announce {
 
 div.container {
     margin: auto;
-    background-color: var(--container-color);
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
     padding: 10px;
 }
 
@@ -103,7 +92,6 @@ div.container.wide {
 }
 
 h2.barheader {
-    background-color: var(--bar-header-color);
     margin-left: -10px;
     margin-right: -10px;
     padding-left: 10px;
@@ -133,11 +121,6 @@ table {
 th {
     text-align: left;
     font-weight: bold;
-    background-color: var(--table-header-color);
-}
-
-tr:nth-child(odd) {
-    background-color: var(--table-row-color);
 }
 
 th, td {
@@ -151,7 +134,6 @@ fieldset {
 }
 
 form label {
-    background-color: var(--label-color);
     text-align: left;
     display: inline-block;
     min-width: 18ch;
@@ -172,18 +154,16 @@ form input[type=email],
 form input[type=password],
 form input[type=number],
 form input[type=checkbox] {
-    background-color: var(--textarea-background-color);
-    color: var(--textarea-color);
     height: 2.15ch;
     margin-right: 5px;
     margin-bottom: 5px;
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
 }
 
-form button, form input[type=submit] {
-    border: 1px solid var(--border-color);
-    background-color: var(--button-background-color);
-    color: var(--button-color);
+form input[type=submit] {
+    border-width: 1px;
+    border-style: solid;
     padding-top: 1px;
     padding-bottom: 1px;
     padding-left: 5px;
@@ -209,11 +189,10 @@ form input[type="radio"]+label img {
 }
 
 form textarea {
-    background-color: var(--textarea-background-color);
-    color: var(--textarea-color);
     margin-right: 5px;
     margin-bottom: 5px;
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
     resize: both;
 }
 
@@ -222,8 +201,8 @@ form#postform {
     position: fixed;
     top: calc(3.5ch + 1px);
     right: 1.3ch;
-    background-color: var(--post-form-color);
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
     padding: 5px;
     max-width: 90%;
     display: none;
@@ -270,7 +249,8 @@ hr {
     margin: 1.3ch 0 1.3ch 0;
     height: 0;
     border-top: none;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
     border-left: none;
     border-right: none;
     clear: both;
@@ -291,11 +271,10 @@ div.catalog-thread {
     padding: 10px;
     margin-right: 1.3ch;
     margin-bottom: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--post-color);
+    border-width: 1px;
+    border-style: solid;
     text-align: center;
     overflow: auto;
-    scrollbar-color: var(--scrollbar-color) var(--scrollbar-background-color);
     scrollbar-width: thin;
 }
 
@@ -304,13 +283,11 @@ div.catalog-thread-info {
 }
 
 div.catalog-thread-lastbumpdate {
-    color: var(--post-date-color);
     font-size: 7.5pt;
 }
 
 div.catalog-thread-subject {
     font-weight: bold;
-    color: var(--post-subject-color);
 }
 
 div.index-thread span.index-thread-summary {
@@ -324,10 +301,10 @@ div.post-container {
 }
 
 div.post {
-    background-color: var(--post-color);
     padding: 1.3ch;
     margin-top: 1.3ch;
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
     display: table;
 }
 
@@ -338,41 +315,14 @@ div.thread {
     padding-top: 0;
 }
 
-div.post-container:target div.post {
-    background-color: var(--post-target-color);
-    border-color: var(--post-target-border-color);
-}
-
-div.post-header span.post-thread-link {
-    font-weight: bold;
-}
-
-div.post-header span.post-subject {
-    font-weight: bold;
-    color: var(--post-subject-color);
-}
-
+div.post-header span.post-thread-link,
+div.post-header span.post-subject,
 div.post-header span.post-name {
     font-weight: bold;
-    color: var(--post-name-color);
-}
-
-div.post-header span.post-date {
-    color: var(--post-date-color);
-}
-
-div.post-header span.post-capcode {
-    font-weight: normal;
-    color: var(--post-capcode-color);
 }
 
 div.post-header span.post-number a {
-    color: var(--post-number-color);
     text-decoration: none;
-}
-
-div.post-header span.post-number a:hover {
-    color: var(--post-number-hover-color);
 }
 
 div.post-header a.referrer {
@@ -449,37 +399,13 @@ div.post-comment, div.catalog-thread-comment {
 }
 
 div.post-comment a, div.catalog-thread-comment a {
-    color: var(--post-link-color);
     text-decoration: underline;
 }
 
-span.greentext {
-    color: var(--greentext-color);
-}
-
-span.pinktext {
-    color: var(--pinktext-color);
-}
-
-span.kiketext {
-    color: var(--kiketext-color);
-    background-color: var(--kiketext-background-color);
-}
-
 span.redtext {
-    color: var(--redtext-color);
     font-weight: bolder;
     font-size: 11pt;
     letter-spacing: -0.7px;
-}
-
-span.spoiler {
-    background-color: var(--spoiler-color);
-    color: var(--spoiler-color);
-}
-
-span.spoiler:hover {
-    color: var(--spoiler-hover-color);
 }
 
 code {
@@ -494,9 +420,9 @@ span.code {
 
 code, span.code {
     max-width: max-content;
-    background-color: var(--code-color);
     margin: 1ch 0;
-    border: 1px solid var(--border-color);
+    border-width: 1px;
+    border-style: solid;
 }
 
 span#thread-reply {
