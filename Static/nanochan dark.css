@@ -33,7 +33,7 @@ th {
     background-color: #222;
 }
 
-form input, form textarea {
+form input, form select, form textarea {
     background-color: #444;
     color: #FFF;
     border-color: #777;

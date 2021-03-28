@@ -172,6 +172,13 @@ form input[type="radio"]+label img {
     max-height: 100px;
 }
 
+form select {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-width: 1px;
+    border-style: solid;
+}
+
 form textarea {
     margin-right: 5px;
     margin-bottom: 5px;

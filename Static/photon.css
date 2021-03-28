@@ -41,7 +41,7 @@ tr:nth-child(odd) {
     background-color: #EEE;
 }
 
-form input, form textarea {
+form input, form select, form textarea {
     border-color: #000;
 }
 
