@@ -615,7 +615,7 @@ function pico.file.add(path)
                "exec convert -flatten -strip - -filter Catrom -quality 60 " ..
                "-thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    p = io.popen("ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
+    p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r");
   elseif class == "image" or extension == "pdf" or extension == "ps" then
     os.execute("exec convert -strip Media/" .. filename .. ((extension == "pdf" or extension == "ps") and "[0]" or "") ..
@@ -624,7 +624,7 @@ function pico.file.add(path)
     os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
                "[0] -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename);
 
-    p = io.popen("identify -format '%wx%h' Media/" .. filename .. "[0]", "r");
+    p = io.popen("exec identify -format '%wx%h' Media/" .. filename .. "[0]", "r");
   end
 
   if p then
