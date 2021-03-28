@@ -53,8 +53,7 @@ div#content {
 
 img#banner {
     display: block;
-    margin-left: auto;
-    margin-right: auto;
+    margin: auto;
 }
 
 h1.redheader, h1#boardtitle {
@@ -78,9 +77,9 @@ div#announce {
 
 div.container {
     margin: auto;
+    padding: 10px;
     border-width: 1px;
     border-style: solid;
-    padding: 10px;
 }
 
 div.container.narrow {
@@ -100,11 +99,7 @@ h2.barheader {
 
 div.container ul {
     list-style: none;
-    padding: 0;
     margin: 0;
-}
-
-div.container ul>li {
     padding-left: 16px;
 }
 
@@ -124,9 +119,7 @@ th {
 }
 
 th, td {
-    padding: 3px;
-    padding-left: 5px;
-    padding-right: 5px;
+    padding: 3px 5px;
 }
 
 fieldset {
@@ -139,10 +132,7 @@ form label {
     min-width: 18ch;
     vertical-align: top;
     margin-right: 5px;
-    padding-right: 5px;
-    padding-left: 5px;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px 5px;
 }
 
 input {
@@ -150,7 +140,6 @@ input {
 }
 
 form input[type=text],
-form input[type=email],
 form input[type=password],
 form input[type=number],
 form input[type=checkbox] {
@@ -162,12 +151,9 @@ form input[type=checkbox] {
 }
 
 form input[type=submit] {
+    padding: 1px 5px;
     border-width: 1px;
     border-style: solid;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    padding-left: 5px;
-    padding-right: 5px;
 }
 
 form input[type="radio"] {
@@ -177,15 +163,13 @@ form input[type="radio"] {
 
 form input[type="radio"]+label {
     vertical-align: middle;
-    margin-bottom: 1ch;
+    margin-bottom: 8px;
     padding: 8px;
 }
 
 form input[type="radio"]+label img {
     display: block;
     max-height: 100px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 form textarea {
@@ -197,7 +181,6 @@ form textarea {
 }
 
 form#postform {
-    float: right;
     position: fixed;
     top: calc(3.5ch + 1px);
     right: 1.3ch;
@@ -234,8 +217,8 @@ form#postform input[type=file] {
 }
 
 form#postform input#captcha {
-    margin-bottom: 0;
     margin-top: 1px;
+    margin-bottom: 0;
 }
 
 a#new-post {
@@ -246,13 +229,11 @@ a#new-post {
 }
 
 hr {
-    margin: 1.3ch 0 1.3ch 0;
+    margin: 1.3ch 0;
     height: 0;
-    border-top: none;
+    border: none;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    border-left: none;
-    border-right: none;
     clear: both;
 }
 
@@ -268,9 +249,9 @@ div.catalog-thread {
     display: inline-block;
     width: 150px;
     height: 200px;
-    padding: 10px;
     margin-right: 1.3ch;
     margin-bottom: 8px;
+    padding: 10px;
     border-width: 1px;
     border-style: solid;
     text-align: center;
@@ -301,8 +282,8 @@ div.post-container {
 }
 
 div.post {
-    padding: 1.3ch;
     margin-top: 1.3ch;
+    padding: 1.3ch;
     border-width: 1px;
     border-style: solid;
     display: table;
