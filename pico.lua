@@ -647,7 +647,7 @@ end
 
 function html.renderrecent(recent_tbl, board, page, prev, next)
   for i = 1, #recent_tbl do
-    html.renderpost(recent_tbl[i], true, true);
+    html.renderpost(recent_tbl[i], board == "Overboard", true);
     printf("<hr class='invisible-separator'>");
   end
 
