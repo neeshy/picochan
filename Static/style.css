@@ -156,18 +156,18 @@ form input[type=submit] {
     border-style: solid;
 }
 
-form input[type="radio"] {
+form input[type=radio] {
     vertical-align: middle;
     margin-left: 18ch;
 }
 
-form input[type="radio"]+label {
+form input[type=radio] + label {
     vertical-align: middle;
     margin-bottom: 8px;
     padding: 8px;
 }
 
-form input[type="radio"]+label img {
+form input[type=radio] + label img {
     display: block;
     max-height: 100px;
 }
@@ -358,11 +358,11 @@ div.thread img.post-file-thumbnail {
     margin-bottom: 1.3ch;
 }
 
-input[type='checkbox']:checked + img.post-file-thumbnail {
+input[type=checkbox]:checked + img.post-file-thumbnail {
     display: none;
 }
 
-input[type='checkbox']:checked + img.post-file-thumbnail + div.post-file-fullsize:after {
+input[type=checkbox]:checked + img.post-file-thumbnail + div.post-file-fullsize:after {
     content: "";
 }
 
