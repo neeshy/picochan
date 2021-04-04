@@ -90,8 +90,8 @@ function html.begin(...)
   end
 
   printf(    "</ul>");
-  printf(    "<a class='invisible' href='' accesskey='r'></a>");
-  printf(    "<a class='invisible' href='#postform' accesskey='p'></a>");
+  printf(    "<a href='' accesskey='r'></a>");
+  printf(    "<a href='#postform' accesskey='p'></a>");
   printf(    "</nav>");
   printf(    "<div id='content'>");
 end
