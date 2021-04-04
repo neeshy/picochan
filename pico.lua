@@ -446,7 +446,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
       if extension == "svg" then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
       elseif class == "image" then
-        printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize::after " ..
+        printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize " ..
                "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                post_tbl["Board"], post_tbl["Number"], i,
                filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);

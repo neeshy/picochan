@@ -362,11 +362,12 @@ input[type=checkbox]:checked + img.post-file-thumbnail {
     display: none;
 }
 
-input[type=checkbox]:checked + img.post-file-thumbnail + div.post-file-fullsize:after {
-    content: "";
+input[type=checkbox]:checked + img.post-file-thumbnail + div.post-file-fullsize {
+    display: block;
 }
 
-div.post-file-fullsize::after {
+div.post-file-fullsize {
+    display: none;
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
