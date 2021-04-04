@@ -640,6 +640,9 @@ function html.renderindex(index_tbl, board, page, prev, next)
     printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1);
   end
   if next then
+    if prev then
+      printf(" ");
+    end
     printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1);
   end
   printf("</div>");
@@ -660,6 +663,9 @@ function html.renderrecent(recent_tbl, board, page, prev, next)
     printf("<a class='page-switcher-prev' href='/%s/recent/%d'>[Prev]</a>", board, page - 1);
   end
   if next then
+    if prev then
+      printf(" ");
+    end
     printf("<a class='page-switcher-next' href='/%s/recent/%d'>[Next]</a>", board, page + 1);
   end
   printf("</div>");
@@ -1510,7 +1516,7 @@ handlers["/Log"] = function(page)
     printf("[Prev]");
   end
   if next then
-    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
   end
   printf("</div>");
   html.table.begin("Account", "Board", "Date", "Description");
@@ -1531,7 +1537,7 @@ handlers["/Log"] = function(page)
     printf("[Prev]");
   end
   if next then
-    printf("<a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
   end
   printf("</div>");
   html.cfinish();
@@ -1804,7 +1810,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<a href='/%s/index'>[Index]</a> ", board);
   printf("<a href='/%s/recent'>[Recent]</a> ", board);
   printf("<a href='/Overboard'>[Overboard]</a> ");
-  printf("<a href=''>[Update]</a>");
+  printf("<a href=''>[Update]</a> ");
 
   printf("<span id='thread-reply'>");
   printf("<a href='#postform'>[Reply]</a> ");
