@@ -647,8 +647,10 @@ end
 
 function html.renderrecent(recent_tbl, board, page, prev, next)
   for i = 1, #recent_tbl do
+    if i ~= 1 then
+      printf("<hr class='invisible-separator'>");
+    end
     html.renderpost(recent_tbl[i], board == "Overboard", true);
-    printf("<hr class='invisible-separator'>");
   end
 
   printf("<hr />");
@@ -1791,8 +1793,10 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<hr />");
 
   for i = 1, #thread_tbl do
+    if i ~= 1 then
+      printf("<hr class='invisible-separator'>");
+    end
     html.renderpost(thread_tbl[i]);
-    printf("<hr class='invisible-separator'>");
   end
 
   printf("<hr />");
