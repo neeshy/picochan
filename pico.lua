@@ -341,13 +341,13 @@ function html.picofmt(post_tbl)
 
   s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!#%$%%&%(%)%*%+,%-%./:;=%?@%[\\%]%^_`{|}~]+)", handle_url);
 
-  s = s:gsub("\1", "&lt;")
-  s = s:gsub("\2", "&gt;")
-  s = s:gsub("\3", "&#39;")
-  s = s:gsub("\4", "&quot;");
-
-  s = s:gsub("\5", insert_escaped(blocks));
   s = s:gsub("\6", insert_escaped(iblocks));
+  s = s:gsub("\5", insert_escaped(blocks));
+
+  s = s:gsub("\4", "&quot;");
+  s = s:gsub("\3", "&#39;")
+  s = s:gsub("\2", "&gt;")
+  s = s:gsub("\1", "&lt;")
 
   s = s:gsub("^\n+", "");
   s = s:gsub("\n+$", "");
