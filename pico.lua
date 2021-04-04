@@ -593,7 +593,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("</a>");
     printf("<div class='catalog-thread-info'>");
-    printf("<a href='/%s/'>/%s/</a> R:%d ", board, board, post_tbl["ReplyCount"]);
+    printf("<a href='/%s/'>/%s/</a> R:%d", board, board, post_tbl["ReplyCount"]);
     html.threadflags(post_tbl);
     printf("</div>");
 
