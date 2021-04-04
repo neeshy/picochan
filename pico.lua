@@ -462,7 +462,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<div class='post-file-fullsize'></div>");
         printf("</label>");
       elseif spoiler then
-        printf("<a href='/Media/%s'><image class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
       elseif extension == "pdf" or extension == "ps" then
         local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200);
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
