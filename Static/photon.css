@@ -9,7 +9,7 @@ a, a:visited {
 
 nav#topbar {
     background-color: #98E;
-    border-bottom-color #000;
+    border-bottom-color: #000;
 }
 
 nav#topbar>ul>li.system>a {
