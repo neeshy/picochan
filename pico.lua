@@ -443,9 +443,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
 
       printf("</div>");
 
-      if extension == "svg" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
-      elseif class == "image" then
+      if class == "image" and extension ~= "svg" then
         printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize " ..
                "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                post_tbl["Board"], post_tbl["Number"], i,
@@ -463,6 +461,8 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("</label>");
       elseif spoiler then
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
+      elseif extension == "svg" then
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
       elseif extension == "pdf" or extension == "ps" then
         local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200);
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
