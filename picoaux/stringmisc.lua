@@ -26,27 +26,21 @@ function string.random(length, pattern)
 end
 
 function string.tokenize(input, delimiter)
-  local result = {};
-  delimiter = delimiter or " ";
-
-  if delimiter == "" then
+  if input == nil or delimiter == "" then
     return nil;
   end
-  if input == nil then
-    return {};
-  end
 
+  delimiter = delimiter or " ";
+
+  local result = {};
   local pos = 1;
-  while true do
-    local first, last = input:find(delimiter, pos, true);
-    if first then
-      result[#result + 1] = input:sub(pos, first - 1);
-      pos = last + 1;
-    else
-      result[#result + 1] = input:sub(pos);
-      break;
-    end
+  local first, last = input:find(delimiter, pos, true);
+  while first do
+    result[#result + 1] = input:sub(pos, first - 1);
+    pos = last + 1;
+    first, last = input:find(delimiter, pos, true);
   end
+  result[#result + 1] = input:sub(pos);
 
   return result;
 end
