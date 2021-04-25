@@ -1,8 +1,6 @@
-#!/usr/local/bin/haserl -u262144
--- Picochan CGI/HTML Frontend
+-- Picochan HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
-local cgi = require("picoaux.cgi");
 local pico = require("picoengine");
 local json = require("picoaux.json");
 local curl = require("picoaux.curl");
@@ -38,9 +36,7 @@ end
 local sitename = pico.global.get("sitename") or "Picochan";
 local defaultpostname = pico.global.get("defaultpostname") or "Anonymous";
 local defaultboardview = pico.global.get("defaultboardview") or "catalog";
-pico.account.register_login(COOKIE["session_key"]);
-
-cgi.initialize();
+pico.account.register_login(cgi.COOKIE["session_key"]);
 
 local function printf(...)
   cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...);
@@ -57,8 +53,8 @@ end
 function html.begin(...)
   local title = string.format(...);
   title = title and (title .. " - ") or "";
-  local theme = (COOKIE["theme"] and io.fileexists("./Static/" .. COOKIE["theme"] .. ".css"))
-                and COOKIE["theme"] or (pico.global.get("theme") or "picochan");
+  local theme = (cgi.COOKIE["theme"] and io.fileexists("./Static/" .. cgi.COOKIE["theme"] .. ".css"))
+                and cgi.COOKIE["theme"] or (pico.global.get("theme") or "picochan");
 
   printf("<!DOCTYPE html>\r\n");
   printf("<html>");
@@ -916,8 +912,8 @@ function html.form.themeconfig()
   local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'");
   for t in themes:lines() do
     local selected;
-    if COOKIE["theme"] then
-      selected = COOKIE["theme"] == t;
+    if cgi.COOKIE["theme"] then
+      selected = cgi.COOKIE["theme"] == t;
     else
       selected = theme == t;
     end
@@ -1060,8 +1056,8 @@ handlers["/Mod/login"] = function()
   html.brc("login", "Moderator Login");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "username", "password") then
-      local session_key, errmsg = pico.account.login(POST["username"], POST["password"]);
+    if tbl_validate(cgi.POST, "username", "password") then
+      local session_key, errmsg = pico.account.login(cgi.POST["username"], cgi.POST["password"]);
 
       if not session_key then
         printf("Cannot log in: %s", errmsg);
@@ -1083,7 +1079,7 @@ end;
 
 handlers["/Mod/logout"] = function()
   account_check();
-  pico.account.logout(COOKIE["session_key"]);
+  pico.account.logout(cgi.COOKIE["session_key"]);
   cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
   cgi.headers["Status"] = "303 See Other";
   cgi.headers["Location"] = "/Overboard";
@@ -1095,8 +1091,8 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   html.brc("change global configuration", "Change global configuration");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name") then
-      local result, msg = pico.global.set(POST["name"], POST["value"] ~= "" and POST["value"] or nil);
+    if tbl_validate(cgi.POST, "name") then
+      local result, msg = pico.global.set(cgi.POST["name"], cgi.POST["value"] ~= "" and cgi.POST["value"] or nil);
       printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1113,8 +1109,8 @@ handlers["/Mod/tools/multidelete"] = function()
   html.brc("multidelete", "Multidelete");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "board", "ispec", "reason") then
-      local result, msg = pico.post.multidelete(POST["board"], POST["ispec"], POST["espec"] ~= "" and POST["espec"] or nil, POST["reason"]);
+    if tbl_validate(cgi.POST, "board", "ispec", "reason") then
+      local result, msg = pico.post.multidelete(cgi.POST["board"], cgi.POST["ispec"], cgi.POST["espec"] ~= "" and cgi.POST["espec"] or nil, cgi.POST["reason"]);
       printf("%s", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1131,8 +1127,8 @@ handlers["/Mod/tools/pattdelete"] = function()
   html.brc("pattern delete", "Pattern delete");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "pattern", "reason") then
-      local result, msg = pico.post.pattdelete(POST["pattern"], POST["reason"]);
+    if tbl_validate(cgi.POST, "pattern", "reason") then
+      local result, msg = pico.post.pattdelete(cgi.POST["pattern"], cgi.POST["reason"]);
       printf("%s", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1149,8 +1145,8 @@ handlers["/Mod/account/create"] = function()
   html.brc("create account", "Create account");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name", "password", "type", "board") then
-      printf("%s", select(2, pico.account.create(POST["name"], POST["password"], POST["type"], POST["board"])));
+    if tbl_validate(cgi.POST, "name", "password", "type", "board") then
+      printf("%s", select(2, pico.account.create(cgi.POST["name"], cgi.POST["password"], cgi.POST["type"], cgi.POST["board"])));
     else
       cgi.headers["Status"] = "400 Bad Request";
       html.error("Action failed", "Invalid request");
@@ -1166,8 +1162,8 @@ handlers["/Mod/account/delete"] = function()
   html.brc("delete account", "Delete account");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name", "reason") then
-      local status, msg = pico.account.delete(POST["name"], POST["reason"]);
+    if tbl_validate(cgi.POST, "name", "reason") then
+      local status, msg = pico.account.delete(cgi.POST["name"], cgi.POST["reason"]);
       printf("%s%s", (not status) and "Cannot delete account: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1184,8 +1180,8 @@ handlers["/Mod/account/config"] = function()
   html.brc("configure account", "Configure account");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name", "password") then
-      printf("%s", select(2, pico.account.changepass(POST["name"], POST["password"])));
+    if tbl_validate(cgi.POST, "name", "password") then
+      printf("%s", select(2, pico.account.changepass(cgi.POST["name"], cgi.POST["password"])));
     else
       cgi.headers["Status"] = "400 Bad Request";
       html.error("Action failed", "Invalid request");
@@ -1201,8 +1197,8 @@ handlers["/Mod/board/create"] = function()
   html.brc("create board", "Create board");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name", "title") then
-      local status, msg = pico.board.create(POST["name"], POST["title"], POST["subtitle"] ~= "" and POST["subtitle"] or nil);
+    if tbl_validate(cgi.POST, "name", "title") then
+      local status, msg = pico.board.create(cgi.POST["name"], cgi.POST["title"], cgi.POST["subtitle"] ~= "" and cgi.POST["subtitle"] or nil);
       printf("%s%s", (not status) and "Cannot create board: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1219,8 +1215,8 @@ handlers["/Mod/board/delete"] = function()
   html.brc("delete board", "Delete board");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "name", "reason") then
-      local status, msg = pico.board.delete(POST["name"], POST["reason"]);
+    if tbl_validate(cgi.POST, "name", "reason") then
+      local status, msg = pico.board.delete(cgi.POST["name"], cgi.POST["reason"]);
       printf("%s%s", (not status) and "Cannot delete board: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1237,21 +1233,21 @@ handlers["/Mod/board/config"] = function()
   html.brc("configure board", "Configure board");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "Name") then
-      if pico.board.exists(POST["Name"]) then
-        if tbl_validate(POST, "Title") then
-          POST["Subtitle"] = POST["Subtitle"] ~= "" and POST["Subtitle"] or nil;
-          POST["TPHLimit"] = POST["TPHLimit"] ~= "" and POST["TPHLimit"] or nil;
-          POST["PPHLimit"] = POST["PPHLimit"] ~= "" and POST["PPHLimit"] or nil;
-          POST["CaptchaTriggerTPH"] = POST["CaptchaTriggerTPH"] ~= "" and POST["CaptchaTriggerTPH"] or nil;
-          POST["CaptchaTriggerPPH"] = POST["CaptchaTriggerPPH"] ~= "" and POST["CaptchaTriggerPPH"] or nil;
-          POST["BumpLimit"] = POST["BumpLimit"] ~= "" and POST["BumpLimit"] or nil;
-          POST["PostLimit"] = POST["PostLimit"] ~= "" and POST["PostLimit"] or nil;
-          POST["ThreadLimit"] = POST["ThreadLimit"] ~= "" and POST["ThreadLimit"] or nil;
-          local status, msg = pico.board.configure(POST);
+    if tbl_validate(cgi.POST, "Name") then
+      if pico.board.exists(cgi.POST["Name"]) then
+        if tbl_validate(cgi.POST, "Title") then
+          cgi.POST["Subtitle"] = cgi.POST["Subtitle"] ~= "" and cgi.POST["Subtitle"] or nil;
+          cgi.POST["TPHLimit"] = cgi.POST["TPHLimit"] ~= "" and cgi.POST["TPHLimit"] or nil;
+          cgi.POST["PPHLimit"] = cgi.POST["PPHLimit"] ~= "" and cgi.POST["PPHLimit"] or nil;
+          cgi.POST["CaptchaTriggerTPH"] = cgi.POST["CaptchaTriggerTPH"] ~= "" and cgi.POST["CaptchaTriggerTPH"] or nil;
+          cgi.POST["CaptchaTriggerPPH"] = cgi.POST["CaptchaTriggerPPH"] ~= "" and cgi.POST["CaptchaTriggerPPH"] or nil;
+          cgi.POST["BumpLimit"] = cgi.POST["BumpLimit"] ~= "" and cgi.POST["BumpLimit"] or nil;
+          cgi.POST["PostLimit"] = cgi.POST["PostLimit"] ~= "" and cgi.POST["PostLimit"] or nil;
+          cgi.POST["ThreadLimit"] = cgi.POST["ThreadLimit"] ~= "" and cgi.POST["ThreadLimit"] or nil;
+          local status, msg = pico.board.configure(cgi.POST);
           printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
         end
-        html.form.board_config(POST["Name"]);
+        html.form.board_config(cgi.POST["Name"]);
       else
         printf("Cannot configure board: Board does not exist");
         html.form.board_config_select();
@@ -1272,8 +1268,8 @@ handlers["/Mod/banner/add"] = function()
   html.brc("add a banner", "Add a banner");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "board", "file") then
-      local status, msg = pico.board.banner.add(POST["board"], POST["file"]);
+    if tbl_validate(cgi.POST, "board", "file") then
+      local status, msg = pico.board.banner.add(cgi.POST["board"], cgi.POST["file"]);
       printf("%s%s", (not status) and "Cannot add banner: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1290,15 +1286,15 @@ handlers["/Mod/banner/delete"] = function()
   html.brc("delete a banner", "Delete a banner");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "board") then
-      if pico.board.exists(POST["board"]) then
-        local banners = pico.board.banner.list(POST["board"]);
+    if tbl_validate(cgi.POST, "board") then
+      if pico.board.exists(cgi.POST["board"]) then
+        local banners = pico.board.banner.list(cgi.POST["board"]);
         if #banners > 0 then
-          if tbl_validate(POST, "file", "reason") then
-            local status, msg = pico.board.banner.delete(POST["board"], POST["file"], POST["reason"]);
+          if tbl_validate(cgi.POST, "file", "reason") then
+            local status, msg = pico.board.banner.delete(cgi.POST["board"], cgi.POST["file"], cgi.POST["reason"]);
             printf("%s%s", (not status) and "Cannot delete banner: " or "", msg);
           end
-          html.form.banner_delete(POST["board"], banners);
+          html.form.banner_delete(cgi.POST["board"], banners);
         else
           printf("Cannot delete banners: Board contains no banners");
           html.form.banner_delete_select();
@@ -1323,8 +1319,8 @@ handlers["/Mod/webring/add"] = function()
   html.brc("add webring endpoint", "Add webring endpoint");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "endpoint", "type") then
-      local status, msg = pico.webring.endpoint.add(POST["endpoint"], POST["type"]);
+    if tbl_validate(cgi.POST, "endpoint", "type") then
+      local status, msg = pico.webring.endpoint.add(cgi.POST["endpoint"], cgi.POST["type"]);
       printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1341,8 +1337,8 @@ handlers["/Mod/webring/remove"] = function()
   html.brc("remove webring endpoint", "Remove webring endpoint");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "endpoint", "reason") then
-      local status, msg = pico.webring.endpoint.remove(POST["endpoint"], POST["reason"]);
+    if tbl_validate(cgi.POST, "endpoint", "reason") then
+      local status, msg = pico.webring.endpoint.remove(cgi.POST["endpoint"], cgi.POST["reason"]);
       printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
     else
       cgi.headers["Status"] = "400 Bad Request";
@@ -1359,13 +1355,13 @@ handlers["/Mod/webring/config"] = function()
   html.brc("configure webring endpoint", "Configure webring endpoint");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "Endpoint") then
-      if pico.webring.endpoint.exists(POST["Endpoint"]) then
-        if tbl_validate(POST, "Type") then
-          local status, msg = pico.webring.endpoint.configure(POST);
+    if tbl_validate(cgi.POST, "Endpoint") then
+      if pico.webring.endpoint.exists(cgi.POST["Endpoint"]) then
+        if tbl_validate(cgi.POST, "Type") then
+          local status, msg = pico.webring.endpoint.configure(cgi.POST);
           printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg);
         end
-        html.form.endpoint_config(POST["Endpoint"]);
+        html.form.endpoint_config(cgi.POST["Endpoint"]);
       else
         printf("Cannot configure webring endpoint: Endpoint does not exist");
         html.form.endpoint_config_select();
@@ -1394,25 +1390,25 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   end
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "reason") then
+    if tbl_validate(cgi.POST, "reason") then
       local result, msg;
 
       if operation == "delete" then
-        result, msg = pico.post.delete(board, post, POST["reason"]);
+        result, msg = pico.post.delete(board, post, cgi.POST["reason"]);
       elseif operation == "unlink" then
-        result, msg = pico.post.unlink(board, post, file, POST["reason"]);
+        result, msg = pico.post.unlink(board, post, file, cgi.POST["reason"]);
       elseif operation == "spoiler" then
-        result, msg = pico.post.spoiler(board, post, file, true, POST["reason"]);
+        result, msg = pico.post.spoiler(board, post, file, true, cgi.POST["reason"]);
       elseif operation == "unspoiler" then
-        result, msg = pico.post.spoiler(board, post, file, false, POST["reason"]);
+        result, msg = pico.post.spoiler(board, post, file, false, cgi.POST["reason"]);
       elseif operation == "move" then
-        if not tbl_validate(POST, "destination") then
+        if not tbl_validate(cgi.POST, "destination") then
           cgi.headers["Status"] = "400 Bad Request";
           html.error("Action failed", "Invalid request");
         end
-        result, msg = pico.thread.move(board, post, POST["destination"], POST["reason"]);
+        result, msg = pico.thread.move(board, post, cgi.POST["destination"], cgi.POST["reason"]);
       else
-        result, msg = pico.thread.toggle(operation, board, post, POST["reason"]);
+        result, msg = pico.thread.toggle(operation, board, post, cgi.POST["reason"]);
       end
 
       if not result then
@@ -1421,7 +1417,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
         cgi.headers["Status"] = "303 See Other";
 
         if operation == "move" then
-          cgi.headers["Location"] = "/" .. POST["destination"];
+          cgi.headers["Location"] = "/" .. cgi.POST["destination"];
         elseif operation == "delete" then
           cgi.headers["Location"] =
             post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
@@ -1468,8 +1464,8 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
   html.brc("delete file", "Delete file");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "reason") then
-      local result, msg = pico.file.delete(file, POST["reason"]);
+    if tbl_validate(cgi.POST, "reason") then
+      local result, msg = pico.file.delete(file, cgi.POST["reason"]);
 
       if not result then
         html.error("Action failed", "Backend returned error: %s", msg);
@@ -1824,13 +1820,13 @@ handlers["/Theme"] = function()
   html.brc("change theme configuration", "Change theme configuration");
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(POST, "theme") then
-      if not io.fileexists("./Static/" .. POST["theme"] .. ".css") then
+    if tbl_validate(cgi.POST, "theme") then
+      if not io.fileexists("./Static/" .. cgi.POST["theme"] .. ".css") then
         cgi.headers["Status"] = "400 Bad Request";
-        html.error("Theme not found", "Cannot find theme file: %s", POST["theme"]);
+        html.error("Theme not found", "Cannot find theme file: %s", cgi.POST["theme"]);
       end
 
-      cgi.headers["Set-Cookie"] = "theme=" .. POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
+      cgi.headers["Set-Cookie"] = "theme=" .. cgi.POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
       cgi.headers["Status"] = "303 See Other";
       cgi.headers["Location"] = "/";
       cgi.finalize();
@@ -1852,7 +1848,7 @@ handlers["/Post"] = function()
     html.error("Action failed", "Invalid request");
   end
 
-  board_tbl = pico.board.tbl(POST["board"]);
+  board_tbl = pico.board.tbl(cgi.POST["board"]);
   if not board_tbl then
     cgi.headers["Status"] = "400 Bad Request";
     html.error("Board Not Found", "The board you specified does not exist.");
@@ -1860,28 +1856,28 @@ handlers["/Post"] = function()
 
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, board_tbl["PostMaxFiles"] do
-    local name = FORM["file" .. i .. "_filename"];
-    if name and name ~= "" then
-      local spoiler = POST["file" .. i .. "_spoiler"] and 1 or 0;
+    local file = cgi.FILE["file" .. i];
+    if file then
+      local spoiler = cgi.POST["file" .. i .. "_spoiler"] and 1 or 0;
 
-      local hash, msg = pico.file.add(FORM["file" .. i .. "_path"]);
+      local hash, msg = pico.file.add(file["file"]);
       if not hash then
         cgi.headers["Status"] = "400 Bad Request";
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
       end
 
-      files[#files + 1] = {["Name"] = name, ["Hash"] = hash, ["Spoiler"] = spoiler};
+      files[#files + 1] = {["Name"] = file["filename"], ["Hash"] = hash, ["Spoiler"] = spoiler};
     end
   end
 
   -- step 2. create the post itself
   local number, msg = pico.post.create(
-    POST["board"], tonumber(POST["parent"]),
-    POST["name"] ~= "" and POST["name"] or nil,
-    POST["email"] ~= "" and POST["email"] or nil,
-    POST["subject"] ~= "" and POST["subject"] or nil,
-    POST["comment"], files,
-    POST["captchaid"], POST["captcha"]
+    cgi.POST["board"], tonumber(cgi.POST["parent"]),
+    cgi.POST["name"] ~= "" and cgi.POST["name"] or nil,
+    cgi.POST["email"] ~= "" and cgi.POST["email"] or nil,
+    cgi.POST["subject"] ~= "" and cgi.POST["subject"] or nil,
+    cgi.POST["comment"], files,
+    cgi.POST["captchaid"], cgi.POST["captcha"]
   );
 
   if not number then
@@ -1891,10 +1887,10 @@ handlers["/Post"] = function()
 
   cgi.headers["Status"] = "303 See Other";
 
-  if not POST["parent"] then
-    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. number;
+  if not cgi.POST["parent"] then
+    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. number;
   else
-    cgi.headers["Location"] = "/" .. POST["board"] .. "/" .. POST["parent"] .. "#" .. number;
+    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. cgi.POST["parent"] .. "#" .. number;
   end
 end;
 

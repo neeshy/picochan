@@ -6,7 +6,6 @@ Picochan is very easy to install. Its dependencies are:
 
   DEPENDENCY        TESTED VERSION   DISTRIBUTION URL
   ----------------------------------------------------------------------------
-  haserl            0.9.35           http://git.picochanwvqfa2xsrfzlul4x4aqtog2eljll5qnj5iagpbhx2vmfqnid.onion/haserl/
   luajit            2.0.5            https://luajit.org/
   sqlite            3.34.0           https://sqlite.org/
   argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
@@ -39,10 +38,6 @@ the /bin/sh symlink with a less insecure shell, such as app-shells/dash.
   # eselect sh set dash
 
 (See https://en.wikipedia.org/wiki/Shellshock_(software_bug) for more info)
-
-Additionally, you must also install haserl which is not available through the
-gentoo repositories. Fortunately, on Linux it is easy and quick to compile by
-yourself.
 
 ---> FINAL PREPARATIONS <---
 

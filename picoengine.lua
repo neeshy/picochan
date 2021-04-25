@@ -577,8 +577,7 @@ end
 
 -- Add a file to the media directory and return its hash reference.
 -- Also add its information to the database.
-function pico.file.add(path)
-  local f = assert(io.open(path, "r"));
+function pico.file.add(f)
   local size = assert(f:seek("end"));
 
   if size > pico.global.get("maxfilesize") then
