@@ -25,7 +25,7 @@ function string.random(length, pattern)
   return result;
 end
 
-function string.tokenize(input, delimiter)
+function string.tokenize(input, delimiter, max)
   if input == nil or delimiter == "" then
     return nil;
   end
@@ -35,7 +35,7 @@ function string.tokenize(input, delimiter)
   local result = {};
   local pos = 1;
   local first, last = input:find(delimiter, pos, true);
-  while first do
+  while first and (not max or #result < max) do
     result[#result + 1] = input:sub(pos, first - 1);
     pos = last + 1;
     first, last = input:find(delimiter, pos, true);
