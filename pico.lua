@@ -695,7 +695,7 @@ function html.form.postform(board_tbl, parent)
 
   for i = 1, board_tbl["PostMaxFiles"] do
     printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />" ..
-           "<label for='file%d_spoiler'>Spoiler</label><input id='file%d_spoiler' name='file%d_spoiler' type='checkbox' value=1 />%s",
+           "<label for='spoiler%d'>Spoiler</label><input id='spoiler%d' name='spoiler%d' type='checkbox' value=1 />%s",
            i, i, i, i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "");
   end
 
@@ -1858,15 +1858,12 @@ handlers["/Post"] = function()
   for i = 1, board_tbl["PostMaxFiles"] do
     local file = cgi.FILE["file" .. i];
     if file then
-      local spoiler = cgi.POST["file" .. i .. "_spoiler"] and 1 or 0;
-
       local hash, msg = pico.file.add(file["file"]);
       if not hash then
         cgi.headers["Status"] = "400 Bad Request";
         html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
       end
-
-      files[#files + 1] = {["Name"] = file["filename"], ["Hash"] = hash, ["Spoiler"] = spoiler};
+      files[#files + 1] = {["Name"] = file["filename"], ["Hash"] = hash, ["Spoiler"] = cgi.POST["spoiler" .. i] and 1 or 0};
     end
   end
 
