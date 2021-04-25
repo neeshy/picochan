@@ -150,6 +150,11 @@ form input[type=checkbox] {
     border-style: solid;
 }
 
+form input[type=file]::file-selector-button {
+    border-width: 1px;
+    border-style: solid;
+}
+
 form input[type=submit] {
     padding: 1px 5px;
     border-width: 1px;

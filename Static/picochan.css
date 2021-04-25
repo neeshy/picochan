@@ -37,7 +37,7 @@ th {
     background-color: #444;
 }
 
-form input, form select, form textarea {
+form input, form input[type=file]::file-selector-button, form select, form textarea {
     border-color: #000;
 }
 

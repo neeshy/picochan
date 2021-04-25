@@ -33,7 +33,7 @@ tr:nth-child(odd) {
     background-color: #BDC;
 }
 
-form input, form select, form textarea {
+form input, form input[type=file]::file-selector-button, form select, form textarea {
     border-color: #000;
 }
 
