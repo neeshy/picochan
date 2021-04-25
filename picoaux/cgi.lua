@@ -96,9 +96,9 @@ local function parseform(boundary, maxread)
   while buf do
     local headers = {};
     readandcheck("\r\n\r\n", collect(headers));
-    if not buf then break end;
+    if not buf then break; end
     headers = table.concat(headers):tokenize("\r\n");
-    if headers[1] == "--" then break end;
+    if headers[1] == "--" then break; end
     local disposition = {};
     for i = 2, #headers do -- skip first, will always be empty string
       local kv = headers[i]:tokenize(":", 1);

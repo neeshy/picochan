@@ -113,7 +113,7 @@ end
 
 function pico.account.create(name, password, type, board)
   local auth, msg = permit("admin bo", "board", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not valid_account_name(name) then
     return false, "Account name is invalid";
@@ -143,7 +143,7 @@ end
 
 function pico.account.delete(name, reason)
   local auth, msg = permit("admin bo", "acct", name);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   local account_tbl = db:r("SELECT Type, Board FROM Accounts WHERE Name = ?", name);
   if not account_tbl then
@@ -158,7 +158,7 @@ end
 
 function pico.account.changepass(name, password)
   local auth, msg = permit("admin gvol bo lvol", "acct", name);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   local account_tbl = db:r("SELECT Board FROM Accounts WHERE Name = ?", name);
 
@@ -226,7 +226,7 @@ end
 -- setting a globalconfig variable to nil removes it.
 function pico.global.set(name, value)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   db:e("DELETE FROM GlobalConfig WHERE Name = ?", name);
 
@@ -257,7 +257,7 @@ end
 
 function pico.board.create(name, title, subtitle)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if pico.board.exists(name) then
     return false, "Board already exists";
@@ -277,7 +277,7 @@ end
 
 function pico.board.delete(name, reason)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.board.exists(name) then
     return false, "Board does not exist";
@@ -302,7 +302,7 @@ end
 
 function pico.board.configure(board_tbl)
   local auth, msg = permit("admin bo", "board", board_tbl["Name"]);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not board_tbl then
     return false, "Board configuration not supplied";
@@ -416,7 +416,7 @@ end
 
 function pico.board.banner.add(board, file)
   local auth, msg = permit("admin bo", "board", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.board.exists(board) then
     return false, "Board does not exist";
@@ -433,7 +433,7 @@ end
 
 function pico.board.banner.delete(board, file, reason)
   local auth, msg = permit("admin bo", "board", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.board.exists(board) then
     return false, "Board does not exist";
@@ -644,7 +644,7 @@ end
 -- in the database.
 function pico.file.delete(filename, reason)
   local auth, msg = permit("admin gvol");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.file.exists(filename) then
     return false, "File does not exist";
@@ -771,7 +771,7 @@ end
 
 function pico.post.set(board, parent, date, name, email, subject, capcode, capcode_board, comment, files)
   local auth, msg = permit("admin gvol");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   db:e("BEGIN TRANSACTION");
   db:e("INSERT INTO Posts (Board, Parent, Date, Name, Email, Subject, Capcode, CapcodeBoard, Comment) " ..
@@ -806,7 +806,7 @@ end
 
 function pico.post.delete(board, number, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not db:b("SELECT TRUE FROM Posts WHERE Board = ? AND Number = ?", board, number) then
     return false, "Post does not exist";
@@ -820,8 +820,8 @@ end
 -- example: pico.post.multidelete("b", "31-57 459-1000", "33 35 48 466", "spam")
 function pico.post.multidelete(board, include, exclude, reason)
   local auth, msg = permit("admin bo", "board", board);
-  if not auth then return auth, msg end;
-  if not include then return false, "Invalid include parameter" end;
+  if not auth then return auth, msg; end
+  if not include then return false, "Invalid include parameter"; end
 
   if not pico.board.exists(board) then
     return false, "Board does not exist";
@@ -862,14 +862,14 @@ function pico.post.multidelete(board, include, exclude, reason)
 
   for i = 1, #inclist do
     result, msg = genspec(inclist[i], sql, sqlp);
-    if not result then return result, msg end;
+    if not result then return result, msg; end
   end
   sql[#sql + 1] = ") AND NOT (FALSE";
   if exclude then
     local exclist = exclude:tokenize();
     for i = 1, #exclist do
       result, msg = genspec(exclist[i], sql, sqlp);
-      if not result then return result, msg end;
+      if not result then return result, msg; end
     end
   end
   sql[#sql + 1] = ")";
@@ -882,8 +882,8 @@ end
 
 function pico.post.pattdelete(pattern, reason)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
-  if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end;
+  if not auth then return auth, msg; end
+  if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern"; end
 
   db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", "%" .. pattern .. "%");
   pico.log.insert(board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason);
@@ -893,7 +893,7 @@ end
 -- remove a file from a post without deleting it
 function pico.post.unlink(board, number, file, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
               board, number, file) then
@@ -908,7 +908,7 @@ end
 
 function pico.post.spoiler(board, number, file, spoil, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
               board, number, file) then
@@ -961,7 +961,7 @@ end
 -- toggle sticky, lock, autosage, or cycle
 function pico.thread.toggle(attribute, board, number, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.thread.exists(board, number) then
     return false, "Thread does not exist";
@@ -992,7 +992,7 @@ end
 -- 3. Delete the old thread.
 function pico.thread.move(board, number, newboard, reason)
   local auth, msg = permit("admin gvol", "post", board);
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not pico.thread.exists(board, number) then
     return false, "Post does not exist or is not a thread";
@@ -1161,7 +1161,7 @@ end
 
 function pico.webring.endpoint.add(endpoint, type)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not endpoint then
     return false, "Endpoint not supplied";
@@ -1181,7 +1181,7 @@ end
 
 function pico.webring.endpoint.remove(endpoint, reason)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not endpoint then
     return false, "Endpoint not supplied";
@@ -1197,7 +1197,7 @@ end
 
 function pico.webring.endpoint.configure(endpoint_tbl)
   local auth, msg = permit("admin");
-  if not auth then return auth, msg end;
+  if not auth then return auth, msg; end
 
   if not endpoint_tbl then
     return false, "Endpoint configuration not supplied";
