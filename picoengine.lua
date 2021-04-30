@@ -876,7 +876,7 @@ function pico.post.multidelete(board, include, exclude, reason)
 
   db:e(table.concat(sql, " "), unpack(sqlp))
   pico.log.insert(board, "Deleted posts {%s}%s for reason: %s",
-                  include, exclude and (" {" .. exclude .. "}") or "", reason)
+                  include, exclude and (" excluding {" .. exclude .. "}") or "", reason)
   return true, "Posts deleted successfully"
 end
 
