@@ -1,19 +1,19 @@
 -- Argon2 FFI bindings for LuaJIT.
 
-require("picoaux.stringmisc");
-local ffi = require("ffi");
-      ffi.argon2 = ffi.load("argon2");
-local argon2 = {};
+require("picoaux.stringmisc")
+local ffi = require("ffi")
+      ffi.argon2 = ffi.load("argon2")
+local argon2 = {}
 
 -- this is the replacement to the enum "argon2_type" in argon2.h
-argon2.type_d = 0;
-argon2.type_i = 1;
-argon2.type_id = 2;
+argon2.type_d = 0
+argon2.type_i = 1
+argon2.type_id = 2
 
 -- argon2_version
-argon2.version_10 = 0x10;
-argon2.version_13 = 0x13;
-argon2.version = argon2.version_13;
+argon2.version_10 = 0x10
+argon2.version_13 = 0x13
+argon2.version = argon2.version_13
 
 ffi.cdef[[
   typedef int argon2_type;
@@ -30,13 +30,13 @@ ffi.cdef[[
                   const uint32_t version);
   int argon2_verify(const char *encoded, const void *pwd,
                     const size_t pwdlen, argon2_type type);
-]];
+]]
 
 local hashtype_lut = {
   ["argon2d"] = 0,
   ["argon2i"] = 1,
   ["argon2id"] = 2
-};
+}
 
 local errcode_lut = {
   [0] = "(0) ARGON2_OK",
@@ -75,48 +75,48 @@ local errcode_lut = {
   [-33] = "(-33) ARGON2_THREAD_FAIL",
   [-34] = "(-34) ARGON2_DECODING_LENGTH_FAIL",
   [-35] = "(-35) ARGON2_VERIFY_MISMATCH"
-};
+}
 
 -- only the password parameter is mandatory, the others are optional and will have
 -- sensible defaults set if they are not provided
 function argon2.digest(password, argon2_type, salt, params)
-  assert(type(password) == "string", "incorrect datatype for parameter 'password'");
-  assert(argon2_type == nil or hashtype_lut[argon2_type] ~= nil, "invalid value for parameter 'argon2_type'");
-  assert(salt == nil or type(salt) == "string", "invalid datatype for parameter 'salt'");
-  assert(params == nil or type(params) == "table", "invalid datatype for parameter 'params'");
+  assert(type(password) == "string", "incorrect datatype for parameter 'password'")
+  assert(argon2_type == nil or hashtype_lut[argon2_type] ~= nil, "invalid value for parameter 'argon2_type'")
+  assert(salt == nil or type(salt) == "string", "invalid datatype for parameter 'salt'")
+  assert(params == nil or type(params) == "table", "invalid datatype for parameter 'params'")
 
-  argon2_type = argon2_type or "argon2id";
-  salt = salt or string.random(16);
-  params = params or {};
-  params.t_cost = params.t_cost or 16;
-  params.m_cost = params.m_cost or 2^16;
-  params.parallelism = params.parallelism or 4;
-  params.version = params.version or argon2.version;
+  argon2_type = argon2_type or "argon2id"
+  salt = salt or string.random(16)
+  params = params or {}
+  params.t_cost = params.t_cost or 16
+  params.m_cost = params.m_cost or 2^16
+  params.parallelism = params.parallelism or 4
+  params.version = params.version or argon2.version
 
-  local errcode, result, resultlen;
+  local errcode, result, resultlen
 
   resultlen = ffi.argon2.argon2_encodedlen(params.t_cost, params.m_cost, params.parallelism,
-                                           #salt, 64, hashtype_lut[argon2_type]);
-  result = ffi.new("char[?]", resultlen);
+                                           #salt, 64, hashtype_lut[argon2_type])
+  result = ffi.new("char[?]", resultlen)
   errcode = ffi.argon2.argon2_hash(params.t_cost, params.m_cost, params.parallelism,
                                    password, #password, salt, #salt, nil, 64,
-                                   result, resultlen, hashtype_lut[argon2_type], params.version);
+                                   result, resultlen, hashtype_lut[argon2_type], params.version)
 
   if errcode == 0 then
-    return ffi.string(result, resultlen);
+    return ffi.string(result, resultlen)
   else
-    return nil, errcode_lut[errcode];
+    return nil, errcode_lut[errcode]
   end
 end
 
 function argon2.verify(password, hash, argon2_type)
-  assert(type(password) == "string", "incorrect datatype for parameter 'password'");
-  assert(type(hash) == "string", "incorrect datatype for parameter 'hash'");
-  assert(argon2_type == nil or hashtype_lut[argon2_type] ~= nil, "invalid value for parameter 'argon2_type'");
+  assert(type(password) == "string", "incorrect datatype for parameter 'password'")
+  assert(type(hash) == "string", "incorrect datatype for parameter 'hash'")
+  assert(argon2_type == nil or hashtype_lut[argon2_type] ~= nil, "invalid value for parameter 'argon2_type'")
 
-  argon2_type = argon2_type or "argon2id";
-  local errcode = ffi.argon2.argon2_verify(hash, password, #password, hashtype_lut[argon2_type]);
-  return (errcode == 0), errcode_lut[errcode];
+  argon2_type = argon2_type or "argon2id"
+  local errcode = ffi.argon2.argon2_verify(hash, password, #password, hashtype_lut[argon2_type])
+  return (errcode == 0), errcode_lut[errcode]
 end
 
-return argon2;
+return argon2

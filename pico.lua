@@ -1,18 +1,18 @@
 -- Picochan HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
-local pico = require("picoengine");
-local json = require("picoaux.json");
-local curl = require("picoaux.curl");
-local date = require("picoaux.date");
+local pico = require("picoengine")
+local json = require("picoaux.json")
+local curl = require("picoaux.curl")
+local date = require("picoaux.date")
 
-require("picoaux.iomisc");
+require("picoaux.iomisc")
 
-local html = {};
-      html.table = {};
-      html.list = {};
-      html.container = {};
-      html.form = {};
+local html = {}
+      html.table = {}
+      html.list = {}
+      html.container = {}
+      html.form = {}
 
 --
 -- INITIALIZATION
@@ -20,30 +20,30 @@ local html = {};
 
 if jit.os == "BSD" then
   -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
-  local openbsd = require("picoaux.openbsd");
-  openbsd.unveil("./picochan.db", "rw");
-  openbsd.unveil("./picochan.db-journal", "rwc");
-  openbsd.unveil("./Media/", "rwxc");
-  openbsd.unveil("./Static/", "rx");
-  openbsd.unveil("/dev/urandom", "r");
-  openbsd.unveil("/tmp/", "rwc");
-  openbsd.unveil("/usr/local/", "x");
-  openbsd.unveil("/etc/ssl/", "rx");
-  openbsd.unveil("/bin/sh", "x");
-  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns");
+  local openbsd = require("picoaux.openbsd")
+  openbsd.unveil("./picochan.db", "rw")
+  openbsd.unveil("./picochan.db-journal", "rwc")
+  openbsd.unveil("./Media/", "rwxc")
+  openbsd.unveil("./Static/", "rx")
+  openbsd.unveil("/dev/urandom", "r")
+  openbsd.unveil("/tmp/", "rwc")
+  openbsd.unveil("/usr/local/", "x")
+  openbsd.unveil("/etc/ssl/", "rx")
+  openbsd.unveil("/bin/sh", "x")
+  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns")
 end
 
-local sitename = pico.global.get("sitename") or "Picochan";
-local defaultpostname = pico.global.get("defaultpostname") or "Anonymous";
-local defaultboardview = pico.global.get("defaultboardview") or "catalog";
-pico.account.register_login(cgi.COOKIE["session_key"]);
+local sitename = pico.global.get("sitename") or "Picochan"
+local defaultpostname = pico.global.get("defaultpostname") or "Anonymous"
+local defaultboardview = pico.global.get("defaultboardview") or "catalog"
+pico.account.register_login(cgi.COOKIE["session_key"])
 
 local function printf(...)
-  cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...);
+  cgi.outputbuf[#cgi.outputbuf + 1] = string.format(...)
 end
 
 local function thumbsize(w, h, mw, mh)
-  return math.min(w, mw, math.floor(w / h * mh + 0.5)), math.min(h, mh, math.floor(h / w * mw + 0.5));
+  return math.min(w, mw, math.floor(w / h * mh + 0.5)), math.min(h, mh, math.floor(h / w * mw + 0.5))
 end
 
 --
@@ -51,212 +51,212 @@ end
 --
 
 function html.begin(...)
-  local title = string.format(...);
-  title = title and (title .. " - ") or "";
+  local title = string.format(...)
+  title = title and (title .. " - ") or ""
   local theme = (cgi.COOKIE["theme"] and io.fileexists("./Static/" .. cgi.COOKIE["theme"] .. ".css"))
-                and cgi.COOKIE["theme"] or (pico.global.get("theme") or "picochan");
+                and cgi.COOKIE["theme"] or (pico.global.get("theme") or "picochan")
 
-  printf("<!DOCTYPE html>\r\n");
-  printf("<html>");
-  printf(  "<head>");
-  printf(    "<title>%s%s</title>", title, sitename);
-  printf(    "<link rel='stylesheet' type='text/css' href='/Static/style.css' />");
-  printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme);
-  printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />");
-  printf(    "<meta charset='utf-8' />");
-  printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
-  printf(  "</head>");
-  printf(  "<body>");
-  printf(    "<nav id='topbar'><ul>");
-  printf(      "<li class='system'><a href='/' accesskey='`'>main</a></li>");
-  printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>");
-  printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>");
-  printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>");
-  printf(      "<li class='system'><a href='/Overboard' accesskey='4'>overboard</a></li>");
-  printf(      "<li class='system'><a href='/Theme' accesskey='5'>theme</a></li>");
+  printf("<!DOCTYPE html>\r\n")
+  printf("<html>")
+  printf(  "<head>")
+  printf(    "<title>%s%s</title>", title, sitename)
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/style.css' />")
+  printf(    "<link rel='stylesheet' type='text/css' href='/Static/%s.css' />", theme)
+  printf(    "<link rel='shortcut icon' type='image/png' href='/Static/favicon.png' />")
+  printf(    "<meta charset='utf-8' />")
+  printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />")
+  printf(  "</head>")
+  printf(  "<body>")
+  printf(    "<nav id='topbar'><ul>")
+  printf(      "<li class='system'><a href='/' accesskey='`'>main</a></li>")
+  printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>")
+  printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>")
+  printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>")
+  printf(      "<li class='system'><a href='/Overboard' accesskey='4'>overboard</a></li>")
+  printf(      "<li class='system'><a href='/Theme' accesskey='5'>theme</a></li>")
 
-  local boards = pico.board.list();
+  local boards = pico.board.list()
   for i = 1, #boards do
     printf("<li class='board'><a href='/%s/' title='%s'>/%s/</a></li>",
-           boards[i]["Name"], boards[i]["Title"], boards[i]["Name"]);
+           boards[i]["Name"], boards[i]["Title"], boards[i]["Name"])
   end
 
   if pico.account.current then
-    printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current["Name"]);
+    printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current["Name"])
   end
 
-  printf(    "</ul>");
-  printf(    "<a href='' accesskey='r'></a>");
-  printf(    "<a href='#postform' accesskey='p'></a>");
-  printf(    "</nav>");
-  printf(    "<div id='content'>");
+  printf(    "</ul>")
+  printf(    "<a href='' accesskey='r'></a>")
+  printf(    "<a href='#postform' accesskey='p'></a>")
+  printf(    "</nav>")
+  printf(    "<div id='content'>")
 end
 
 function html.finish()
-  printf("</div></body></html>");
-  printf("\r\n<!-- %d ms generation time -->", os.clock() * 1000);
+  printf("</div></body></html>")
+  printf("\r\n<!-- %d ms generation time -->", os.clock() * 1000)
 end
 
 function html.error(title, ...)
-  cgi.outputbuf = {};
-  html.begin("error");
-  html.redheader(title);
-  html.container.begin();
-  printf(...);
-  html.container.finish();
-  html.finish();
-  cgi.finalize();
+  cgi.outputbuf = {}
+  html.begin("error")
+  html.redheader(title)
+  html.container.begin()
+  printf(...)
+  html.container.finish()
+  html.finish()
+  cgi.finalize()
 end
 
 function html.redheader(...)
-  printf("<h1 class='redheader'>%s</h1>", string.format(...));
+  printf("<h1 class='redheader'>%s</h1>", string.format(...))
 end
 
 function html.announce()
-  printf("<div id='announce'>%s</div>", pico.global.get("announce") or "");
+  printf("<div id='announce'>%s</div>", pico.global.get("announce") or "")
 end
 
 function html.container.begin(width)
-  printf("<div class='container %s'>", width or "narrow");
+  printf("<div class='container %s'>", width or "narrow")
 end
 
 function html.container.finish()
-  printf("</div>");
+  printf("</div>")
 end
 
 function html.container.barheader(...)
-  printf("<h2 class='barheader'>%s</h2>", string.format(...));
+  printf("<h2 class='barheader'>%s</h2>", string.format(...))
 end
 
 function html.list.begin(ordered)
-  printf("<%sl>", ordered and "o" or "u");
+  printf("<%sl>", ordered and "o" or "u")
 end
 
 function html.list.finish(ordered)
-  printf("</%sl>", ordered and "o" or "u");
+  printf("</%sl>", ordered and "o" or "u")
 end
 
 function html.list.entry(...)
-  printf("<li>%s</li>", string.format(...));
+  printf("<li>%s</li>", string.format(...))
 end
 
 function html.table.begin(...)
-  printf("<table><tr>");
+  printf("<table><tr>")
   for i = 1, select("#", ...) do
-    printf("<th>%s</th>", select(i, ...));
+    printf("<th>%s</th>", select(i, ...))
   end
-  printf("</tr>");
+  printf("</tr>")
 end
 
 function html.table.entry(...)
-  printf("<tr>");
+  printf("<tr>")
   for i = 1, select("#", ...) do
-    printf("<td>%s</td>", select(i, ...));
+    printf("<td>%s</td>", select(i, ...))
   end
-  printf("</tr>");
+  printf("</tr>")
 end
 
 function html.table.finish()
-  printf("</table>");
+  printf("</table>")
 end
 
 function html.date(timestamp, reldisplay)
-  local difftime = os.time() - timestamp;
-  local unit, multiple;
-  local decimal = false;
-  local reltime;
+  local difftime = os.time() - timestamp
+  local unit, multiple
+  local decimal = false
+  local reltime
 
   if difftime >= (60 * 60 * 24 * 365) then
-    unit = "year";
-    multiple = difftime / (60 * 60 * 24 * 365);
-    decimal = true;
+    unit = "year"
+    multiple = difftime / (60 * 60 * 24 * 365)
+    decimal = true
   elseif difftime >= (60 * 60 * 24 * 30) then
-    unit = "month";
-    multiple = difftime / (60 * 60 * 24 * 30);
-    decimal = true;
+    unit = "month"
+    multiple = difftime / (60 * 60 * 24 * 30)
+    decimal = true
   elseif difftime >= (60 * 60 * 24 * 7) then
-    unit = "week";
-    multiple = difftime / (60 * 60 * 24 * 7);
+    unit = "week"
+    multiple = difftime / (60 * 60 * 24 * 7)
   elseif difftime >= (60 * 60 * 24) then
-    unit = "day";
-    multiple = difftime / (60 * 60 * 24);
+    unit = "day"
+    multiple = difftime / (60 * 60 * 24)
   elseif difftime >= (60 * 60) then
-    unit = "hour";
-    multiple = difftime / (60 * 60);
+    unit = "hour"
+    multiple = difftime / (60 * 60)
   elseif difftime >= (60) then
-    unit = "minute";
-    multiple = difftime / (60);
+    unit = "minute"
+    multiple = difftime / (60)
   else
-    unit = "second";
-    multiple = difftime;
+    unit = "second"
+    multiple = difftime
   end
 
   if decimal then
-    reltime = string.format("%.1f %s%s ago", multiple, unit, multiple == 1 and "" or "s");
+    reltime = string.format("%.1f %s%s ago", multiple, unit, multiple == 1 and "" or "s")
   else
-    multiple = math.floor(multiple);
-    reltime = string.format("%d %s%s ago", multiple, unit, multiple == 1 and "" or "s");
+    multiple = math.floor(multiple)
+    reltime = string.format("%d %s%s ago", multiple, unit, multiple == 1 and "" or "s")
   end
 
   return string.format("<time datetime='%s' title='%s'>%s</time>", os.date("!%F %T", timestamp),
                        reldisplay and os.date("!%F %T %Z %z", timestamp) or reltime,
-                       reldisplay and reltime or os.date("!%F %T", timestamp));
+                       reldisplay and reltime or os.date("!%F %T", timestamp))
 end
 
 function html.striphtml(s)
-  s = tostring(s);
+  s = tostring(s)
   local ret = s
     :gsub("&", "&amp;")
     :gsub("<", "&lt;")
     :gsub(">", "&gt;")
     :gsub("'", "&#39;")
-    :gsub("\"", "&quot;");
-  return ret;
+    :gsub("\"", "&quot;")
+  return ret
 end
 
 function html.unstriphtml(s)
-  s = tostring(s);
+  s = tostring(s)
   local ret = s
     :gsub("&quot;", "\"")
     :gsub("&#39;", "'")
     :gsub("&gt;", ">")
     :gsub("&lt;", "<")
-    :gsub("&amp;", "&");
-  return ret;
+    :gsub("&amp;", "&")
+  return ret
 end
 
 function html.picofmt(post_tbl)
-  local email = post_tbl["Email"];
+  local email = post_tbl["Email"]
   if email and (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
-    local s = html.striphtml(post_tbl["Comment"]:gsub("\r", ""));
-    s = s:gsub("^\n+", "");
-    s = s:gsub("\n+$", "");
-    return s:gsub("\n", "<br />");
+    local s = html.striphtml(post_tbl["Comment"]:gsub("\r", ""))
+    s = s:gsub("^\n+", "")
+    s = s:gsub("\n+$", "")
+    return s:gsub("\n", "<br />")
   end
 
   local function handle_refs(number)
-    local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number, true);
+    local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number, true)
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2%d</a></s>", number);
+      return string.format("<s><a class='reference'>\2\2%d</a></s>", number)
     else
       return string.format("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>",
-                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number);
+                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number)
     end
   end
 
   local function handle_xbrefs(board, number)
     if not tonumber(number) then
-      return string.format("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s", board, board, number);
+      return string.format("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s", board, board, number)
     end
 
-    local ref_post_tbl = pico.post.tbl(board, number, true);
+    local ref_post_tbl = pico.post.tbl(board, number, true)
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2\2/%s/%s</a></s>", board, number or "");
+      return string.format("<s><a class='reference'>\2\2\2/%s/%s</a></s>", board, number or "")
     else
       return string.format("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>",
-                           board, ref_post_tbl["Parent"] or number, number, board, number);
+                           board, ref_post_tbl["Parent"] or number, number, board, number)
     end
   end
 
@@ -268,112 +268,112 @@ function html.picofmt(post_tbl)
       ["["] = "]",
       ["\3"] = "\3",
       ["\4"] = "\4"
-    };
-    local prev = html.unstriphtml(previous):sub(-1);
-    local raw = html.unstriphtml(url);
-    local balance = balance_tbl[prev];
-    local append = "";
+    }
+    local prev = html.unstriphtml(previous):sub(-1)
+    local raw = html.unstriphtml(url)
+    local balance = balance_tbl[prev]
+    local append = ""
     if balance then
-      local first, second = (prev .. raw):match("^(%b" .. prev .. balance .. ")(.-)$");
+      local first, second = (prev .. raw):match("^(%b" .. prev .. balance .. ")(.-)$")
       if first then
-        url = html.striphtml(first:sub(2, -2));
-        append = html.striphtml(balance .. second);
+        url = html.striphtml(first:sub(2, -2))
+        append = html.striphtml(balance .. second)
       end
     else
-      local last = raw:match("[!,%.:;%?]$");
+      local last = raw:match("[!,%.:;%?]$")
       if last then
-        url = html.striphtml(raw:sub(1, -2));
-        append = last;
+        url = html.striphtml(raw:sub(1, -2))
+        append = last
       end
     end
-    return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append);
+    return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append)
   end
 
-  local blocks = {};
-  local iblocks = {};
+  local blocks = {}
+  local iblocks = {}
 
   local function handle_code(b, c, t, e)
     return function(block)
-      b[#b + 1] = t .. block .. e;
-      return c;
-    end;
+      b[#b + 1] = t .. block .. e
+      return c
+    end
   end
 
   local function insert_escaped(t)
     return function()
       if #t > 0 then
-        return table.remove(t, 1);
+        return table.remove(t, 1)
       end
-      return "";
-    end;
+      return ""
+    end
   end
 
-  local s = "\n" .. post_tbl["Comment"]:gsub("\r", "");
+  local s = "\n" .. post_tbl["Comment"]:gsub("\r", "")
 
-  s = s:gsub("[\1-\8\11-\31\127]", "");
+  s = s:gsub("[\1-\8\11-\31\127]", "")
 
-  s = s:gsub("&", "&amp;");
-  s = s:gsub("<", "\1");
-  s = s:gsub(">", "\2");
-  s = s:gsub("'", "\3");
-  s = s:gsub("\"", "\4");
+  s = s:gsub("&", "&amp;")
+  s = s:gsub("<", "\1")
+  s = s:gsub(">", "\2")
+  s = s:gsub("'", "\3")
+  s = s:gsub("\"", "\4")
 
-  s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\5", "<code>", "</code>"));
-  s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"));
+  s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\5", "<code>", "</code>"))
+  s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"))
 
-  s = s:gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs);
-  s = s:gsub("\2\2\2/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs);
-  s = s:gsub("\2\2(%d+)", handle_refs);
+  s = s:gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs)
+  s = s:gsub("\2\2\2/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs)
+  s = s:gsub("\2\2(%d+)", handle_refs)
 
-  s = s:gsub("\3\3\3([^\n]-)\3\3\3", "<b>%1</b>");
-  s = s:gsub("\3\3([^\n]-)\3\3", "<i>%1</i>");
-  s = s:gsub("~~([^\n]-)~~", "<s>%1</s>");
-  s = s:gsub("__([^\n]-)__", "<u>%1</u>");
-  s = s:gsub("==([^\n]-)==", "<span class='redtext'>%1</span>");
-  s = s:gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>");
-  s = s:gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>");
-  s = s:gsub("\n(\2[^\n]*)", "\n<span class='greentext'>%1</span>");
-  s = s:gsub("\n(\1[^\n]*)", "\n<span class='pinktext'>%1</span>");
+  s = s:gsub("\3\3\3([^\n]-)\3\3\3", "<b>%1</b>")
+  s = s:gsub("\3\3([^\n]-)\3\3", "<i>%1</i>")
+  s = s:gsub("~~([^\n]-)~~", "<s>%1</s>")
+  s = s:gsub("__([^\n]-)__", "<u>%1</u>")
+  s = s:gsub("==([^\n]-)==", "<span class='redtext'>%1</span>")
+  s = s:gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>")
+  s = s:gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>")
+  s = s:gsub("\n(\2[^\n]*)", "\n<span class='greentext'>%1</span>")
+  s = s:gsub("\n(\1[^\n]*)", "\n<span class='pinktext'>%1</span>")
 
-  s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url);
+  s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url)
 
-  s = s:gsub("\6", insert_escaped(iblocks));
-  s = s:gsub("\5", insert_escaped(blocks));
+  s = s:gsub("\6", insert_escaped(iblocks))
+  s = s:gsub("\5", insert_escaped(blocks))
 
-  s = s:gsub("\4", "&quot;");
+  s = s:gsub("\4", "&quot;")
   s = s:gsub("\3", "&#39;")
   s = s:gsub("\2", "&gt;")
   s = s:gsub("\1", "&lt;")
 
-  s = s:gsub("^\n+", "");
-  s = s:gsub("\n+$", "");
-  s = s:gsub("\n", "<br />");
+  s = s:gsub("^\n+", "")
+  s = s:gsub("\n+$", "")
+  s = s:gsub("\n", "<br />")
 
-  return s;
+  return s
 end
 
 function html.modlinks(post_tbl)
-  local board = post_tbl["Board"];
-  local number = post_tbl["Number"];
+  local board = post_tbl["Board"]
+  local number = post_tbl["Number"]
 
   if (not pico.account.current)
      or (pico.account.current["Board"]
          and pico.account.current["Board"] ~= board) then
-    return;
+    return
   end
 
-  printf(" <span class='mod-links'>");
-  printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number);
+  printf(" <span class='mod-links'>")
+  printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number)
 
   if not post_tbl["Parent"] then
-    printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", board, number);
-    printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", board, number);
-    printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", board, number);
-    printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", board, number);
-    printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", board, number);
+    printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", board, number)
+    printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", board, number)
+    printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", board, number)
+    printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", board, number)
+    printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", board, number)
   end
 
-  printf("</span>");
+  printf("</span>")
 end
 
 function html.threadflags(post_tbl)
@@ -383,1487 +383,1487 @@ function html.threadflags(post_tbl)
            post_tbl["Sticky"]   == 1 and "<a title='Sticky'>&#x1f4cc;</a> "  or "",
            post_tbl["Lock"]     == 1 and "<a title='Lock'>&#x1f512;</a> "    or "",
            post_tbl["Autosage"] == 1 and "<a title='Autosage'>&#x2693;</a> " or "",
-           post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x1f503;</a> "   or "");
+           post_tbl["Cycle"]    == 1 and "<a title='Cycle'>&#x1f503;</a> "   or "")
   end
 end
 
 function html.renderpostfiles(post_tbl, unprivileged)
   local function formatfilesize(size)
     if size > (1024 * 1024) then
-      return string.format("%.2f MiB", (size / 1024 / 1024));
+      return string.format("%.2f MiB", (size / 1024 / 1024))
     elseif size > 1024 then
-      return string.format("%.2f KiB", (size / 1024));
+      return string.format("%.2f KiB", (size / 1024))
     else
-      return string.format("%d B", size);
+      return string.format("%d B", size)
     end
   end
 
-  local file_tbl = post_tbl["Files"];
-  local truncate = #file_tbl == 1 and 64 or 24;
+  local file_tbl = post_tbl["Files"]
+  local truncate = #file_tbl == 1 and 64 or 24
 
   if file_tbl then
     for i = 1, #file_tbl do
-      local file = file_tbl[i];
-      local filename = file["Name"];
-      local downloadname = file["DownloadName"];
-      downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename;
-      local spoiler = file["Spoiler"] == 1;
-      local extension = pico.file.extension(filename);
-      local class = pico.file.class(extension);
+      local file = file_tbl[i]
+      local filename = file["Name"]
+      local downloadname = file["DownloadName"]
+      downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename
+      local spoiler = file["Spoiler"] == 1
+      local extension = pico.file.extension(filename)
+      local class = pico.file.class(extension)
 
-      printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "");
-      printf("<div class='post-file-info'>");
+      printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "")
+      printf("<div class='post-file-info'>")
       printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
              filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
-             formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "");
-      printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension);
+             formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "")
+      printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension)
 
       if not unprivileged
           and pico.account.current
           and (not pico.account.current["Board"] or pico.account.current["Board"] == post_tbl["Board"]) then
-        printf(" <span class='mod-links'>");
+        printf(" <span class='mod-links'>")
         printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
+               post_tbl["Board"], post_tbl["Number"], filename)
         printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
+               post_tbl["Board"], post_tbl["Number"], filename)
         printf("<a href='/Mod/post/unspoiler/%s/%d/%s' title='Unspoiler File'>[O]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename);
+               post_tbl["Board"], post_tbl["Number"], filename)
 
         if not pico.account.current["Board"] then
           printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
-                 filename);
+                 filename)
         end
 
-        printf("</span>");
+        printf("</span>")
       end
 
-      printf("</div>");
+      printf("</div>")
 
       if class == "image" and extension ~= "svg" then
         printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize " ..
                "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                post_tbl["Board"], post_tbl["Number"], i,
-               filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0);
+               filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0)
 
-        printf("<label>");
-        printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i);
+        printf("<label>")
+        printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i)
         if spoiler then
-          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' />");
+          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' />")
         else
           printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
-                 filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200));
+                 filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
         end
-        printf("<div class='post-file-fullsize'></div>");
-        printf("</label>");
+        printf("<div class='post-file-fullsize'></div>")
+        printf("</label>")
       elseif spoiler then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename)
       elseif extension == "svg" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
       elseif extension == "pdf" or extension == "ps" then
-        local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200);
+        local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200)
         printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
-               filename, filename, width, height, extension:upper());
+               filename, filename, width, height, extension:upper())
       elseif extension == "epub" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename)
       elseif extension == "txt" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename);
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename)
       elseif class == "archive" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename);
+        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
       elseif class == "video" then
-        printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename);
+        printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
       elseif class == "audio" then
-        printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename);
+        printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
       end
 
-      printf("</div>");
+      printf("</div>")
     end
   end
 end
 
 function html.renderpost(post_tbl, overboard, separate, unprivileged)
   printf("<div%s class='post-container'>",
-         overboard and "" or string.format(" id='%d'", post_tbl["Number"]));
-  printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread");
-  printf("<div class='post-header'>");
+         overboard and "" or string.format(" id='%d'", post_tbl["Number"]))
+  printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread")
+  printf("<div class='post-header'>")
 
   if separate or (overboard and not post_tbl["Parent"]) then
-    printf(" <span class='post-thread-link'>");
+    printf(" <span class='post-thread-link'>")
     if post_tbl["Parent"] then
       printf("<a href='/%s/%d'>/%s/%d</a>",
-             post_tbl["Board"], post_tbl["Parent"], post_tbl["Board"], post_tbl["Parent"]);
+             post_tbl["Board"], post_tbl["Parent"], post_tbl["Board"], post_tbl["Parent"])
     else
-      printf("<a href='/%s/'>/%s/</a>", post_tbl["Board"], post_tbl["Board"]);
+      printf("<a href='/%s/'>/%s/</a>", post_tbl["Board"], post_tbl["Board"])
     end
-    printf("</span> -&gt;");
+    printf("</span> -&gt;")
   end
 
   if post_tbl["Subject"] and post_tbl["Subject"] ~= "" then
-    printf(" <span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]));
+    printf(" <span class='post-subject'>%s</span>", html.striphtml(post_tbl["Subject"]))
   end
 
-  printf(" <span class='post-name'>");
+  printf(" <span class='post-name'>")
   if post_tbl["Email"] and post_tbl["Email"] ~= "" then
     printf("<a class='post-email' href='mailto:%s'>%s</a>",
-           html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"] or defaultpostname));
+           html.striphtml(post_tbl["Email"]), html.striphtml(post_tbl["Name"] or defaultpostname))
   else
-    printf("%s", html.striphtml(post_tbl["Name"] or defaultpostname));
+    printf("%s", html.striphtml(post_tbl["Name"] or defaultpostname))
   end
-  printf("</span>");
+  printf("</span>")
 
   if post_tbl["Capcode"] then
-    local capcode;
+    local capcode
 
     if post_tbl["Capcode"] == "admin" then
-      capcode = "Administrator";
+      capcode = "Administrator"
     elseif post_tbl["Capcode"] == "bo" then
-      capcode = "Board Owner (" .. post_tbl["CapcodeBoard"] .. ")";
+      capcode = "Board Owner (" .. post_tbl["CapcodeBoard"] .. ")"
     elseif post_tbl["Capcode"] == "gvol" then
-      capcode = "Global Volunteer";
+      capcode = "Global Volunteer"
     elseif post_tbl["Capcode"] == "lvol" then
-      capcode = "Board Volunteer (" .. post_tbl["CapcodeBoard"] .. ")";
+      capcode = "Board Volunteer (" .. post_tbl["CapcodeBoard"] .. ")"
     end
 
-    printf(" <span class='post-capcode'>## %s</span>", capcode);
+    printf(" <span class='post-capcode'>## %s</span>", capcode)
   end
 
-  printf(" <span class='post-date'>%s</span>", html.date(post_tbl["Date"]));
+  printf(" <span class='post-date'>%s</span>", html.date(post_tbl["Date"]))
   printf(" <span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"],
-         post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"]);
+         post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"])
 
-  html.threadflags(post_tbl);
+  html.threadflags(post_tbl)
   if not unprivileged then
-    html.modlinks(post_tbl);
+    html.modlinks(post_tbl)
   end
 
-  local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"]);
+  local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"])
   for i = 1, #reflist do
     printf(" <a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
-           post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i]);
+           post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], reflist[i], reflist[i])
   end
 
-  printf("</div>");
-  html.renderpostfiles(post_tbl, unprivileged);
-  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl));
-  printf("</div></div>");
+  printf("</div>")
+  html.renderpostfiles(post_tbl, unprivileged)
+  printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl))
+  printf("</div></div>")
 end
 
 function html.rendercatalog(catalog_tbl)
-  printf("<div class='catalog-container'>");
+  printf("<div class='catalog-container'>")
 
   for i = 1, #catalog_tbl do
-    local post_tbl = catalog_tbl[i];
-    local board = post_tbl["Board"];
-    local number = post_tbl["Number"];
+    local post_tbl = catalog_tbl[i]
+    local board = post_tbl["Board"]
+    local number = post_tbl["Number"]
 
-    printf("<div class='catalog-thread'>");
-    printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number);
+    printf("<div class='catalog-thread'>")
+    printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number)
 
     if post_tbl["File"] then
       if post_tbl["Spoiler"] == 1 then
-        printf("<img alt='***' src='/Static/spoiler.png' width=100 height=70 />");
+        printf("<img alt='***' src='/Static/spoiler.png' width=100 height=70 />")
       else
-        local extension = pico.file.extension(post_tbl["File"]);
-        local class = pico.file.class(extension);
+        local extension = pico.file.extension(post_tbl["File"])
+        local class = pico.file.class(extension)
 
         if class == "image" or class == "video" or extension == "pdf" or extension == "ps" then
           if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
             printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
-                   post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70));
+                   post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70))
           else
-            printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"]);
+            printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"])
           end
         elseif class == "audio" then
-          printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />");
+          printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />")
         elseif class == "archive" then
-          printf("<img alt='***' src='/Static/archive.png' width=100 height=70 />");
+          printf("<img alt='***' src='/Static/archive.png' width=100 height=70 />")
         elseif extension == "epub" then
-          printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />");
+          printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />")
         elseif extension == "txt" then
-          printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />");
+          printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />")
         end
       end
     else
-      printf("***");
+      printf("***")
     end
 
-    printf("</a>");
-    printf("<div class='catalog-thread-info'>");
-    printf("<a href='/%s/'>/%s/</a> R:%d", board, board, post_tbl["ReplyCount"]);
-    html.threadflags(post_tbl);
-    printf("</div>");
+    printf("</a>")
+    printf("<div class='catalog-thread-info'>")
+    printf("<a href='/%s/'>/%s/</a> R:%d", board, board, post_tbl["ReplyCount"])
+    html.threadflags(post_tbl)
+    printf("</div>")
 
-    printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true));
-    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"] or ""));
-    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl));
+    printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl["LastBumpDate"], true))
+    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl["Subject"] or ""))
+    printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl))
 
-    printf("</div>");
+    printf("</div>")
 
-    printf("<hr class='invisible-separator'>");
+    printf("<hr class='invisible-separator'>")
   end
 
-  printf("</div>");
+  printf("</div>")
 end
 
 function html.renderindex(index_tbl, board, page, prev, next)
-  overboard = board == "Overboard";
+  overboard = board == "Overboard"
   for i = 1, #index_tbl do
-    printf("<div class='index-thread'>");
-    html.renderpost(index_tbl[i][1], overboard);
+    printf("<div class='index-thread'>")
+    html.renderpost(index_tbl[i][1], overboard)
 
-    printf("<hr class='invisible-separator'>");
+    printf("<hr class='invisible-separator'>")
 
-    printf("<span class='index-thread-summary'>");
+    printf("<span class='index-thread-summary'>")
     if index_tbl[i][1]["RepliesOmitted"] > 0 then
-      printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"]);
+      printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"])
     end
 
-    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"]);
-    printf("</span>");
+    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
+    printf("</span>")
 
 
     for j = 2, #index_tbl[i] do
-      printf("<hr class='invisible-separator'>");
-      html.renderpost(index_tbl[i][j], overboard);
+      printf("<hr class='invisible-separator'>")
+      html.renderpost(index_tbl[i][j], overboard)
     end
 
-    printf("</div><hr />");
+    printf("</div><hr />")
   end
 
-  printf("<div class='page-switcher'>");
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+  printf("<div class='page-switcher'>")
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
   if prev then
-    printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1);
+    printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1)
   end
   if next then
     if prev then
-      printf(" ");
+      printf(" ")
     end
-    printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1);
+    printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1)
   end
-  printf("</div>");
+  printf("</div>")
 end
 
 function html.renderrecent(recent_tbl, board, page, prev, next)
   for i = 1, #recent_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible-separator'>");
+      printf("<hr class='invisible-separator'>")
     end
-    html.renderpost(recent_tbl[i], board == "Overboard", true);
+    html.renderpost(recent_tbl[i], board == "Overboard", true)
   end
 
-  printf("<hr />");
-  printf("<div class='page-switcher'>");
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page);
+  printf("<hr />")
+  printf("<div class='page-switcher'>")
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
   if prev then
-    printf("<a class='page-switcher-prev' href='/%s/recent/%d'>[Prev]</a>", board, page - 1);
+    printf("<a class='page-switcher-prev' href='/%s/recent/%d'>[Prev]</a>", board, page - 1)
   end
   if next then
     if prev then
-      printf(" ");
+      printf(" ")
     end
-    printf("<a class='page-switcher-next' href='/%s/recent/%d'>[Next]</a>", board, page + 1);
+    printf("<a class='page-switcher-next' href='/%s/recent/%d'>[Next]</a>", board, page + 1)
   end
-  printf("</div>");
+  printf("</div>")
 end
 
 function html.brc(title, redheader)
-  html.begin(title);
-  html.redheader(redheader);
-  html.container.begin();
+  html.begin(title)
+  html.redheader(redheader)
+  html.container.begin()
 end
 
 function html.cfinish()
-  html.container.finish();
-  html.finish();
+  html.container.finish()
+  html.finish()
 end
 
 function html.form.postform(board_tbl, parent)
-  printf("<fieldset><form id='postform' action='/Post' method='POST' enctype='multipart/form-data'>");
-  printf(  "<input name='board' value='%s' type='hidden' />", board_tbl["Name"]);
+  printf("<fieldset><form id='postform' action='/Post' method='POST' enctype='multipart/form-data'>")
+  printf(  "<input name='board' value='%s' type='hidden' />", board_tbl["Name"])
 
   if parent ~= nil then
-    printf("<input name='parent' value='%d' type='hidden' />", parent);
+    printf("<input name='parent' value='%d' type='hidden' />", parent)
   end
 
-  printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength=64 /><br />");
-  printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength=64 /><br />");
-  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 />");
-  printf(  "<input type='submit' value='Post' accesskey='s' /><br />");
-  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"]);
+  printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength=64 /><br />")
+  printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength=64 /><br />")
+  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 />")
+  printf(  "<input type='submit' value='Post' accesskey='s' /><br />")
+  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"])
 
   for i = 1, board_tbl["PostMaxFiles"] do
     printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />" ..
            "<label for='spoiler%d'>Spoiler</label><input id='spoiler%d' name='spoiler%d' type='checkbox' value=1 />%s",
-           i, i, i, i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "");
+           i, i, i, i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "")
   end
 
   if parent == nil and board_tbl["ThreadCaptcha"] == 1
      or parent ~= nil and board_tbl["PostCaptcha"] == 1 then
-    local captchaid, captchab64 = pico.captcha.create();
+    local captchaid, captchab64 = pico.captcha.create()
 
-    printf("<input name='captchaid' value='%s' type='hidden' />", captchaid);
-    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength=6 required /><br />");
-    printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captchab64);
+    printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
+    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength=6 required /><br />")
+    printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captchab64)
   end
 
-  printf("</form></fieldset>");
+  printf("</form></fieldset>")
 end
 
 function html.form.mod_login()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />");
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.board_create()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />");
-  printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />")
+  printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.board_delete()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.board_config_select()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required autofocus /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.board_config(board)
-  local board_tbl = pico.board.tbl(board);
+  local board_tbl = pico.board.tbl(board)
 
-  printf("<fieldset><form method='POST'>");
-  printf(  "<input type='hidden' name='Name' value='%s' />", board);
-  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]));
-  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""));
-  printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "");
-  printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "");
-  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxFiles"]);
-  printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' min=0 required /><br />", board_tbl["ThreadMinLength"]);
-  printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxLength"]);
-  printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxNewlines"]);
-  printf(  "<label for='PostMaxDblNewlines'>PostMaxDblNewlines</label><input id='PostMaxDblNewlines' name='PostMaxDblNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxDblNewlines"]);
-  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["TPHLimit"] or "");
-  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["PPHLimit"] or "");
-  printf(  "<label for='ThreadCaptcha'>ThreadCaptcha</label><input id='ThreadCaptcha' name='ThreadCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["ThreadCaptcha"] == 1 and "checked " or "");
-  printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "");
-  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerTPH"] or "");
-  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerPPH"] or "");
-  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%s' min=0 /><br />", board_tbl["BumpLimit"] or "");
-  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%s' min=0 /><br />", board_tbl["PostLimit"] or "");
-  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%s' min=0 /><br />", board_tbl["ThreadLimit"] or "");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<input type='hidden' name='Name' value='%s' />", board)
+  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]))
+  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""))
+  printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "")
+  printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "")
+  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxFiles"])
+  printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' min=0 required /><br />", board_tbl["ThreadMinLength"])
+  printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxLength"])
+  printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxNewlines"])
+  printf(  "<label for='PostMaxDblNewlines'>PostMaxDblNewlines</label><input id='PostMaxDblNewlines' name='PostMaxDblNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxDblNewlines"])
+  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["TPHLimit"] or "")
+  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["PPHLimit"] or "")
+  printf(  "<label for='ThreadCaptcha'>ThreadCaptcha</label><input id='ThreadCaptcha' name='ThreadCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["ThreadCaptcha"] == 1 and "checked " or "")
+  printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "")
+  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerTPH"] or "")
+  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerPPH"] or "")
+  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%s' min=0 /><br />", board_tbl["BumpLimit"] or "")
+  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%s' min=0 /><br />", board_tbl["PostLimit"] or "")
+  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%s' min=0 /><br />", board_tbl["ThreadLimit"] or "")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.banner_add()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.banner_delete_select()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.banner_delete(board, banners)
-  printf("<fieldset><form method='POST'>");
-  printf(  "<input type='hidden' name='board' value='%s' />", board);
-  printf(  "<label for='file'>File</label><br />");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<input type='hidden' name='board' value='%s' />", board)
+  printf(  "<label for='file'>File</label><br />")
   for i = 1, #banners do
-    printf("<input id='%s' name='file' type='radio' value='%s' %s/>", banners[i], banners[i], i == 1 and "checked " or "");
-    printf("<label for='%s'><img src='/Media/%s' alt='%s' /></label><br />", banners[i], banners[i], banners[i]);
+    printf("<input id='%s' name='file' type='radio' value='%s' %s/>", banners[i], banners[i], i == 1 and "checked " or "")
+    printf("<label for='%s'><img src='/Media/%s' alt='%s' /></label><br />", banners[i], banners[i], banners[i])
   end
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
-  printf("</form></fieldset>");
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.account_create()
-  printf("<fieldset><form id='account-create' method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />");
-  printf(  "<label for='type'>Type</label>");
-  printf(  "<select form='account-create' id='type' name='type'>");
-  printf(    "<option value='admin'>Administrator</option>");
-  printf(    "<option value='bo'>Board Owner</option>");
-  printf(    "<option value='gvol'>Global Volunteer</option>");
-  printf(    "<option value='lvol' selected>Local Volunteer</option>");
-  printf(  "</select><br />");
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form id='account-create' method='POST'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />")
+  printf(  "<label for='type'>Type</label>")
+  printf(  "<select form='account-create' id='type' name='type'>")
+  printf(    "<option value='admin'>Administrator</option>")
+  printf(    "<option value='bo'>Board Owner</option>")
+  printf(    "<option value='gvol'>Global Volunteer</option>")
+  printf(    "<option value='lvol' selected>Local Volunteer</option>")
+  printf(  "</select><br />")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.account_delete()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.account_config()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"]);
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"])
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.endpoint_add()
-  printf("<fieldset><form id='endpoint-add' method='POST'>");
-  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
-  printf(  "<label for='type'>Type</label>");
-  printf(  "<select form='endpoint-add' id='type' name='type'>");
-  printf(    "<option value='following' selected>Following</option>");
-  printf(    "<option value='known'>Known Only</option>");
-  printf(    "<option value='blacklist'>Blacklisted</option>");
-  printf(  "</select><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form id='endpoint-add' method='POST'>")
+  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
+  printf(  "<label for='type'>Type</label>")
+  printf(  "<select form='endpoint-add' id='type' name='type'>")
+  printf(    "<option value='following' selected>Following</option>")
+  printf(    "<option value='known'>Known Only</option>")
+  printf(    "<option value='blacklist'>Blacklisted</option>")
+  printf(  "</select><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.endpoint_remove()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.endpoint_config_select()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='Endpoint'>Endpoint</label><input id='Endpoint' name='Endpoint' type='text' required autofocus /><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='Endpoint'>Endpoint</label><input id='Endpoint' name='Endpoint' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.endpoint_config(endpoint)
-  local endpoint_tbl = pico.webring.endpoint.tbl(endpoint);
+  local endpoint_tbl = pico.webring.endpoint.tbl(endpoint)
 
-  printf("<fieldset><form method='POST'>");
-  printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl["Endpoint"]));
-  printf(  "<label for='Type'>Type</label>");
-  printf(  "<select id='Type' name='Type'>");
-  printf(    "<option value='following'%s>Following</option>", endpoint_tbl["Type"] == "following" and " selected" or "");
-  printf(    "<option value='known'%s>Known Only</option>", endpoint_tbl["Type"] == "known" and " selected" or "");
-  printf(    "<option value='blacklist'%s>Blacklisted</option>", endpoint_tbl["Type"] == "blacklist" and " selected" or "");
-  printf(  "</select><br />");
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl["Endpoint"]))
+  printf(  "<label for='Type'>Type</label>")
+  printf(  "<select id='Type' name='Type'>")
+  printf(    "<option value='following'%s>Following</option>", endpoint_tbl["Type"] == "following" and " selected" or "")
+  printf(    "<option value='known'%s>Known Only</option>", endpoint_tbl["Type"] == "known" and " selected" or "")
+  printf(    "<option value='blacklist'%s>Blacklisted</option>", endpoint_tbl["Type"] == "blacklist" and " selected" or "")
+  printf(  "</select><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.globalconfig(varname)
-  printf("<fieldset><form id='globalconfig' method='POST'>");
-  printf("<input type='hidden' name='name' value='%s' />", varname);
-  printf("<label for='value'>%s</label>", varname);
+  printf("<fieldset><form id='globalconfig' method='POST'>")
+  printf("<input type='hidden' name='name' value='%s' />", varname)
+  printf("<label for='value'>%s</label>", varname)
 
   if varname == "frontpage" or varname == "announce" then
     printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
-           html.striphtml(pico.global.get(varname) or "") or "");
+           html.striphtml(pico.global.get(varname) or "") or "")
   elseif varname == "theme" then
-    printf("<select id='value' name='value' form='globalconfig' autofocus>");
-    local theme = pico.global.get("theme");
-    local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'");
+    printf("<select id='value' name='value' form='globalconfig' autofocus>")
+    local theme = pico.global.get("theme")
+    local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
     for t in themes:lines() do
-      printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t);
+      printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t)
     end
-    printf("</select>");
+    printf("</select>")
   elseif varname == "defaultboardview" then
-    printf("<select id='value' name='value' form='globalconfig' autofocus>");
-    printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "");
-    printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "");
-    printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "");
-    printf("</select>");
+    printf("<select id='value' name='value' form='globalconfig' autofocus>")
+    printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "")
+    printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "")
+    printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "")
+    printf("</select>")
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
-           html.striphtml(pico.global.get(varname) or "") or "");
+           html.striphtml(pico.global.get(varname) or "") or "")
   end
-  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
-  printf("</form></fieldset>");
+  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.themeconfig()
-  printf("<fieldset><form id='themeconfig' method='POST'>");
-  printf("<label for='theme'>theme</label>");
+  printf("<fieldset><form id='themeconfig' method='POST'>")
+  printf("<label for='theme'>theme</label>")
 
-  printf("<select id='theme' name='theme' form='themeconfig' autofocus>");
-  local theme = pico.global.get("theme");
-  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'");
+  printf("<select id='theme' name='theme' form='themeconfig' autofocus>")
+  local theme = pico.global.get("theme")
+  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
   for t in themes:lines() do
-    local selected;
+    local selected
     if cgi.COOKIE["theme"] then
-      selected = cgi.COOKIE["theme"] == t;
+      selected = cgi.COOKIE["theme"] == t
     else
-      selected = theme == t;
+      selected = theme == t
     end
-    printf("<option value='%s'%s>%s</option>", t, selected and " selected" or "", t);
+    printf("<option value='%s'%s>%s</option>", t, selected and " selected" or "", t)
   end
-  printf("</select>");
+  printf("</select>")
 
-  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />");
-  printf("</form></fieldset>");
+  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.mod_action_reason()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />");
-  printf(  "<input type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />")
+  printf(  "<input type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.mod_move_thread()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf(  "<input type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<input type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.mod_multidelete()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />");
-  printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />");
-  printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf(  "<input type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />")
+  printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<input type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 function html.form.mod_pattdelete()
-  printf("<fieldset><form method='POST'>");
-  printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />");
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />");
-  printf(  "<input type='submit' value='Continue' />");
-  printf("</form></fieldset>");
+  printf("<fieldset><form method='POST'>")
+  printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<input type='submit' value='Continue' />")
+  printf("</form></fieldset>")
 end
 
 --
 -- PAGE DEFINITIONS
 --
 
-cgi.headers["Content-Type"] = "text/html; charset=utf-8";
-cgi.headers["Cache-Control"] = "no-cache";
-cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self';";
-cgi.headers["Referrer-Policy"] = "no-referrer";
-cgi.headers["X-DNS-Prefetch-Control"] = "off";
-cgi.headers["X-Frame-Options"] = "deny";
+cgi.headers["Content-Type"] = "text/html; charset=utf-8"
+cgi.headers["Cache-Control"] = "no-cache"
+cgi.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self';"
+cgi.headers["Referrer-Policy"] = "no-referrer"
+cgi.headers["X-DNS-Prefetch-Control"] = "off"
+cgi.headers["X-Frame-Options"] = "deny"
 
 local handlers = {}
 
 local function account_check()
   if not pico.account.current then
-    cgi.headers["Status"] = "303 See Other";
-    cgi.headers["Location"] = "/Mod/login";
-    cgi.finalize();
+    cgi.headers["Status"] = "303 See Other"
+    cgi.headers["Location"] = "/Mod/login"
+    cgi.finalize()
   end
 end
 
 local function tbl_validate(tbl, ...)
   for i = 1, select("#", ...) do
-    v = tbl[select(i, ...)];
+    v = tbl[select(i, ...)]
     if v == nil or v == "" then
-      return false;
+      return false
     end
   end
-  return true;
+  return true
 end
 
 handlers["/"] = function()
-  html.begin("welcome");
-  html.redheader("Welcome to %s", sitename);
-  html.container.begin();
-  printf("%s", pico.global.get("frontpage") or "");
-  html.container.finish();
-  html.finish();
-end;
+  html.begin("welcome")
+  html.redheader("Welcome to %s", sitename)
+  html.container.begin()
+  printf("%s", pico.global.get("frontpage") or "")
+  html.container.finish()
+  html.finish()
+end
 
 handlers["/Mod"] = function()
-  account_check();
-  html.brc("dashboard", "Moderation Dashboard");
+  account_check()
+  html.brc("dashboard", "Moderation Dashboard")
   printf("You are logged in as <b>%s</b>. Your account type is <b>%s</b>.",
-         pico.account.current["Name"], pico.account.current["Type"]);
-  html.container.barheader("Global");
-  html.list.begin();
-  html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>");
-  html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>");
-  html.list.entry("<a href='/Mod/global/url'>Change site URL</a>");
-  html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>");
-  html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>");
-  html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>");
-  html.list.entry("<a href='/Mod/global/defaultboardview'>Change default board view</a>");
-  html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>");
-  html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>");
-  html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>");
-  html.list.entry("<a href='/Mod/global/logpagesize'>Change mod log page size</a>");
-  html.list.entry("<a href='/Mod/global/maxfilesize'>Change the maximum file size</a>");
-  html.list.finish();
-  html.container.barheader("Moderator Tools");
-  html.list.begin();
-  html.list.entry("<a href='/Mod/tools/multidelete'>Multi-delete by range</a>");
-  html.list.entry("<a href='/Mod/tools/pattdelete'>Pattern delete</a>");
-  html.list.finish();
-  html.container.barheader("Accounts");
-  html.list.begin();
-  html.list.entry("<a href='/Mod/account/create'>Create an account</a>");
-  html.list.entry("<a href='/Mod/account/delete'>Delete an account</a>");
-  html.list.entry("<a href='/Mod/account/config'>Configure an account</a>");
-  html.list.finish();
-  html.container.barheader("Boards");
-  html.list.begin();
-  html.list.entry("<a href='/Mod/board/create'>Create a board</a>");
-  html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>");
-  html.list.entry("<a href='/Mod/board/config'>Configure a board</a>");
-  html.list.entry("<a href='/Mod/banner/add'>Add a banner to a board</a>");
-  html.list.entry("<a href='/Mod/banner/delete'>Delete a banner from a board</a>");
-  html.list.finish();
-  html.container.barheader("Webring");
-  html.list.begin();
-  html.list.entry("<a href='/Mod/webring/add'>Add a webring endpoint</a>");
-  html.list.entry("<a href='/Mod/webring/remove'>Remove a webring endpoint</a>");
-  html.list.entry("<a href='/Mod/webring/config'>Configure a webring endpoint</a>");
-  html.list.finish();
-  html.cfinish();
-end;
+         pico.account.current["Name"], pico.account.current["Type"])
+  html.container.barheader("Global")
+  html.list.begin()
+  html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>")
+  html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>")
+  html.list.entry("<a href='/Mod/global/url'>Change site URL</a>")
+  html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>")
+  html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>")
+  html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>")
+  html.list.entry("<a href='/Mod/global/defaultboardview'>Change default board view</a>")
+  html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>")
+  html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>")
+  html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>")
+  html.list.entry("<a href='/Mod/global/logpagesize'>Change mod log page size</a>")
+  html.list.entry("<a href='/Mod/global/maxfilesize'>Change the maximum file size</a>")
+  html.list.finish()
+  html.container.barheader("Moderator Tools")
+  html.list.begin()
+  html.list.entry("<a href='/Mod/tools/multidelete'>Multi-delete by range</a>")
+  html.list.entry("<a href='/Mod/tools/pattdelete'>Pattern delete</a>")
+  html.list.finish()
+  html.container.barheader("Accounts")
+  html.list.begin()
+  html.list.entry("<a href='/Mod/account/create'>Create an account</a>")
+  html.list.entry("<a href='/Mod/account/delete'>Delete an account</a>")
+  html.list.entry("<a href='/Mod/account/config'>Configure an account</a>")
+  html.list.finish()
+  html.container.barheader("Boards")
+  html.list.begin()
+  html.list.entry("<a href='/Mod/board/create'>Create a board</a>")
+  html.list.entry("<a href='/Mod/board/delete'>Delete a board</a>")
+  html.list.entry("<a href='/Mod/board/config'>Configure a board</a>")
+  html.list.entry("<a href='/Mod/banner/add'>Add a banner to a board</a>")
+  html.list.entry("<a href='/Mod/banner/delete'>Delete a banner from a board</a>")
+  html.list.finish()
+  html.container.barheader("Webring")
+  html.list.begin()
+  html.list.entry("<a href='/Mod/webring/add'>Add a webring endpoint</a>")
+  html.list.entry("<a href='/Mod/webring/remove'>Remove a webring endpoint</a>")
+  html.list.entry("<a href='/Mod/webring/config'>Configure a webring endpoint</a>")
+  html.list.finish()
+  html.cfinish()
+end
 
 handlers["/Mod/login"] = function()
   if pico.account.current then
-    cgi.headers["Status"] = "303 See Other";
-    cgi.headers["Location"] = "/Mod";
-    cgi.finalize();
+    cgi.headers["Status"] = "303 See Other"
+    cgi.headers["Location"] = "/Mod"
+    cgi.finalize()
   end
 
-  html.brc("login", "Moderator Login");
+  html.brc("login", "Moderator Login")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "username", "password") then
-      local session_key, errmsg = pico.account.login(cgi.POST["username"], cgi.POST["password"]);
+      local session_key, errmsg = pico.account.login(cgi.POST["username"], cgi.POST["password"])
 
       if not session_key then
-        printf("Cannot log in: %s", errmsg);
+        printf("Cannot log in: %s", errmsg)
       else
-        cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict";
-        cgi.headers["Status"] = "303 See Other";
-        cgi.headers["Location"] = "/Mod";
-        cgi.finalize();
+        cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict"
+        cgi.headers["Status"] = "303 See Other"
+        cgi.headers["Location"] = "/Mod"
+        cgi.finalize()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.mod_login();
-  html.cfinish();
-end;
+  html.form.mod_login()
+  html.cfinish()
+end
 
 handlers["/Mod/logout"] = function()
-  account_check();
-  pico.account.logout(cgi.COOKIE["session_key"]);
-  cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict";
-  cgi.headers["Status"] = "303 See Other";
-  cgi.headers["Location"] = "/Overboard";
-  cgi.finalize();
-end;
+  account_check()
+  pico.account.logout(cgi.COOKIE["session_key"])
+  cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict"
+  cgi.headers["Status"] = "303 See Other"
+  cgi.headers["Location"] = "/Overboard"
+  cgi.finalize()
+end
 
 handlers["/Mod/global/([%l%d]+)"] = function(varname)
-  account_check();
-  html.brc("change global configuration", "Change global configuration");
+  account_check()
+  html.brc("change global configuration", "Change global configuration")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name") then
-      local result, msg = pico.global.set(cgi.POST["name"], cgi.POST["value"] ~= "" and cgi.POST["value"] or nil);
-      printf("%s: %s", result and "Variable set" or "Cannot set variable", msg);
+      local result, msg = pico.global.set(cgi.POST["name"], cgi.POST["value"] ~= "" and cgi.POST["value"] or nil)
+      printf("%s: %s", result and "Variable set" or "Cannot set variable", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.globalconfig(varname);
-  html.cfinish();
-end;
+  html.form.globalconfig(varname)
+  html.cfinish()
+end
 
 handlers["/Mod/tools/multidelete"] = function()
-  account_check();
-  html.brc("multidelete", "Multidelete");
+  account_check()
+  html.brc("multidelete", "Multidelete")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "board", "ispec", "reason") then
-      local result, msg = pico.post.multidelete(cgi.POST["board"], cgi.POST["ispec"], cgi.POST["espec"] ~= "" and cgi.POST["espec"] or nil, cgi.POST["reason"]);
-      printf("%s", msg);
+      local result, msg = pico.post.multidelete(cgi.POST["board"], cgi.POST["ispec"], cgi.POST["espec"] ~= "" and cgi.POST["espec"] or nil, cgi.POST["reason"])
+      printf("%s", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.mod_multidelete();
-  html.cfinish();
-end;
+  html.form.mod_multidelete()
+  html.cfinish()
+end
 
 handlers["/Mod/tools/pattdelete"] = function()
-  account_check();
-  html.brc("pattern delete", "Pattern delete");
+  account_check()
+  html.brc("pattern delete", "Pattern delete")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "pattern", "reason") then
-      local result, msg = pico.post.pattdelete(cgi.POST["pattern"], cgi.POST["reason"]);
-      printf("%s", msg);
+      local result, msg = pico.post.pattdelete(cgi.POST["pattern"], cgi.POST["reason"])
+      printf("%s", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.mod_pattdelete();
-  html.cfinish();
-end;
+  html.form.mod_pattdelete()
+  html.cfinish()
+end
 
 handlers["/Mod/account/create"] = function()
-  account_check();
-  html.brc("create account", "Create account");
+  account_check()
+  html.brc("create account", "Create account")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "password", "type", "board") then
-      printf("%s", select(2, pico.account.create(cgi.POST["name"], cgi.POST["password"], cgi.POST["type"], cgi.POST["board"])));
+      printf("%s", select(2, pico.account.create(cgi.POST["name"], cgi.POST["password"], cgi.POST["type"], cgi.POST["board"])))
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.account_create();
-  html.cfinish();
-end;
+  html.form.account_create()
+  html.cfinish()
+end
 
 handlers["/Mod/account/delete"] = function()
-  account_check();
-  html.brc("delete account", "Delete account");
+  account_check()
+  html.brc("delete account", "Delete account")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "reason") then
-      local status, msg = pico.account.delete(cgi.POST["name"], cgi.POST["reason"]);
-      printf("%s%s", (not status) and "Cannot delete account: " or "", msg);
+      local status, msg = pico.account.delete(cgi.POST["name"], cgi.POST["reason"])
+      printf("%s%s", (not status) and "Cannot delete account: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.account_delete();
-  html.cfinish();
-end;
+  html.form.account_delete()
+  html.cfinish()
+end
 
 handlers["/Mod/account/config"] = function()
-  account_check();
-  html.brc("configure account", "Configure account");
+  account_check()
+  html.brc("configure account", "Configure account")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "password") then
-      printf("%s", select(2, pico.account.changepass(cgi.POST["name"], cgi.POST["password"])));
+      printf("%s", select(2, pico.account.changepass(cgi.POST["name"], cgi.POST["password"])))
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.account_config();
-  html.cfinish();
-end;
+  html.form.account_config()
+  html.cfinish()
+end
 
 handlers["/Mod/board/create"] = function()
-  account_check();
-  html.brc("create board", "Create board");
+  account_check()
+  html.brc("create board", "Create board")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "title") then
-      local status, msg = pico.board.create(cgi.POST["name"], cgi.POST["title"], cgi.POST["subtitle"] ~= "" and cgi.POST["subtitle"] or nil);
-      printf("%s%s", (not status) and "Cannot create board: " or "", msg);
+      local status, msg = pico.board.create(cgi.POST["name"], cgi.POST["title"], cgi.POST["subtitle"] ~= "" and cgi.POST["subtitle"] or nil)
+      printf("%s%s", (not status) and "Cannot create board: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.board_create();
-  html.cfinish();
-end;
+  html.form.board_create()
+  html.cfinish()
+end
 
 handlers["/Mod/board/delete"] = function()
-  account_check();
-  html.brc("delete board", "Delete board");
+  account_check()
+  html.brc("delete board", "Delete board")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "reason") then
-      local status, msg = pico.board.delete(cgi.POST["name"], cgi.POST["reason"]);
-      printf("%s%s", (not status) and "Cannot delete board: " or "", msg);
+      local status, msg = pico.board.delete(cgi.POST["name"], cgi.POST["reason"])
+      printf("%s%s", (not status) and "Cannot delete board: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.board_delete();
-  html.cfinish();
-end;
+  html.form.board_delete()
+  html.cfinish()
+end
 
 handlers["/Mod/board/config"] = function()
-  account_check();
-  html.brc("configure board", "Configure board");
+  account_check()
+  html.brc("configure board", "Configure board")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "Name") then
       if pico.board.exists(cgi.POST["Name"]) then
         if tbl_validate(cgi.POST, "Title") then
-          cgi.POST["Subtitle"] = cgi.POST["Subtitle"] ~= "" and cgi.POST["Subtitle"] or nil;
-          cgi.POST["TPHLimit"] = cgi.POST["TPHLimit"] ~= "" and cgi.POST["TPHLimit"] or nil;
-          cgi.POST["PPHLimit"] = cgi.POST["PPHLimit"] ~= "" and cgi.POST["PPHLimit"] or nil;
-          cgi.POST["CaptchaTriggerTPH"] = cgi.POST["CaptchaTriggerTPH"] ~= "" and cgi.POST["CaptchaTriggerTPH"] or nil;
-          cgi.POST["CaptchaTriggerPPH"] = cgi.POST["CaptchaTriggerPPH"] ~= "" and cgi.POST["CaptchaTriggerPPH"] or nil;
-          cgi.POST["BumpLimit"] = cgi.POST["BumpLimit"] ~= "" and cgi.POST["BumpLimit"] or nil;
-          cgi.POST["PostLimit"] = cgi.POST["PostLimit"] ~= "" and cgi.POST["PostLimit"] or nil;
-          cgi.POST["ThreadLimit"] = cgi.POST["ThreadLimit"] ~= "" and cgi.POST["ThreadLimit"] or nil;
-          local status, msg = pico.board.configure(cgi.POST);
-          printf("%s%s", (not status) and "Cannot configure board: " or "", msg);
+          cgi.POST["Subtitle"] = cgi.POST["Subtitle"] ~= "" and cgi.POST["Subtitle"] or nil
+          cgi.POST["TPHLimit"] = cgi.POST["TPHLimit"] ~= "" and cgi.POST["TPHLimit"] or nil
+          cgi.POST["PPHLimit"] = cgi.POST["PPHLimit"] ~= "" and cgi.POST["PPHLimit"] or nil
+          cgi.POST["CaptchaTriggerTPH"] = cgi.POST["CaptchaTriggerTPH"] ~= "" and cgi.POST["CaptchaTriggerTPH"] or nil
+          cgi.POST["CaptchaTriggerPPH"] = cgi.POST["CaptchaTriggerPPH"] ~= "" and cgi.POST["CaptchaTriggerPPH"] or nil
+          cgi.POST["BumpLimit"] = cgi.POST["BumpLimit"] ~= "" and cgi.POST["BumpLimit"] or nil
+          cgi.POST["PostLimit"] = cgi.POST["PostLimit"] ~= "" and cgi.POST["PostLimit"] or nil
+          cgi.POST["ThreadLimit"] = cgi.POST["ThreadLimit"] ~= "" and cgi.POST["ThreadLimit"] or nil
+          local status, msg = pico.board.configure(cgi.POST)
+          printf("%s%s", (not status) and "Cannot configure board: " or "", msg)
         end
-        html.form.board_config(cgi.POST["Name"]);
+        html.form.board_config(cgi.POST["Name"])
       else
-        printf("Cannot configure board: Board does not exist");
-        html.form.board_config_select();
+        printf("Cannot configure board: Board does not exist")
+        html.form.board_config_select()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   else
-    html.form.board_config_select();
+    html.form.board_config_select()
   end
 
-  html.cfinish();
-end;
+  html.cfinish()
+end
 
 handlers["/Mod/banner/add"] = function()
-  account_check();
-  html.brc("add a banner", "Add a banner");
+  account_check()
+  html.brc("add a banner", "Add a banner")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "board", "file") then
-      local status, msg = pico.board.banner.add(cgi.POST["board"], cgi.POST["file"]);
-      printf("%s%s", (not status) and "Cannot add banner: " or "", msg);
+      local status, msg = pico.board.banner.add(cgi.POST["board"], cgi.POST["file"])
+      printf("%s%s", (not status) and "Cannot add banner: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.banner_add();
-  html.cfinish();
-end;
+  html.form.banner_add()
+  html.cfinish()
+end
 
 handlers["/Mod/banner/delete"] = function()
-  account_check();
-  html.brc("delete a banner", "Delete a banner");
+  account_check()
+  html.brc("delete a banner", "Delete a banner")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "board") then
       if pico.board.exists(cgi.POST["board"]) then
-        local banners = pico.board.banner.list(cgi.POST["board"]);
+        local banners = pico.board.banner.list(cgi.POST["board"])
         if #banners > 0 then
           if tbl_validate(cgi.POST, "file", "reason") then
-            local status, msg = pico.board.banner.delete(cgi.POST["board"], cgi.POST["file"], cgi.POST["reason"]);
-            printf("%s%s", (not status) and "Cannot delete banner: " or "", msg);
+            local status, msg = pico.board.banner.delete(cgi.POST["board"], cgi.POST["file"], cgi.POST["reason"])
+            printf("%s%s", (not status) and "Cannot delete banner: " or "", msg)
           end
-          html.form.banner_delete(cgi.POST["board"], banners);
+          html.form.banner_delete(cgi.POST["board"], banners)
         else
-          printf("Cannot delete banners: Board contains no banners");
-          html.form.banner_delete_select();
+          printf("Cannot delete banners: Board contains no banners")
+          html.form.banner_delete_select()
         end
       else
-        printf("Cannot delete banners: Board does not exist");
-        html.form.banner_delete_select();
+        printf("Cannot delete banners: Board does not exist")
+        html.form.banner_delete_select()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   else
-    html.form.banner_delete_select();
+    html.form.banner_delete_select()
   end
 
-  html.cfinish();
-end;
+  html.cfinish()
+end
 
 handlers["/Mod/webring/add"] = function()
-  account_check();
-  html.brc("add webring endpoint", "Add webring endpoint");
+  account_check()
+  html.brc("add webring endpoint", "Add webring endpoint")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "endpoint", "type") then
-      local status, msg = pico.webring.endpoint.add(cgi.POST["endpoint"], cgi.POST["type"]);
-      printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg);
+      local status, msg = pico.webring.endpoint.add(cgi.POST["endpoint"], cgi.POST["type"])
+      printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.endpoint_add();
-  html.cfinish();
-end;
+  html.form.endpoint_add()
+  html.cfinish()
+end
 
 handlers["/Mod/webring/remove"] = function()
-  account_check();
-  html.brc("remove webring endpoint", "Remove webring endpoint");
+  account_check()
+  html.brc("remove webring endpoint", "Remove webring endpoint")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "endpoint", "reason") then
-      local status, msg = pico.webring.endpoint.remove(cgi.POST["endpoint"], cgi.POST["reason"]);
-      printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg);
+      local status, msg = pico.webring.endpoint.remove(cgi.POST["endpoint"], cgi.POST["reason"])
+      printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg)
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.endpoint_remove();
-  html.cfinish();
-end;
+  html.form.endpoint_remove()
+  html.cfinish()
+end
 
 handlers["/Mod/webring/config"] = function()
-  account_check();
-  html.brc("configure webring endpoint", "Configure webring endpoint");
+  account_check()
+  html.brc("configure webring endpoint", "Configure webring endpoint")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "Endpoint") then
       if pico.webring.endpoint.exists(cgi.POST["Endpoint"]) then
         if tbl_validate(cgi.POST, "Type") then
-          local status, msg = pico.webring.endpoint.configure(cgi.POST);
-          printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg);
+          local status, msg = pico.webring.endpoint.configure(cgi.POST)
+          printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg)
         end
-        html.form.endpoint_config(cgi.POST["Endpoint"]);
+        html.form.endpoint_config(cgi.POST["Endpoint"])
       else
-        printf("Cannot configure webring endpoint: Endpoint does not exist");
-        html.form.endpoint_config_select();
+        printf("Cannot configure webring endpoint: Endpoint does not exist")
+        html.form.endpoint_config_select()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   else
-    html.form.endpoint_config_select();
+    html.form.endpoint_config_select()
   end
 
-  html.cfinish();
-end;
+  html.cfinish()
+end
 
 handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post, file)
-  account_check();
-  html.begin("%s post", operation);
-  html.redheader("Modify or Delete a Post");
-  html.container.begin();
+  account_check()
+  html.begin("%s post", operation)
+  html.redheader("Modify or Delete a Post")
+  html.container.begin()
 
-  local board_tbl = pico.board.tbl(board);
-  local post_tbl = pico.post.tbl(board, post);
+  local board_tbl = pico.board.tbl(board)
+  local post_tbl = pico.post.tbl(board, post)
   if not post_tbl then
-    html.error("Action failed", "Cannot find post %d on board %s", post, board);
+    html.error("Action failed", "Cannot find post %d on board %s", post, board)
   end
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "reason") then
-      local result, msg;
+      local result, msg
 
       if operation == "delete" then
-        result, msg = pico.post.delete(board, post, cgi.POST["reason"]);
+        result, msg = pico.post.delete(board, post, cgi.POST["reason"])
       elseif operation == "unlink" then
-        result, msg = pico.post.unlink(board, post, file, cgi.POST["reason"]);
+        result, msg = pico.post.unlink(board, post, file, cgi.POST["reason"])
       elseif operation == "spoiler" then
-        result, msg = pico.post.spoiler(board, post, file, true, cgi.POST["reason"]);
+        result, msg = pico.post.spoiler(board, post, file, true, cgi.POST["reason"])
       elseif operation == "unspoiler" then
-        result, msg = pico.post.spoiler(board, post, file, false, cgi.POST["reason"]);
+        result, msg = pico.post.spoiler(board, post, file, false, cgi.POST["reason"])
       elseif operation == "move" then
         if not tbl_validate(cgi.POST, "destination") then
-          cgi.headers["Status"] = "400 Bad Request";
-          html.error("Action failed", "Invalid request");
+          cgi.headers["Status"] = "400 Bad Request"
+          html.error("Action failed", "Invalid request")
         end
-        result, msg = pico.thread.move(board, post, cgi.POST["destination"], cgi.POST["reason"]);
+        result, msg = pico.thread.move(board, post, cgi.POST["destination"], cgi.POST["reason"])
       else
-        result, msg = pico.thread.toggle(operation, board, post, cgi.POST["reason"]);
+        result, msg = pico.thread.toggle(operation, board, post, cgi.POST["reason"])
       end
 
       if not result then
-        html.error("Action failed", "Backend returned error: %s", msg);
+        html.error("Action failed", "Backend returned error: %s", msg)
       else
-        cgi.headers["Status"] = "303 See Other";
+        cgi.headers["Status"] = "303 See Other"
 
         if operation == "move" then
-          cgi.headers["Location"] = "/" .. cgi.POST["destination"];
+          cgi.headers["Location"] = "/" .. cgi.POST["destination"]
         elseif operation == "delete" then
           cgi.headers["Location"] =
             post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
-                                or ("/" .. board);
+                                or ("/" .. board)
         else
           cgi.headers["Location"] =
             post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
-                                or ("/" .. board .. "/" .. post_tbl["Number"]);
+                                or ("/" .. board .. "/" .. post_tbl["Number"])
         end
 
-        cgi.finalize();
+        cgi.finalize()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
   printf("You are about to <b>%s</b>%s the following post:", operation,
          (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
-         " " .. file .. " from" or "");
-  html.renderpost(post_tbl, true, true, true);
+         " " .. file .. " from" or "")
+  html.renderpost(post_tbl, true, true, true)
 
   if operation == "move" then
-    html.form.mod_move_thread();
+    html.form.mod_move_thread()
   else
-    html.form.mod_action_reason();
+    html.form.mod_action_reason()
   end
 
-  html.cfinish();
-end;
+  html.cfinish()
+end
 
-handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(spoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(unspoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(autosage)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
-handlers["/Mod/post/(cycle)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"];
+handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(spoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(unspoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(autosage)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(cycle)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 
 handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
-  account_check();
-  html.brc("delete file", "Delete file");
+  account_check()
+  html.brc("delete file", "Delete file")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "reason") then
-      local result, msg = pico.file.delete(file, cgi.POST["reason"]);
+      local result, msg = pico.file.delete(file, cgi.POST["reason"])
 
       if not result then
-        html.error("Action failed", "Backend returned error: %s", msg);
+        html.error("Action failed", "Backend returned error: %s", msg)
       else
-        cgi.headers["Status"] = "303 See Other";
-        cgi.headers["Location"] = "/Overboard";
-        cgi.finalize();
+        cgi.headers["Status"] = "303 See Other"
+        cgi.headers["Location"] = "/Overboard"
+        cgi.finalize()
       end
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", file);
-  html.form.mod_action_reason();
-  html.cfinish();
-end;
+  printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", file)
+  html.form.mod_action_reason()
+  html.cfinish()
+end
 
 handlers["/Log"] = function(page)
-  html.begin("logs");
-  html.redheader("Moderation Logs");
-  html.container.begin("wide");
+  html.begin("logs")
+  html.redheader("Moderation Logs")
+  html.container.begin("wide")
 
-  page = tonumber(page) or 1;
+  page = tonumber(page) or 1
   if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local log_tbl = pico.log.retrieve(page);
+  local log_tbl = pico.log.retrieve(page)
   if #log_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too high: %s", page)
   end
 
   prev = page > 1
-  next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0;
+  next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0
 
-  printf("<div class='page-switcher'>");
+  printf("<div class='page-switcher'>")
   if prev then
-    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1)
   else
-    printf("[Prev]");
+    printf("[Prev]")
   end
   if next then
-    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1)
   end
-  printf("</div>");
-  html.table.begin("Account", "Board", "Date", "Description");
+  printf("</div>")
+  html.table.begin("Account", "Board", "Date", "Description")
 
   for i = 1, #log_tbl do
-    local entry = log_tbl[i];
+    local entry = log_tbl[i]
     html.table.entry(entry["Account"] or "<i>SYSTEM</i>",
                      entry["Board"] == nil and "<i>GLOBAL</i>" or string.format("<a href='/%s/'>/%s/</a>", entry["Board"], entry["Board"]),
                      html.date(entry["Date"]),
-                     html.striphtml(entry["Description"]));
+                     html.striphtml(entry["Description"]))
   end
 
-  html.table.finish();
-  printf("<div class='page-switcher'>");
+  html.table.finish()
+  printf("<div class='page-switcher'>")
   if prev then
-    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1);
+    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1)
   else
-    printf("[Prev]");
+    printf("[Prev]")
   end
   if next then
-    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1);
+    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1)
   end
-  printf("</div>");
-  html.cfinish();
-end;
+  printf("</div>")
+  html.cfinish()
+end
 
-handlers["/Log/(%d+)"] = handlers["/Log"];
+handlers["/Log/(%d+)"] = handlers["/Log"]
 
 handlers["/Boards"] = function()
-  local known = pico.webring.tbl()["known"];
-  local webring_boards = {};
+  local known = pico.webring.tbl()["known"]
+  local webring_boards = {}
 
   for headers, body in curl.multi_request(known) do
     if headers["status"] == 200 then
       local status, boards = pcall(function()
-        local webring = assert(json.decode(body));
-        local site_name = assert(webring["name"]);
-        local site_boards = assert(webring["boards"]);
-        local boards = {};
+        local webring = assert(json.decode(body))
+        local site_name = assert(webring["name"])
+        local site_boards = assert(webring["boards"])
+        local boards = {}
         for j = 1, #site_boards do
-          local board = {};
-          board["site_name"] = site_name;
-          board["name"] = html.striphtml(site_boards[j]["uri"]) or "";
-          board["title"] = html.striphtml(site_boards[j]["title"]) or "";
-          board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or "";
-          board["path"] = html.striphtml(site_boards[j]["path"]) or "";
-          board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or "";
-          board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or "";
-          board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"]);
-          board["last"] = board["last"] and html.date(board["last"], true) or "";
+          local board = {}
+          board["site_name"] = site_name
+          board["name"] = html.striphtml(site_boards[j]["uri"]) or ""
+          board["title"] = html.striphtml(site_boards[j]["title"]) or ""
+          board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or ""
+          board["path"] = html.striphtml(site_boards[j]["path"]) or ""
+          board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or ""
+          board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or ""
+          board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"])
+          board["last"] = board["last"] and html.date(board["last"], true) or ""
 
-          boards[#boards + 1] = board;
+          boards[#boards + 1] = board
         end
-        return boards;
-      end);
+        return boards
+      end)
       if status then
         for j = 1, #boards do
-          webring_boards[#webring_boards + 1] = boards[j];
+          webring_boards[#webring_boards + 1] = boards[j]
         end
       end
     end
   end
 
-  html.begin("boards");
-  html.redheader("Board List");
-  html.container.begin("wide");
+  html.begin("boards")
+  html.redheader("Board List")
+  html.container.begin("wide")
   if #webring_boards ~= 0 then
-    html.container.barheader("Local Boards");
+    html.container.barheader("Local Boards")
   end
-  html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts", "Last Activity");
+  html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts", "Last Activity")
 
-  local g_tpw7d = 0;
-  local g_tpd1d = 0;
-  local g_ppd7d = 0;
-  local g_ppd1d = 0;
-  local g_pph1h = 0;
-  local g_total = 0;
-  local g_last = nil;
-  local board_list_tbl = pico.board.list();
+  local g_tpw7d = 0
+  local g_tpd1d = 0
+  local g_ppd7d = 0
+  local g_ppd1d = 0
+  local g_pph1h = 0
+  local g_total = 0
+  local g_last = nil
+  local board_list_tbl = pico.board.list()
   for i = 1, #board_list_tbl do
-    local board = board_list_tbl[i]["Name"];
-    local title = board_list_tbl[i]["Title"];
-    local subtitle = board_list_tbl[i]["Subtitle"] or "";
-    local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1);
-    local tpd1d = pico.board.stats.threadrate(board, 24, 1);
-    local ppd7d = pico.board.stats.postrate(board, 24, 7);
-    local ppd1d = pico.board.stats.postrate(board, 24, 1);
-    local pph1h = pico.board.stats.postrate(board, 1, 1);
-    local total = pico.board.stats.totalposts(board);
-    local last = pico.board.stats.lastbumpdate(board);
+    local board = board_list_tbl[i]["Name"]
+    local title = board_list_tbl[i]["Title"]
+    local subtitle = board_list_tbl[i]["Subtitle"] or ""
+    local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1)
+    local tpd1d = pico.board.stats.threadrate(board, 24, 1)
+    local ppd7d = pico.board.stats.postrate(board, 24, 7)
+    local ppd1d = pico.board.stats.postrate(board, 24, 1)
+    local pph1h = pico.board.stats.postrate(board, 1, 1)
+    local total = pico.board.stats.totalposts(board)
+    local last = pico.board.stats.lastbumpdate(board)
 
-    g_tpw7d = g_tpw7d + tpw7d;
-    g_tpd1d = g_tpd1d + tpd1d;
-    g_ppd7d = g_ppd7d + ppd7d;
-    g_ppd1d = g_ppd1d + ppd1d;
-    g_pph1h = g_pph1h + pph1h;
-    g_total = g_total + total;
+    g_tpw7d = g_tpw7d + tpw7d
+    g_tpd1d = g_tpd1d + tpd1d
+    g_ppd7d = g_ppd7d + ppd7d
+    g_ppd1d = g_ppd1d + ppd1d
+    g_pph1h = g_pph1h + pph1h
+    g_total = g_total + total
     if not g_last then
-      g_last = last;
+      g_last = last
     elseif last then
-      g_last = math.max(g_last, last);
+      g_last = math.max(g_last, last)
     end
 
     html.table.entry(string.format("<a href='/%s/' title='%s'>/%s/</a>", board, title, board),
-                     title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total, last and html.date(last, true) or "");
+                     title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total, last and html.date(last, true) or "")
   end
 
-  html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total, g_last and html.date(g_last, true) or "");
-  html.table.finish();
+  html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total, g_last and html.date(g_last, true) or "")
+  html.table.finish()
 
   if #webring_boards ~= 0 then
-    html.container.barheader("Webring Boards");
-    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts", "Last Activity");
+    html.container.barheader("Webring Boards")
+    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts", "Last Activity")
     for i = 1, #webring_boards do
-      local board = webring_boards[i];
+      local board = webring_boards[i]
       html.table.entry(string.format("<a href='%s' title='%s'>%s/%s/</a>",
                        board["path"], board["title"], board["site_name"], board["name"]),
-                       board["title"], board["subtitle"], board["pph"], board["total"], board["last"]);
+                       board["title"], board["subtitle"], board["pph"], board["total"], board["last"])
     end
   end
 
-  html.table.finish();
-  html.cfinish();
-end;
+  html.table.finish()
+  html.cfinish()
+end
 
 local function overboard_header()
-  html.begin("overboard");
-  html.redheader("%s Overboard", sitename);
-  html.announce();
-  printf("<a href='/Overboard/catalog'>[Catalog]</a> ");
-  printf("<a href='/Overboard/index'>[Index]</a> ");
-  printf("<a href='/Overboard/recent'>[Recent]</a> ");
-  printf("<a href=''>[Update]</a><hr />");
+  html.begin("overboard")
+  html.redheader("%s Overboard", sitename)
+  html.announce()
+  printf("<a href='/Overboard/catalog'>[Catalog]</a> ")
+  printf("<a href='/Overboard/index'>[Index]</a> ")
+  printf("<a href='/Overboard/recent'>[Recent]</a> ")
+  printf("<a href=''>[Update]</a><hr />")
 end
 
 local function board_header(board_tbl)
   if not board_tbl then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Board Not Found", "The board you specified does not exist.");
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Board Not Found", "The board you specified does not exist.")
   end
 
-  html.begin("/%s/", board_tbl["Name"]);
-  local banner = pico.board.banner.get(board_tbl["Name"]);
+  html.begin("/%s/", board_tbl["Name"])
+  local banner = pico.board.banner.get(board_tbl["Name"])
   if banner then
-    printf("<img id='banner' src='/Media/%s' height=100 />", banner);
+    printf("<img id='banner' src='/Media/%s' height=100 />", banner)
   end
-  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]));
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
-  html.announce();
-  printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>");
-  html.form.postform(board_tbl, nil);
-  printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl["Name"]);
-  printf("<a href='/%s/index'>[Index]</a> ", board_tbl["Name"]);
-  printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl["Name"]);
-  printf("<a href=''>[Update]</a><hr />");
+  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]))
+  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
+  html.announce()
+  printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
+  html.form.postform(board_tbl, nil)
+  printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl["Name"])
+  printf("<a href='/%s/index'>[Index]</a> ", board_tbl["Name"])
+  printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl["Name"])
+  printf("<a href=''>[Update]</a><hr />")
 end
 
 handlers["/(Overboard)/catalog"] = function()
-  overboard_header();
-  html.rendercatalog(pico.board.catalog());
-  html.finish();
-end;
+  overboard_header()
+  html.rendercatalog(pico.board.catalog())
+  html.finish()
+end
 
 handlers["/([%l%d]+)/catalog"] = function(board)
-  local board_tbl = pico.board.tbl(board);
-  board_header(board_tbl);
-  html.rendercatalog(pico.board.catalog(board));
-  html.finish();
-end;
+  local board_tbl = pico.board.tbl(board)
+  board_header(board_tbl)
+  html.rendercatalog(pico.board.catalog(board))
+  html.finish()
+end
 
 handlers["/(Overboard)/index"] = function(board, page)
-  local overboard = board == "Overboard";
-  local boardval;
+  local overboard = board == "Overboard"
+  local boardval
   if overboard then
-    overboard_header();
+    overboard_header()
   else
-    boardval = board;
-    board_header(pico.board.tbl(board));
+    boardval = board
+    board_header(pico.board.tbl(board))
   end
 
-  page = tonumber(page) or 1;
+  page = tonumber(page) or 1
   if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local index_tbl = pico.board.index(boardval, page);
+  local index_tbl = pico.board.index(boardval, page)
   if #index_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too high: %s", page)
   end
 
   html.renderindex(index_tbl, board, page, page > 1,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0);
-  html.finish();
-end;
+                   #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0)
+  html.finish()
+end
 
-handlers["/(Overboard)/index/(%d+)"] = handlers["/(Overboard)/index"];
-handlers["/([%l%d]+)/index"] = handlers["/(Overboard)/index"];
-handlers["/([%l%d]+)/index/(%d+)"] = handlers["/(Overboard)/index"];
+handlers["/(Overboard)/index/(%d+)"] = handlers["/(Overboard)/index"]
+handlers["/([%l%d]+)/index"] = handlers["/(Overboard)/index"]
+handlers["/([%l%d]+)/index/(%d+)"] = handlers["/(Overboard)/index"]
 
 handlers["/(Overboard)/recent"] = function(board, page)
-  local overboard = board == "Overboard";
-  local boardval;
+  local overboard = board == "Overboard"
+  local boardval
   if overboard then
-    overboard_header();
+    overboard_header()
   else
-    boardval = board;
-    board_header(pico.board.tbl(board));
+    boardval = board
+    board_header(pico.board.tbl(board))
   end
 
-  page = tonumber(page) or 1;
+  page = tonumber(page) or 1
   if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too low: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local recent_tbl = pico.board.recent(boardval, page);
+  local recent_tbl = pico.board.recent(boardval, page)
   if #recent_tbl == 0 and page ~= 1 then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Page not found", "Page number too high: %s", page);
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too high: %s", page)
   end
 
   html.renderrecent(recent_tbl, board, page, page > 1,
-                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0);
-  html.finish();
-end;
+                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0)
+  html.finish()
+end
 
-handlers["/(Overboard)/recent/(%d+)"] = handlers["/(Overboard)/recent"];
-handlers["/([%l%d]+)/recent"] = handlers["/(Overboard)/recent"];
-handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/(Overboard)/recent"];
+handlers["/(Overboard)/recent/(%d+)"] = handlers["/(Overboard)/recent"]
+handlers["/([%l%d]+)/recent"] = handlers["/(Overboard)/recent"]
+handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/(Overboard)/recent"]
 
 if defaultboardview == "index" then
-  handlers["/(Overboard)"] = handlers["/(Overboard)/index"];
-  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/index"];
-  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/index"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/index"]
+  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/index"]
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/index"]
 elseif defaultboardview == "recent" then
-  handlers["/(Overboard)"] = handlers["/(Overboard)/recent"];
-  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/recent"];
-  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/recent"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/recent"]
+  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/recent"]
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/recent"]
 else
-  handlers["/(Overboard)"] = handlers["/(Overboard)/catalog"];
-  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"];
+  handlers["/(Overboard)"] = handlers["/(Overboard)/catalog"]
+  handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"]
 end
 
 handlers["/([%l%d]+)/(%d+)"] = function(board, post)
-  local board_tbl = pico.board.tbl(board);
+  local board_tbl = pico.board.tbl(board)
 
   if not board_tbl then
-    cgi.headers["Status"] = "404 Not Found";
-    html.error("Board Not Found", "The board you specified does not exist.");
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Board Not Found", "The board you specified does not exist.")
   end
 
-  local thread_tbl, msg = pico.thread.tbl(board, post);
+  local thread_tbl, msg = pico.thread.tbl(board, post)
 
   if not thread_tbl then
-    local post_tbl = pico.post.tbl(board, post);
+    local post_tbl = pico.post.tbl(board, post)
     if not post_tbl then
-      cgi.headers["Status"] = "404 Not Found";
-      html.error("Thread Not Found", "Cannot display thread: %s", msg);
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Thread Not Found", "Cannot display thread: %s", msg)
     else
-      cgi.headers["Status"] = "301 Moved Permanently";
-      cgi.headers["Location"] = string.format("/%s/%d#%d", board, post_tbl["Parent"], post_tbl["Number"]);
-      cgi.finalize();
+      cgi.headers["Status"] = "301 Moved Permanently"
+      cgi.headers["Location"] = string.format("/%s/%d#%d", board, post_tbl["Parent"], post_tbl["Number"])
+      cgi.finalize()
     end
   end
 
   html.begin("/%s/ - %s", board, (thread_tbl[1]["Subject"] and #thread_tbl[1]["Subject"] > 0)
                                  and html.striphtml(thread_tbl[1]["Subject"])
-                                 or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)));
-  local banner = pico.board.banner.get(board);
+                                 or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)))
+  local banner = pico.board.banner.get(board)
   if banner then
-    printf("<img id='banner' src='/Media/%s' height=100 />", banner);
+    printf("<img id='banner' src='/Media/%s' height=100 />", banner)
   end
-  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board, html.striphtml(board_tbl["Title"]));
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""));
-  html.announce();
-  printf("<a id='new-post' href='#postform'>[Make a Post]</a>");
-  html.form.postform(board_tbl, post);
-  printf("<hr />");
+  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board, html.striphtml(board_tbl["Title"]))
+  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
+  html.announce()
+  printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
+  html.form.postform(board_tbl, post)
+  printf("<hr />")
 
   for i = 1, #thread_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible-separator'>");
+      printf("<hr class='invisible-separator'>")
     end
-    html.renderpost(thread_tbl[i]);
+    html.renderpost(thread_tbl[i])
   end
 
-  printf("<hr />");
-  printf("<a href='/%s/catalog'>[Catalog]</a> ", board);
-  printf("<a href='/%s/index'>[Index]</a> ", board);
-  printf("<a href='/%s/recent'>[Recent]</a> ", board);
-  printf("<a href='/Overboard'>[Overboard]</a> ");
-  printf("<a href=''>[Update]</a> ");
+  printf("<hr />")
+  printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
+  printf("<a href='/%s/index'>[Index]</a> ", board)
+  printf("<a href='/%s/recent'>[Recent]</a> ", board)
+  printf("<a href='/Overboard'>[Overboard]</a> ")
+  printf("<a href=''>[Update]</a> ")
 
-  printf("<span id='thread-reply'>");
-  printf("<a href='#postform'>[Reply]</a> ");
-  printf("%d replies", thread_tbl[1]["ReplyCount"]);
-  printf("</span>");
+  printf("<span id='thread-reply'>")
+  printf("<a href='#postform'>[Reply]</a> ")
+  printf("%d replies", thread_tbl[1]["ReplyCount"])
+  printf("</span>")
 
-  html.finish();
-end;
+  html.finish()
+end
 
 handlers["/Theme"] = function()
-  html.brc("change theme configuration", "Change theme configuration");
+  html.brc("change theme configuration", "Change theme configuration")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "theme") then
       if not io.fileexists("./Static/" .. cgi.POST["theme"] .. ".css") then
-        cgi.headers["Status"] = "400 Bad Request";
-        html.error("Theme not found", "Cannot find theme file: %s", cgi.POST["theme"]);
+        cgi.headers["Status"] = "400 Bad Request"
+        html.error("Theme not found", "Cannot find theme file: %s", cgi.POST["theme"])
       end
 
-      cgi.headers["Set-Cookie"] = "theme=" .. cgi.POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict";
-      cgi.headers["Status"] = "303 See Other";
-      cgi.headers["Location"] = "/";
-      cgi.finalize();
+      cgi.headers["Set-Cookie"] = "theme=" .. cgi.POST["theme"] .. "; HttpOnly; Path=/; SameSite=Strict"
+      cgi.headers["Status"] = "303 See Other"
+      cgi.headers["Location"] = "/"
+      cgi.finalize()
     else
-      cgi.headers["Status"] = "400 Bad Request";
-      html.error("Action failed", "Invalid request");
+      cgi.headers["Status"] = "400 Bad Request"
+      html.error("Action failed", "Invalid request")
     end
   end
 
-  html.form.themeconfig();
-  html.cfinish();
-end;
+  html.form.themeconfig()
+  html.cfinish()
+end
 
 handlers["/Post"] = function()
-  local files = {};
+  local files = {}
 
   if os.getenv("REQUEST_METHOD") ~= "POST" then
-    cgi.headers["Status"] = "400 Bad Request";
-    html.error("Action failed", "Invalid request");
+    cgi.headers["Status"] = "400 Bad Request"
+    html.error("Action failed", "Invalid request")
   end
 
-  board_tbl = pico.board.tbl(cgi.POST["board"]);
+  board_tbl = pico.board.tbl(cgi.POST["board"])
   if not board_tbl then
-    cgi.headers["Status"] = "400 Bad Request";
-    html.error("Board Not Found", "The board you specified does not exist.");
+    cgi.headers["Status"] = "400 Bad Request"
+    html.error("Board Not Found", "The board you specified does not exist.")
   end
 
   -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, board_tbl["PostMaxFiles"] do
-    local file = cgi.FILE["file" .. i];
+    local file = cgi.FILE["file" .. i]
     if file then
-      local hash, msg = pico.file.add(file["file"]);
+      local hash, msg = pico.file.add(file["file"])
       if not hash then
-        cgi.headers["Status"] = "400 Bad Request";
-        html.error("File Upload Error", "Cannot add file #%d: %s", i, msg);
+        cgi.headers["Status"] = "400 Bad Request"
+        html.error("File Upload Error", "Cannot add file #%d: %s", i, msg)
       end
-      files[#files + 1] = {["Name"] = file["filename"], ["Hash"] = hash, ["Spoiler"] = cgi.POST["spoiler" .. i] and 1 or 0};
+      files[#files + 1] = {["Name"] = file["filename"], ["Hash"] = hash, ["Spoiler"] = cgi.POST["spoiler" .. i] and 1 or 0}
     end
   end
 
@@ -1875,36 +1875,36 @@ handlers["/Post"] = function()
     cgi.POST["subject"] ~= "" and cgi.POST["subject"] or nil,
     cgi.POST["comment"], files,
     cgi.POST["captchaid"], cgi.POST["captcha"]
-  );
+  )
 
   if not number then
-    cgi.headers["Status"] = "400 Bad Request";
-    html.error("Posting Error", "Cannot make post: %s", msg);
+    cgi.headers["Status"] = "400 Bad Request"
+    html.error("Posting Error", "Cannot make post: %s", msg)
   end
 
-  cgi.headers["Status"] = "303 See Other";
+  cgi.headers["Status"] = "303 See Other"
 
   if not cgi.POST["parent"] then
-    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. number;
+    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. number
   else
-    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. cgi.POST["parent"] .. "#" .. number;
-  end
-end;
-
-handlers["/webring.json"] = function()
-  cgi.headers["Content-Type"] = "application/json";
-  printf("%s", json.encode(pico.webring.tbl()));
-end;
-
-local path_info = os.getenv("PATH_INFO");
-for patt, func in pairs(handlers) do
-  patt = "^" .. patt .. "$";
-
-  if path_info:match(patt) then
-    path_info:gsub(patt, func);
-    cgi.finalize();
+    cgi.headers["Location"] = "/" .. cgi.POST["board"] .. "/" .. cgi.POST["parent"] .. "#" .. number
   end
 end
 
-cgi.headers["Status"] = "404 Not Found";
-html.error("Page Not Found", "The specified page does not exist.");
+handlers["/webring.json"] = function()
+  cgi.headers["Content-Type"] = "application/json"
+  printf("%s", json.encode(pico.webring.tbl()))
+end
+
+local path_info = os.getenv("PATH_INFO")
+for patt, func in pairs(handlers) do
+  patt = "^" .. patt .. "$"
+
+  if path_info:match(patt) then
+    path_info:gsub(patt, func)
+    cgi.finalize()
+  end
+end
+
+cgi.headers["Status"] = "404 Not Found"
+html.error("Page Not Found", "The specified page does not exist.")

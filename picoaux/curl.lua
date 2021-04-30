@@ -2,7 +2,7 @@
 
 local ffi = require("ffi")
       ffi.curl = ffi.load("libcurl")
-local curl = {};
+local curl = {}
 
 ffi.cdef[[
   typedef void CURL;
@@ -409,71 +409,71 @@ ffi.cdef[[
   CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...);
   CURLcode curl_easy_perform(CURL *curl);
   void curl_easy_cleanup(CURL *curl);
-]];
+]]
 
-local long = ffi.typeof("long");
+local long = ffi.typeof("long")
 
 function curl.multi_request(urls)
-  assert(type(urls) == "table", "incorrect datatype for parameter 'urls'");
+  assert(type(urls) == "table", "incorrect datatype for parameter 'urls'")
 
   -- copy urls table
-  local u = {};
+  local u = {}
   for i = 1, #urls do
-    v = urls[i];
-    assert(type(v) == "string", string.format("incorrect datatype for element %d of parameter 'urls'", i));
-    u[i] = v;
+    v = urls[i]
+    assert(type(v) == "string", string.format("incorrect datatype for element %d of parameter 'urls'", i))
+    u[i] = v
   end
 
-  local ch = ffi.curl.curl_easy_init();
+  local ch = ffi.curl.curl_easy_init()
 
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_HTTPGET, long(1));
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_FOLLOWLOCATION, long(1));
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_CONNECTTIMEOUT, long(3));
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_PROXY, "socks5h://127.0.0.1:9050");
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_HTTPGET, long(1))
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_FOLLOWLOCATION, long(1))
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_CONNECTTIMEOUT, long(3))
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_PROXY, "socks5h://127.0.0.1:9050")
 
-  local write_buffer = {};
+  local write_buffer = {}
   local write_function = ffi.cast("curl_write_callback", function(buffer, size, nitems, outstream)
-    write_buffer[#write_buffer + 1] = ffi.string(buffer, size * nitems);
-    return size * nitems;
-  end);
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_WRITEFUNCTION, write_function);
+    write_buffer[#write_buffer + 1] = ffi.string(buffer, size * nitems)
+    return size * nitems
+  end)
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_WRITEFUNCTION, write_function)
 
-  local header_buffer = {};
+  local header_buffer = {}
   local header_function = ffi.cast("curl_write_callback", function(buffer, size, nitems, outstream)
-    local s = ffi.string(buffer, size * nitems);
-    local status = s:match("^HTTP/[%d%.]+%s+(%d+)%s+.-\r\n$");
+    local s = ffi.string(buffer, size * nitems)
+    local status = s:match("^HTTP/[%d%.]+%s+(%d+)%s+.-\r\n$")
     if status then
-      header_buffer = {["status"] = tonumber(status)};
+      header_buffer = {["status"] = tonumber(status)}
     else
-      local k, v = s:match("^([%w%-]-): (.-)\r\n$");
+      local k, v = s:match("^([%w%-]-): (.-)\r\n$")
       if k then
-        header_buffer[k] = v;
+        header_buffer[k] = v
       end
     end
-    return size * nitems;
-  end);
-  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_HEADERFUNCTION, header_function);
+    return size * nitems
+  end)
+  ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_HEADERFUNCTION, header_function)
 
-  local i = 1;
-  local j = #u;
+  local i = 1
+  local j = #u
 
   return function()
     while i <= j do
-      write_buffer = {};
-      header_buffer = {};
-      ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_URL, u[i]);
-      local result = ffi.curl.curl_easy_perform(ch);
+      write_buffer = {}
+      header_buffer = {}
+      ffi.curl.curl_easy_setopt(ch, ffi.curl.CURLOPT_URL, u[i])
+      local result = ffi.curl.curl_easy_perform(ch)
       if i == j then
-        write_function:free();
-        header_function:free();
-        ffi.curl.curl_easy_cleanup(ch);
+        write_function:free()
+        header_function:free()
+        ffi.curl.curl_easy_cleanup(ch)
       end
-      i = i + 1;
+      i = i + 1
       if result == ffi.curl.CURLE_OK then
-        return header_buffer, table.concat(write_buffer);
+        return header_buffer, table.concat(write_buffer)
       end
     end
   end
 end
 
-return curl;
+return curl
