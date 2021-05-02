@@ -932,9 +932,9 @@ function pico.thread.tbl(board, number)
     return nil, "Post is not a thread or does not exist"
   end
 
-  local stmt = db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
-                          "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
-                          "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC")
+  local stmt = assert(db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
+                                 "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
+                                 "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC"))
 
   db:e("BEGIN TRANSACTION")
   local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
@@ -943,7 +943,9 @@ function pico.thread.tbl(board, number)
   for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i]
     post_tbl["Files"] = {}
-    stmt:bind_values(post_tbl["Board"], post_tbl["Number"])
+    if stmt:bind_values(post_tbl["Board"], post_tbl["Number"]) ~= sqlite3.OK then
+      error(db:errmsg())
+    end
 
     while stmt:step() == sqlite3.ROW do
       post_tbl["Files"][#post_tbl["Files"] + 1] = stmt:get_named_values()
