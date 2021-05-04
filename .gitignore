@@ -2,3 +2,4 @@ favicon.ico
 media/
 picochan.db
 pubkey.asc
+.DS_Store
