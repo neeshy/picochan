@@ -260,7 +260,7 @@ function html.picofmt(post_tbl)
     end
   end
 
-  local function handle_url(previous, url)
+  local function handle_url(prev, url)
     local balance_tbl = {
       ["("] = ")",
       ["\1"] = "\2",
@@ -269,24 +269,22 @@ function html.picofmt(post_tbl)
       ["\3"] = "\3",
       ["\4"] = "\4"
     }
-    local prev = html.unstriphtml(previous):sub(-1)
-    local raw = html.unstriphtml(url)
     local balance = balance_tbl[prev]
     local append = ""
     if balance then
-      local first, second = (prev .. raw):match("^(%b" .. prev .. balance .. ")(.-)$")
+      local first, second = (prev .. url):match("^(%b" .. prev .. balance .. ")(.-)$")
       if first then
-        url = html.striphtml(first:sub(2, -2))
-        append = html.striphtml(balance .. second)
+        url = first:sub(2, -2)
+        append = balance .. second
       end
     else
-      local last = raw:match("[!,%.:;%?]$")
+      local last = url:match("[!,%.:;%?]$")
       if last then
-        url = html.striphtml(raw:sub(1, -2))
+        url = url:sub(1, -2)
         append = last
       end
     end
-    return string.format("%s<a href='%s'>%s</a>%s", previous, url, url, append)
+    return string.format("%s<a href='%s'>%s</a>%s", prev, url, url, append)
   end
 
   local blocks = {}
