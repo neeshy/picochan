@@ -61,9 +61,9 @@ function string.base64(s)
   local byte, rep = string.byte, string.rep
   local pad = 2 - ((#s-1) % 3)
   s = (s..rep("\0", pad)):gsub("...", function(cs)
-      local a, b, c = byte(cs, 1, 3)
-      return bs[RSHIFT(a, 2)] .. bs[OR(LSHIFT(AND(a, 3), 4), RSHIFT(b, 4))] ..
-             bs[OR(LSHIFT(AND(b, 15), 2), RSHIFT(c, 6))] .. bs[AND(c, 63)]
+    local a, b, c = byte(cs, 1, 3)
+    return bs[RSHIFT(a, 2)] .. bs[OR(LSHIFT(AND(a, 3), 4), RSHIFT(b, 4))] ..
+           bs[OR(LSHIFT(AND(b, 15), 2), RSHIFT(c, 6))] .. bs[AND(c, 63)]
   end)
   return s:sub(1, #s-pad) .. rep("=", pad)
 end
