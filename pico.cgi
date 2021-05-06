@@ -1,18 +1,11 @@
 #!/usr/local/bin/luajit
 -- Picochan CGI Frontend
 
-cgi = require("picoaux.cgi")
-
-local function try(...)
-  local status, err = pcall(...)
-  if not status then
-    cgi.headers = {["Status"] = "500 Server Error", ["Content-Type"] = "text/plain; charset=utf-8"}
-    cgi.outputbuf = {err, "\r\n", debug.traceback()}
-    cgi.finalize()
-  end
+local status, err = pcall(require, "pico")
+if not status then
+  io.write("Status: 500 Server Error\r\n" ..
+           "Content-Type: text/plain; charset=utf-8\r\n" ..
+           "\r\n" ..
+           err .. "\n" ..
+           debug.traceback() .. "\n")
 end
-
-try(cgi.initialize)
-try(require, "pico")
-
-cgi.finalize()

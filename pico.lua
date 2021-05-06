@@ -1,6 +1,7 @@
 -- Picochan HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
+local cgi = require("picoaux.cgi")
 local pico = require("picoengine")
 local json = require("picoaux.json")
 local curl = require("picoaux.curl")
@@ -36,6 +37,8 @@ end
 local sitename = pico.global.get("sitename") or "Picochan"
 local defaultpostname = pico.global.get("defaultpostname") or "Anonymous"
 local defaultboardview = pico.global.get("defaultboardview") or "catalog"
+
+cgi.initialize()
 pico.account.register_login(cgi.COOKIE["session_key"])
 
 local function printf(...)
@@ -93,8 +96,8 @@ function html.begin(...)
 end
 
 function html.finish()
-  printf("</div></body></html>")
-  printf("\r\n<!-- %d ms generation time -->", os.clock() * 1000)
+  printf("</div></body></html>\r\n")
+  printf("<!-- %d ms generation time -->\r\n", os.clock() * 1000)
 end
 
 function html.error(title, ...)
