@@ -319,7 +319,9 @@ function html.picofmt(post_tbl)
   s = s:gsub("'", "\3")
   s = s:gsub("\"", "\4")
 
-  s = s:gsub("\n?```\n*(.-)\n*```\n?", handle_code(blocks, "\5", "<code>", "</code>"))
+  s = s:gsub("```\n*(.-)\n*```", handle_code(blocks, "\5", "<code>", "</code>"))
+  s = s:gsub("([^\n])\5", "%1\n\5")
+  s = s:gsub("\5([^\n])", "\5\n%1")
   s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"))
 
   s = s:gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs)

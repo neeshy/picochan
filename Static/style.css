@@ -407,16 +407,15 @@ span.redtext {
 }
 
 code {
-    display: block;
     padding: 1ch;
 }
 
 span.code {
-    display: inline-block;
     padding: 0.5ch;
 }
 
 code, span.code {
+    display: inline-block;
     max-width: max-content;
     margin: 1ch 0;
     border-width: 1px;
