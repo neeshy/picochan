@@ -1115,7 +1115,7 @@ end
 
 function pico.captcha.check(id, text)
   if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
-    db:e("DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now') OR Id = ?", id)
+    db:e("DELETE FROM Captchas WHERE Id = ?", id)
     return true
   else
     return false

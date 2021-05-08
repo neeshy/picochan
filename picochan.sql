@@ -225,9 +225,10 @@ BEGIN
   DELETE FROM Sessions WHERE Account = NEW.Account;
 END;
 
-CREATE TRIGGER set_session_expiry AFTER INSERT ON Sessions
+CREATE TRIGGER expire_session AFTER INSERT ON Sessions
 BEGIN
   UPDATE Sessions SET ExpireDate = STRFTIME('%s', 'now') + 86400 WHERE Key = NEW.Key;
+  DELETE FROM Sessions WHERE ExpireDate <= STRFTIME('%s', 'now');
 END;
 
 CREATE TRIGGER set_log_date AFTER INSERT ON Logs
@@ -235,9 +236,10 @@ BEGIN
   UPDATE Logs SET Date = STRFTIME('%s', 'now') WHERE ROWID = NEW.ROWID;
 END;
 
-CREATE TRIGGER set_captcha_expiry AFTER INSERT ON Captchas
+CREATE TRIGGER expire_captcha AFTER INSERT ON Captchas
 BEGIN
   UPDATE Captchas SET ExpireDate = STRFTIME('%s', 'now') + 1800 WHERE Id = NEW.Id;
+  DELETE FROM Captchas WHERE ExpireDate <= STRFTIME('%s', 'now');
 END;
 
 CREATE INDEX posts_parent_number ON Posts (Parent, Number);
