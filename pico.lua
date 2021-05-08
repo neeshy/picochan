@@ -606,7 +606,22 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>")
 end
 
-function html.renderindex(index_tbl, board, page, prev, next)
+function html.renderpages(prefix, page, prev, next)
+  printf("<div class='page-switcher'>")
+  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
+  if prev then
+    printf("<a class='page-switcher-prev' href='%s/%d'>[Prev]</a>", prefix, page - 1)
+  end
+  if next then
+    if prev then
+      printf(" ")
+    end
+    printf("<a class='page-switcher-next' href='%s/%d'>[Next]</a>", prefix, page + 1)
+  end
+  printf("</div>")
+end
+
+function html.renderindex(index_tbl, board)
   overboard = board == "Overboard"
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>")
@@ -622,7 +637,6 @@ function html.renderindex(index_tbl, board, page, prev, next)
     printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
     printf("</span>")
 
-
     for j = 2, #index_tbl[i] do
       printf("<hr class='invisible-separator'>")
       html.renderpost(index_tbl[i][j], overboard)
@@ -630,19 +644,6 @@ function html.renderindex(index_tbl, board, page, prev, next)
 
     printf("</div><hr />")
   end
-
-  printf("<div class='page-switcher'>")
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
-  if prev then
-    printf("<a class='page-switcher-prev' href='/%s/index/%d'>[Prev]</a>", board, page - 1)
-  end
-  if next then
-    if prev then
-      printf(" ")
-    end
-    printf("<a class='page-switcher-next' href='/%s/index/%d'>[Next]</a>", board, page + 1)
-  end
-  printf("</div>")
 end
 
 function html.renderrecent(recent_tbl, board, page, prev, next)
@@ -652,20 +653,7 @@ function html.renderrecent(recent_tbl, board, page, prev, next)
     end
     html.renderpost(recent_tbl[i], board == "Overboard", true)
   end
-
   printf("<hr />")
-  printf("<div class='page-switcher'>")
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
-  if prev then
-    printf("<a class='page-switcher-prev' href='/%s/recent/%d'>[Prev]</a>", board, page - 1)
-  end
-  if next then
-    if prev then
-      printf(" ")
-    end
-    printf("<a class='page-switcher-next' href='/%s/recent/%d'>[Next]</a>", board, page + 1)
-  end
-  printf("</div>")
 end
 
 function html.brc(title, redheader)
@@ -1513,16 +1501,7 @@ handlers["/Log"] = function(page)
   prev = page > 1
   next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0
 
-  printf("<div class='page-switcher'>")
-  if prev then
-    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1)
-  else
-    printf("[Prev]")
-  end
-  if next then
-    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1)
-  end
-  printf("</div>")
+  html.renderpages("/Log", page, prev, next)
   html.table.begin("Account", "Board", "Date", "Description")
 
   for i = 1, #log_tbl do
@@ -1534,16 +1513,7 @@ handlers["/Log"] = function(page)
   end
 
   html.table.finish()
-  printf("<div class='page-switcher'>")
-  if prev then
-    printf("<a class='page-switcher-prev' href='/Log/%d'>[Prev]</a>", page - 1)
-  else
-    printf("[Prev]")
-  end
-  if next then
-    printf(" <a class='page-switcher-next' href='/Log/%d'>[Next]</a>", page + 1)
-  end
-  printf("</div>")
+  html.renderpages("/Log", page, prev, next)
   html.cfinish()
 end
 
@@ -1713,7 +1683,8 @@ handlers["/(Overboard)/index"] = function(board, page)
     html.error("Page not found", "Page number too high: %s", page)
   end
 
-  html.renderindex(index_tbl, board, page, page > 1,
+  html.renderindex(index_tbl, board)
+  html.renderpages(string.format("/%s/index", board), page, page > 1,
                    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0)
   html.finish()
 end
@@ -1744,8 +1715,9 @@ handlers["/(Overboard)/recent"] = function(board, page)
     html.error("Page not found", "Page number too high: %s", page)
   end
 
-  html.renderrecent(recent_tbl, board, page, page > 1,
-                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0)
+  html.renderrecent(recent_tbl, board)
+  html.renderpages(string.format("/%s/recent", board), page, page > 1,
+                   #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0)
   html.finish()
 end
 
