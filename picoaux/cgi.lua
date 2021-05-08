@@ -113,7 +113,7 @@ local function parseform(boundary, maxread)
     if name then
       local filename = disposition["filename"]
       if filename then
-        local tmpfile = io.tmpfile()
+        local tmpfile = assert(io.tmpfile())
         readandcheck(lineboundary, output(tmpfile))
         if assert(tmpfile:seek("end")) ~= 0 then
           assert(tmpfile:seek("set"))
