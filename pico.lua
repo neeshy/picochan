@@ -600,7 +600,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("</div>")
 
-    printf("<hr class='invisible-separator'>")
+    printf("<hr class='invisible'>")
   end
 
   printf("</div>")
@@ -610,13 +610,13 @@ function html.renderpages(prefix, page, prev, next)
   printf("<div class='page-switcher'>")
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
   if prev then
-    printf("<a class='page-switcher-prev' href='%s/%d'>[Prev]</a>", prefix, page - 1)
+    printf("<a href='%s/%d'>[Prev]</a>", prefix, page - 1)
   end
   if next then
     if prev then
       printf(" ")
     end
-    printf("<a class='page-switcher-next' href='%s/%d'>[Next]</a>", prefix, page + 1)
+    printf("<a class='float-right' href='%s/%d'>[Next]</a>", prefix, page + 1)
   end
   printf("</div>")
 end
@@ -627,7 +627,7 @@ function html.renderindex(index_tbl, board)
     printf("<div class='index-thread'>")
     html.renderpost(index_tbl[i][1], overboard)
 
-    printf("<hr class='invisible-separator'>")
+    printf("<hr class='invisible'>")
 
     printf("<span class='index-thread-summary'>")
     if index_tbl[i][1]["RepliesOmitted"] > 0 then
@@ -638,7 +638,7 @@ function html.renderindex(index_tbl, board)
     printf("</span>")
 
     for j = 2, #index_tbl[i] do
-      printf("<hr class='invisible-separator'>")
+      printf("<hr class='invisible'>")
       html.renderpost(index_tbl[i][j], overboard)
     end
 
@@ -649,7 +649,7 @@ end
 function html.renderrecent(recent_tbl, board, page, prev, next)
   for i = 1, #recent_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible-separator'>")
+      printf("<hr class='invisible'>")
     end
     html.renderpost(recent_tbl[i], board == "Overboard", true)
   end
@@ -1623,7 +1623,7 @@ local function overboard_header()
   printf("<a href='/Overboard/catalog'>[Catalog]</a> ")
   printf("<a href='/Overboard/index'>[Index]</a> ")
   printf("<a href='/Overboard/recent'>[Recent]</a> ")
-  printf("<a href=''>[Update]</a><hr />")
+  printf("<a class='float-right' href=''>[Update]</a><hr />")
 end
 
 local function board_header(board_tbl)
@@ -1645,7 +1645,7 @@ local function board_header(board_tbl)
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl["Name"])
   printf("<a href='/%s/index'>[Index]</a> ", board_tbl["Name"])
   printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl["Name"])
-  printf("<a href=''>[Update]</a><hr />")
+  printf("<a class='float-right' href=''>[Update]</a><hr />")
 end
 
 handlers["/(Overboard)/catalog"] = function()
@@ -1776,7 +1776,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   for i = 1, #thread_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible-separator'>")
+      printf("<hr class='invisible'>")
     end
     html.renderpost(thread_tbl[i])
   end
@@ -1786,9 +1786,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<a href='/%s/index'>[Index]</a> ", board)
   printf("<a href='/%s/recent'>[Recent]</a> ", board)
   printf("<a href='/Overboard'>[Overboard]</a> ")
-  printf("<a href=''>[Update]</a> ")
 
-  printf("<span id='thread-reply'>")
+  printf("<span class='float-right'>")
+  printf("<a href=''>[Update]</a> ")
   printf("<a href='#postform'>[Reply]</a> ")
   printf("%d replies", thread_tbl[1]["ReplyCount"])
   printf("</span>")

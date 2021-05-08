@@ -249,10 +249,6 @@ hr {
     clear: both;
 }
 
-hr.invisible-separator {
-    display: none;
-}
-
 div.catalog-container {
     text-align: center;
 }
@@ -422,10 +418,10 @@ code, span.code {
     border-style: solid;
 }
 
-span#thread-reply {
-    float: right;
+.invisible {
+    display: none;
 }
 
-div.page-switcher a.page-switcher-next {
+.float-right {
     float: right;
 }
