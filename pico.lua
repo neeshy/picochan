@@ -469,7 +469,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename)
       elseif class == "archive" then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
-      elseif class == "video" then
+      elseif class == "video" or (class == "audio" and file["Width"] and file["Height"]) then
         printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
       elseif class == "audio" then
         printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
@@ -566,7 +566,8 @@ function html.rendercatalog(catalog_tbl)
         local extension = pico.file.extension(post_tbl["File"])
         local class = pico.file.class(extension)
 
-        if class == "image" or class == "video" or extension == "pdf" or extension == "ps" then
+        if class == "image" or class == "video" or extension == "pdf" or extension == "ps" or
+            (class == "audio" and post_tbl["FileWidth"] and post_tbl["FileHeight"]) then
           if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
             printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
                    post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70))
