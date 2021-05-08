@@ -1,8 +1,8 @@
 -- Picochan HTML Frontend
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
-local cgi = require("picoaux.cgi")
 local pico = require("picoengine")
+local cgi = require("picoaux.cgi")
 local json = require("picoaux.json")
 local curl = require("picoaux.curl")
 local date = require("picoaux.date")
