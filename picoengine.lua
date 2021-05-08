@@ -906,20 +906,20 @@ function pico.post.unlink(board, number, file, reason)
   return true, "File unlinked successfully"
 end
 
-function pico.post.spoiler(board, number, file, spoil, reason)
+function pico.post.spoiler(board, number, file, reason)
   local auth, msg = permit("admin gvol bo lvol", "post", board)
   if not auth then return auth, msg end
 
   if not db:b("SELECT TRUE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?",
               board, number, file) then
-    return false, "No such file in that particular post"
+    return false, "No such file in the given post"
   end
 
-  db:e("UPDATE FileRefs SET Spoiler = ? WHERE Board = ? AND Number = ? AND File = ?",
-       spoil and 1 or 0, board, number, file)
-  pico.log.insert(board, "%s file %s from /%s/%d for reason: %s",
-                  spoil and "Spoilered" or "Unspoilered", file, board, number, reason)
-  return true, "File " .. (spoil and "spoilered" or "unspoilered") .. " sucessfully"
+  db:e("UPDATE FileRefs SET Spoiler = NOT Spoiler WHERE Board = ? AND Number = ? AND File = ?",
+       board, number, file)
+  pico.log.insert(board, "Toggled spoiler on file %s from /%s/%d for reason: %s",
+                  file, board, number, reason)
+  return true, "Spoiler toggled on file sucessfully"
 end
 
 --

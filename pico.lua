@@ -429,8 +429,6 @@ function html.renderpostfiles(post_tbl, unprivileged)
                post_tbl["Board"], post_tbl["Number"], filename)
         printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
                post_tbl["Board"], post_tbl["Number"], filename)
-        printf("<a href='/Mod/post/unspoiler/%s/%d/%s' title='Unspoiler File'>[O]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename)
 
         if not pico.account.current["Board"] then
           printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
@@ -1401,9 +1399,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
       elseif operation == "unlink" then
         result, msg = pico.post.unlink(board, post, file, cgi.POST["reason"])
       elseif operation == "spoiler" then
-        result, msg = pico.post.spoiler(board, post, file, true, cgi.POST["reason"])
-      elseif operation == "unspoiler" then
-        result, msg = pico.post.spoiler(board, post, file, false, cgi.POST["reason"])
+        result, msg = pico.post.spoiler(board, post, file, cgi.POST["reason"])
       elseif operation == "move" then
         if not tbl_validate(cgi.POST, "destination") then
           cgi.headers["Status"] = "400 Bad Request"
@@ -1440,7 +1436,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   end
 
   printf("You are about to <b>%s</b>%s the following post:", operation,
-         (operation == "unlink" or operation == "spoiler" or operation == "unspoiler") and
+         (operation == "unlink" or operation == "spoiler") and
          " " .. file .. " from" or "")
   html.renderpost(post_tbl, true, true, true)
 
@@ -1455,7 +1451,6 @@ end
 
 handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(spoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
-handlers["/Mod/post/(unspoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
