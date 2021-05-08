@@ -28,7 +28,6 @@ if jit.os == "BSD" then
   openbsd.unveil("./Static/", "rx")
   openbsd.unveil("/dev/urandom", "r")
   openbsd.unveil("/tmp/", "rwc")
-  openbsd.unveil("/usr/local/", "x")
   openbsd.unveil("/etc/ssl/", "rx")
   openbsd.unveil("/bin/sh", "x")
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns")
