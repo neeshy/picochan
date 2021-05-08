@@ -1785,7 +1785,6 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
   printf("<a href='/%s/index'>[Index]</a> ", board)
   printf("<a href='/%s/recent'>[Recent]</a> ", board)
-  printf("<a href='/Overboard'>[Overboard]</a> ")
 
   printf("<span class='float-right'>")
   printf("<a href=''>[Update]</a> ")
