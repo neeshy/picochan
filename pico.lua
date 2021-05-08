@@ -1435,9 +1435,19 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
     end
   end
 
-  printf("You are about to <b>%s</b>%s the following post:", operation,
-         (operation == "unlink" or operation == "spoiler") and
-         " " .. file .. " from" or "")
+  local thread = operation == "sticky" or
+                 operation == "lock" or
+                 operation == "autosage" or
+                 operation == "cycle"
+  local toggle = thread or operation == "spoiler"
+  thread = (thread or operation == "move" or operation == "delete") and
+           not post_tbl["Parent"]
+
+  printf("You are about to %s%s the following %s:",
+         toggle and "toggle the <b>" .. operation .. "</b> attribute for"
+           or "<b>" .. operation .. "</b>",
+         file and " " .. file .. " from" or "",
+         thread and "thread" or "post")
   html.renderpost(post_tbl, true, true, true)
 
   if operation == "move" then
