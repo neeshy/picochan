@@ -431,7 +431,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
                post_tbl["Board"], post_tbl["Number"], filename)
 
         if not pico.account.current["Board"] then
-          printf("<a href='/Mod/file/delete/%s' title='Delete File'>[F]</a>",
+          printf("<a href='/Mod/file/delete/%s' title='Delete File'>[D]</a>",
                  filename)
         end
 
