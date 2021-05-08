@@ -366,16 +366,16 @@ function html.modlinks(post_tbl)
   end
 
   printf(" <span class='mod-links'>")
-  printf("<a href='/Mod/post/delete/%s/%d'>[D]</a>", board, number)
-
-  if not post_tbl["Parent"] then
-    printf("<a href='/Mod/post/move/%s/%d'>[M]</a>", board, number)
-    printf("<a href='/Mod/post/sticky/%s/%d'>[S]</a>", board, number)
-    printf("<a href='/Mod/post/lock/%s/%d'>[L]</a>", board, number)
-    printf("<a href='/Mod/post/autosage/%s/%d'>[A]</a>", board, number)
-    printf("<a href='/Mod/post/cycle/%s/%d'>[C]</a>", board, number)
+  if post_tbl["Parent"] then
+    printf("<a href='/Mod/post/delete/%s/%d' title='Delete Post'>[D]</a>", board, number)
+  else
+    printf("<a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
+    printf("<a href='/Mod/post/move/%s/%d' title='Move Thread'>[M]</a>", board, number)
+    printf("<a href='/Mod/post/sticky/%s/%d' title='Sticky Thread'>[S]</a>", board, number)
+    printf("<a href='/Mod/post/lock/%s/%d' title='Lock Thread'>[L]</a>", board, number)
+    printf("<a href='/Mod/post/autosage/%s/%d' title='Autosage Thread'>[A]</a>", board, number)
+    printf("<a href='/Mod/post/cycle/%s/%d' title='Cycle Thread'>[C]</a>", board, number)
   end
-
   printf("</span>")
 end
 
