@@ -457,19 +457,19 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<div class='post-file-fullsize'></div>")
         printf("</label>")
       elseif spoiler then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename)
       elseif extension == "svg" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
       elseif extension == "pdf" or extension == "ps" then
         local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200)
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
                filename, filename, width, height, extension:upper())
       elseif extension == "epub" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename)
       elseif extension == "txt" then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename)
       elseif class == "archive" then
-        printf("<a href='/Media/%s'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
       elseif class == "video" then
         printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
       elseif class == "audio" then
