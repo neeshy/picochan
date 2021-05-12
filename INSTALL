@@ -85,11 +85,19 @@ If this is the case:
 You may use any web server that supports CGI, but nginx is recommended. Example
 configuration files can be found at https://github.com/vxiiduu/picochan-wsconf
 For the nginx webserver, you will need to install nginx itself, fcgiwrap, and
-spawn-fcgi through your preferred means.
+(optionally) spawn-fcgi through your preferred means.
 
 If you decide to use the example configuration files, you must still edit them
 to suit your system. Consult the documentation for the web server and for any
 other applications (fcgiwrap etc.) which you are using.
+
+To start fcgiwrap, you may use the following command:
+
+  $ fcgiwrap -f -s unix:/tmp/picochan.sock
+
+It is recommended that instead of using the above command, you use a facility
+provided by your operating system to start spawn-fcgi instead. Configure
+spawn-fcgi to start fcgiwrap on /tmp/picochan.sock.
 
 ---> FINAL PREPARATIONS <---
 
