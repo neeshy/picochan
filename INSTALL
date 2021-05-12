@@ -67,8 +67,8 @@ failure to use these options will most likely result in picochan not working.
   $ make
   # make install
 
-At this stage, on certain systems including OpenBSD, compilation will fail due
-to "lua2c.c" failing to compile. This is caused by faulty GNU build scripts.
+At this stage, on certain systems including OpenBSD and macOS, compilation fails
+due to "lua2c.c" failing to compile. This is caused by faulty GNU build scripts.
 If this is the case:
 
   $ cd src
