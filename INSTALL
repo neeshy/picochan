@@ -52,6 +52,8 @@ yourself.
 
 ---> HASERL <---
 
+[[[ Important: DO NOT use haserl 0.9.36, it doesn't work. ]]]
+
 Download the source tarball through the distribution URL provided.
 When compiling haserl, make sure to use the following configure options. A
 failure to use these options will most likely result in picochan not working.
@@ -71,15 +73,33 @@ If this is the case:
 
   $ cd src
   $ cc -I/usr/local/include/luajit* -o lua2c lua2c.c -lluajit-5.1
+
+(Note: You may need to modify this command depending on your system.)
+
   $ cd ..
   $ make
   # make install
+
+---> WEBSERVER CONFIGURATION <---
+
+You may use any web server that supports CGI, but nginx is recommended. Example
+configuration files can be found at https://github.com/vxiiduu/picochan-wsconf
+For the nginx webserver, you will need to install nginx itself, fcgiwrap, and
+spawn-fcgi through your preferred means.
+
+If you decide to use the example configuration files, you must still edit them
+to suit your system. Consult the documentation for the web server and for any
+other applications (fcgiwrap etc.) which you are using.
 
 ---> FINAL PREPARATIONS <---
 
 Create the database:
 
   $ sqlite3 picochan.db <picochan.sql
+
+Create the media directory:
+
+  $ mkdir media media/icon media/thumb
 
 Point your web browser at the picochan installation. Log in as an admin using
 the username 'setup' and the password 'password'. Use this account to create a
