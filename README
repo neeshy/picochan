@@ -29,7 +29,8 @@ nanochan:
     large amount (orders of magnitude), especially with large boards or long
     threads
   - Backend and frontend are separate. This improves code simplicity a little
-    and also allows for more frontends in the future
+    and also allows for more frontends.
+  - There is a JSON frontend to allow for external clients to be written.
   - LuaJIT is used, and the software's speed is further improved
 
 Other more minor changes:

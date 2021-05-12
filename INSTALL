@@ -31,6 +31,10 @@ do not enable the dav1d USE-flag for ffmpeg).
   media-gfx/graphicsmagick  USE="jpeg png webp svg openmp threads bzip2 zlib"
   media-video/ffmpeg        USE="dav1d vpx x264 x265 gpl"
 
+It is optional to install cjson to enable the use of the JSON frontend
+(pico_json). If you do not install cjson, the ordinary HTML frontend will
+still function.
+
 It is optional but recommended to remove bash as your system shell (/bin/sh).
 Picochan uses the functions os.execute() and io.popen(), which make use of
 /bin/sh to execute commands. On most Linux systems, this is a symlink to bash.
