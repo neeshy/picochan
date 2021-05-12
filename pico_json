@@ -10,7 +10,14 @@ cgi.initialize();
 cgi.headers["Content-Type"] = "application/json; charset=utf-8";
 cgi.headers["Cache-Control"] = "no-cache";
 
-if cgi.pathinfo[1] == "Overboard" then
+if cgi.pathinfo[1] == nil or cgi.pathinfo[1] == "" then
+  cgi.outputbuf = {json.encode{
+    sitename = pico.global.get("sitename"),
+    frontpage = pico.global.get("frontpage"),
+    defaultpostname = pico.global.get("defaultpostname"),
+    boards = pico.board.list()
+  }};
+elseif cgi.pathinfo[1] == "Overboard" then
   cgi.outputbuf = {json.encode(pico.board.overboard())};
 elseif cgi.pathinfo[1] == "Recent" then
   cgi.outputbuf = {json.encode(pico.post.recent(tonumber(cgi.pathinfo[2]) or 1))};
