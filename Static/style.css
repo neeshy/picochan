@@ -403,19 +403,20 @@ span.redtext {
 }
 
 code {
+    margin: 1ch 0;
     padding: 1ch;
+    border-width: 1px;
+    border-style: solid;
 }
 
 span.code {
-    padding: 0.5ch;
+    padding-left: 0.5ch;
+    padding-right: 0.5ch;
 }
 
 code, span.code {
     display: inline-block;
     max-width: max-content;
-    margin: 1ch 0;
-    border-width: 1px;
-    border-style: solid;
 }
 
 .invisible {

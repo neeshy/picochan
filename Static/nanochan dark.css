@@ -85,7 +85,14 @@ span.spoiler:hover {
     color: #FFF;
 }
 
+code {
+    border-color: #777;
+}
+
+span.code {
+    box-shadow: inset 0 0 0 1px #777;
+}
+
 code, span.code {
     background-color: #222;
-    border-color: #777;
 }

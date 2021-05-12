@@ -99,7 +99,14 @@ span.spoiler:hover {
     color: #FFF;
 }
 
+code {
+    border-color: #000;
+}
+
+span.code {
+    box-shadow: inset 0 0 0 1px #000;
+}
+
 code, span.code {
     background-color: #444;
-    border-color: #000;
 }
