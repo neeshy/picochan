@@ -24,11 +24,7 @@ local function unescape(s)
     local digit = 0
     for i = 1, 2 do
       local xb = x:byte(i, i + 1)
-      if xb >= A then
-        digit = digit + xb - A + 10
-      else
-        digit = digit + xb - zero
-      end
+      digit = digit * 16 + xb - (xb >= A and (A - 10) or zero)
     end
     return string.char(digit)
   end)
