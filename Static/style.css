@@ -220,17 +220,14 @@ form#postform label {
 form#postform textarea {
     width: calc(100% - 7ch - 25px);
     max-width: calc(100% - 7ch - 20px);
-    margin: 0;
+    margin: 0 0 5px 0;
 }
 
 form#postform input[type=file] {
     max-width: 300px;
-    margin-top: 3px;
-}
-
-form#postform input#captcha {
-    margin-top: 1px;
-    margin-bottom: 0;
+    vertical-align: top;
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 a#new-post {
