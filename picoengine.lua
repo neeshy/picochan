@@ -611,9 +611,7 @@ function pico.file.add(f)
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
                "exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename)
     os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec convert -flatten -strip - -filter Catrom -quality 60 " ..
-               "-thumbnail 100x70 JPEG:Media/icon/" .. filename)
-
+               "exec convert -strip - -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
     p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r")
   elseif class == "audio" then
@@ -621,8 +619,7 @@ function pico.file.add(f)
       os.execute("ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - |" ..
                  "exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename)
       os.execute("ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - |" ..
-                 "exec convert -flatten -strip - -filter Catrom -quality 60 " ..
-                 "-thumbnail 100x70 JPEG:Media/icon/" .. filename)
+                 "exec convert -strip - -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
       p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                    "Media/" .. filename, "r")
     end
@@ -630,9 +627,8 @@ function pico.file.add(f)
     os.execute("exec convert -strip Media/" .. filename .. ((extension == "pdf" or extension == "ps") and "[0]" or "") ..
                " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "ps" or extension == "svg") and "PNG:" or "") ..
                "Media/thumb/" .. filename)
-    os.execute("exec convert -background '#222' -flatten -strip Media/" .. filename ..
-               "[0] -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
-
+    os.execute("exec convert -strip Media/" .. filename ..
+               "[0] -coalesce -filter Catrom -quality 60 -thumbnail 100x70 Media/icon/" .. filename)
     p = io.popen("exec identify -format '%wx%h' Media/" .. filename .. "[0]", "r")
   end
 
