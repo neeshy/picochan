@@ -4,7 +4,7 @@ local ffi = require("ffi")
       ffi.sqlite3 = ffi.load("sqlite3")
 local sqlite3 = {}
 
-ffi.cdef[[
+ffi.cdef([[
   typedef struct sqlite3 sqlite3;
   typedef struct sqlite3_stmt sqlite3_stmt;
 
@@ -44,7 +44,7 @@ ffi.cdef[[
   const unsigned char *sqlite3_column_text(sqlite3_stmt *stmt, int column);
   const void *sqlite3_column_blob(sqlite3_stmt *stmt, int column);
   int sqlite3_column_bytes(sqlite3_stmt *stmt, int column);
-]]
+]])
 
 sqlite3.READONLY = ffi.sqlite3.SQLITE_OPEN_READONLY
 sqlite3.READWRITE = ffi.sqlite3.SQLITE_OPEN_READWRITE

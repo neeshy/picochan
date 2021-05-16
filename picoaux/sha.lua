@@ -4,13 +4,13 @@ local ffi = require("ffi")
       ffi.ssl = ffi.load("ssl")
 local sha = {}
 
-ffi.cdef[[
+ffi.cdef([[
   unsigned char *SHA1(const unsigned char *d, size_t n, unsigned char *md);
   unsigned char *SHA224(const unsigned char *d, size_t n, unsigned char *md);
   unsigned char *SHA256(const unsigned char *d, size_t n, unsigned char *md);
   unsigned char *SHA384(const unsigned char *d, size_t n, unsigned char *md);
   unsigned char *SHA512(const unsigned char *d, size_t n, unsigned char *md);
-]]
+]])
 
 local hashfunc_lut = {
   ["sha1"] = ffi.ssl.SHA1,

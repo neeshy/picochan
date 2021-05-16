@@ -4,7 +4,7 @@ local ffi = require("ffi")
       ffi.curl = ffi.load("libcurl")
 local curl = {}
 
-ffi.cdef[[
+ffi.cdef([[
   typedef void CURL;
   typedef void CURLSH;
 
@@ -409,7 +409,7 @@ ffi.cdef[[
   CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...);
   CURLcode curl_easy_perform(CURL *curl);
   void curl_easy_cleanup(CURL *curl);
-]]
+]])
 
 local long = ffi.typeof("long")
 
