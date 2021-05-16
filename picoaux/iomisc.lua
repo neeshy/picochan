@@ -36,7 +36,7 @@ function io.readuntil(file, buf, delimiter, chunksize, out)
   end
 
   file = file or io.input()
-  buf = buf or io.readall(file, chunksize)
+  buf = buf or file:read(chunksize)
   delimiter = delimiter or " "
 
   local pos = 1
@@ -62,7 +62,7 @@ function io.readuntil(file, buf, delimiter, chunksize, out)
         buf = read
         pos = 1
         if #buf < chunksize then
-          read = io.readall(file, chunksize - #buf)
+          read = file:read(chunksize - #buf)
           if read then
             buf = buf .. read
           end
