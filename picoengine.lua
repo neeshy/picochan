@@ -607,22 +607,14 @@ function pico.file.add(f)
   newf:close()
 
   local p, width, height
-  if class == "video" then
-    os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename)
-    os.execute("ffmpeg -i Media/" .. filename .. " -ss 00:00:00.500 -vframes 1 -f image2 - |" ..
-               "exec convert -strip - -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
+  if class == "video" or (class == "audio" and os.execute("exec ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - >/dev/null")) then
+    local ffmpeg = "ffmpeg -i Media/" .. filename ..
+      (class == "video" and " -ss 00:00:00.500 -vframes 1 -f image2 -"
+                         or " -map 0:v:0 -f image2 -")
+    os.execute(ffmpeg .. " | exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename)
+    os.execute(ffmpeg .. " | exec convert -strip - -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
     p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r")
-  elseif class == "audio" then
-    if os.execute("exec ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - >/dev/null") then
-      os.execute("ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - |" ..
-                 "exec convert -strip - -filter Catrom -thumbnail 200x200 JPEG:Media/thumb/" .. filename)
-      os.execute("ffmpeg -i Media/" .. filename .. " -map 0:v:0 -f image2 - |" ..
-                 "exec convert -strip - -filter Catrom -quality 60 -thumbnail 100x70 JPEG:Media/icon/" .. filename)
-      p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
-                   "Media/" .. filename, "r")
-    end
   elseif class == "image" or extension == "pdf" or extension == "ps" then
     os.execute("exec convert -strip Media/" .. filename .. ((extension == "pdf" or extension == "ps") and "[0]" or "") ..
                " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "ps" or extension == "svg") and "PNG:" or "") ..
