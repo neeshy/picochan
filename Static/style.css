@@ -103,7 +103,7 @@ div.container ul {
     padding-left: 16px;
 }
 
-div.container ul>li:before {
+div.container ul>li::before {
     content: "*";
     padding-right: 8px;
 }
@@ -172,7 +172,7 @@ form input[type=radio] + label {
     padding: 8px;
 }
 
-form input[type=radio] + label img {
+form input[type=radio] + label>img {
     display: block;
     max-height: 100px;
 }
@@ -334,8 +334,8 @@ div.post-file-info {
     font-size: 7.5pt;
 }
 
-audio.post-audio {
-    display: block;
+img.post-file-thumbnail {
+    cursor: pointer;
 }
 
 video.post-video {
@@ -343,11 +343,11 @@ video.post-video {
     max-height: 240px;
 }
 
-img.post-file-thumbnail, video.post-video {
+img.post-file-thumbnail, video.post-video, audio.post-audio {
     float: left;
 }
 
-img.post-file-thumbnail, video.post-video, div.post-file-fullsize {
+img.post-file-thumbnail, video.post-video, audio.post-audio, div.post-file-fullsize {
     margin-top: 1.3ch;
     margin-right: 1.3ch;
 }
@@ -374,6 +374,7 @@ div.post-file-fullsize {
     max-height: 90vh;
     float: right;
     margin-bottom: 1.3ch;
+    cursor: pointer;
 }
 
 div.post-file-single div.post-file-fullsize {

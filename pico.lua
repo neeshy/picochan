@@ -130,12 +130,12 @@ function html.container.barheader(...)
   printf("<h2 class='barheader'>%s</h2>", string.format(...))
 end
 
-function html.list.begin(ordered)
-  printf("<%sl>", ordered and "o" or "u")
+function html.list.begin()
+  printf("<ul>")
 end
 
 function html.list.finish(ordered)
-  printf("</%sl>", ordered and "o" or "u")
+  printf("</ul>")
 end
 
 function html.list.entry(...)
