@@ -1,47 +1,29 @@
----> INSTALLATION INSTRUCTIONS <---
+DEPENDENCY        BUILD CONFIGURATION        HOMEPAGE
+---------------------------------------------------------------------------------------
+LuaJIT                                       https://luajit.org/
+SQLite                                       https://sqlite.org/
+Argon2                                       https://github.com/P-H-C/phc-winner-argon2
+FFmpeg            mp3 opus vorbis theora     https://ffmpeg.org/
+                  vpx x264 x265
+ImageMagick       jpeg png webp svg zlib     https://imagemagick.org/
+curl              ssl                        https://curl.se/
 
-THESE INSTALLATION INSTRUCTIONS ARE FOR PICOCHAN 2.7 OR ABOVE.
+One of the following dependencies must be installed to provide the Courier font
+which is required for captcha generation.
 
-Picochan is very easy to install. Its dependencies are:
+DEPENDENCY        HOMEPAGE
+---------------------------------------------------
+corefonts         http://corefonts.sourceforge.net/
+ghostscript       https://ghostscript.com/
 
-  DEPENDENCY        TESTED VERSION   DISTRIBUTION URL
-  ----------------------------------------------------------------------------
-  luajit            2.0.5            https://luajit.org/
-  sqlite            3.34.0           https://sqlite.org/
-  argon2            20190702         https://github.com/P-H-C/phc-winner-argon2
-  corefonts         1-r7             http://corefonts.sourceforge.net/
-  ffmpeg            4.3.1            https://ffmpeg.org/
-  imagemagick       7.0.11.0         https://imagemagick.org/
-  curl              7.75.0           https://curl.se/
-
-On a freshly installed Gentoo system, Picochan was made to work by first
-installing the following packages through portage. The relevant USE flags are
-also given (your results may vary if you do not follow the USE flags listed,
-for example, thumbnails for AV1-encoded videos may not be generated if you
-do not enable the dav1d USE-flag for ffmpeg).
-
-  app-crypt/argon2
-  dev-db/sqlite
-  dev-lang/luajit           USE="lua52compat"
-  media-fonts/corefonts
-  media-gfx/imagemagick     USE="jpeg png webp svg openmp bzip2 zlib"
-  media-video/ffmpeg        USE="dav1d vpx x264 x265 gpl"
-  net-misc/curl             USE="ssl"
-
-It is optional but recommended to remove bash as your system shell (/bin/sh).
+It is recommended to use dash or ksh as the default system shell (/bin/sh).
 Picochan uses the functions os.execute() and io.popen(), which make use of
 /bin/sh to execute commands. On most Linux systems, this is a symlink to bash.
 GNU bash is highly insecure, and for security reasons, consider replacing
-the /bin/sh symlink with a less insecure shell, such as app-shells/dash.
+the /bin/sh symlink with a less insecure shell.
+See https://en.wikipedia.org/wiki/Shellshock_(software_bug) for further details.
 
-  # emerge app-shells/dash app-eselect/eselect-sh
-  # eselect sh set dash
-
-(See https://en.wikipedia.org/wiki/Shellshock_(software_bug) for more info)
-
----> FINAL PREPARATIONS <---
-
-Create the database:
+Creating the database:
 
   $ sqlite3 picochan.db <picochan.sql
 
