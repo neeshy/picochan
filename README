@@ -1,5 +1,3 @@
----> INTRODUCTION <---
-
 Picochan is imageboard software.
 
 Key features which differentiate picochan from mainstream imageboard software
@@ -40,7 +38,6 @@ Other more minor changes:
     no longer hard-coded.
   - Opening the post box using the keyboard shortcut no longer jumps you
     back up to the top of the page.
-  - Posts do not include redundant <br> elements.
   - Formatting has been improved significantly from the original Nanochan
     formatting engine.
 
