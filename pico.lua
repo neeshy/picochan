@@ -207,33 +207,33 @@ end
 
 function html.striphtml(s)
   s = tostring(s)
-  local ret = s
     :gsub("&", "&amp;")
     :gsub("<", "&lt;")
     :gsub(">", "&gt;")
     :gsub("'", "&#39;")
     :gsub("\"", "&quot;")
-  return ret
+  return s
 end
 
 function html.unstriphtml(s)
   s = tostring(s)
-  local ret = s
     :gsub("&quot;", "\"")
     :gsub("&#39;", "'")
     :gsub("&gt;", ">")
     :gsub("&lt;", "<")
     :gsub("&amp;", "&")
-  return ret
+  return s
 end
 
 function html.picofmt(post_tbl)
   local email = post_tbl["Email"]
   if email and (email == "nofo" or email:match("^nofo ") or email:match(" nofo$") or email:match(" nofo ")) then
-    local s = html.striphtml(post_tbl["Comment"]:gsub("\r", ""))
-    s = s:gsub("^\n+", "")
-    s = s:gsub("\n+$", "")
-    return s:gsub("\n", "<br />")
+    local s = html.striphtml(post_tbl["Comment"])
+      :gsub("[\1-\8\11-\31\127]", "")
+      :gsub("^\n+", "")
+      :gsub("\n+$", "")
+      :gsub("\n", "<br />")
+    return s
   end
 
   local function handle_refs(number)
@@ -308,48 +308,47 @@ function html.picofmt(post_tbl)
     end
   end
 
-  local s = "\n" .. post_tbl["Comment"]:gsub("\r", "")
+  local s = ("\n" .. post_tbl["Comment"])
+    :gsub("[\1-\8\11-\31\127]", "")
 
-  s = s:gsub("[\1-\8\11-\31\127]", "")
+    :gsub("&", "&amp;")
+    :gsub("<", "\1")
+    :gsub(">", "\2")
+    :gsub("'", "\3")
+    :gsub("\"", "\4")
 
-  s = s:gsub("&", "&amp;")
-  s = s:gsub("<", "\1")
-  s = s:gsub(">", "\2")
-  s = s:gsub("'", "\3")
-  s = s:gsub("\"", "\4")
+    :gsub("```\n*(.-)\n*```", handle_code(blocks, "\5", "<code>", "</code>"))
+    :gsub("([^\n])\5", "%1\n\5")
+    :gsub("\5([^\n])", "\5\n%1")
+    :gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"))
 
-  s = s:gsub("```\n*(.-)\n*```", handle_code(blocks, "\5", "<code>", "</code>"))
-  s = s:gsub("([^\n])\5", "%1\n\5")
-  s = s:gsub("\5([^\n])", "\5\n%1")
-  s = s:gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"))
+    :gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs)
+    :gsub("\2\2\2/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs)
+    :gsub("\2\2(%d+)", handle_refs)
 
-  s = s:gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs)
-  s = s:gsub("\2\2\2/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs)
-  s = s:gsub("\2\2(%d+)", handle_refs)
+    :gsub("\3\3\3([^\n]-)\3\3\3", "<b>%1</b>")
+    :gsub("\3\3([^\n]-)\3\3", "<i>%1</i>")
+    :gsub("~~([^\n]-)~~", "<s>%1</s>")
+    :gsub("__([^\n]-)__", "<u>%1</u>")
+    :gsub("==([^\n]-)==", "<span class='redtext'>%1</span>")
+    :gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>")
+    :gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>")
+    :gsub("\n(\2[^\n]*)", "\n<span class='greentext'>%1</span>")
+    :gsub("\n(\1[^\n]*)", "\n<span class='pinktext'>%1</span>")
 
-  s = s:gsub("\3\3\3([^\n]-)\3\3\3", "<b>%1</b>")
-  s = s:gsub("\3\3([^\n]-)\3\3", "<i>%1</i>")
-  s = s:gsub("~~([^\n]-)~~", "<s>%1</s>")
-  s = s:gsub("__([^\n]-)__", "<u>%1</u>")
-  s = s:gsub("==([^\n]-)==", "<span class='redtext'>%1</span>")
-  s = s:gsub("%*%*([^\n]-)%*%*", "<span class='spoiler'>%1</span>")
-  s = s:gsub("%(%(%([^\n]-%)%)%)", "<span class='kiketext'>%1</span>")
-  s = s:gsub("\n(\2[^\n]*)", "\n<span class='greentext'>%1</span>")
-  s = s:gsub("\n(\1[^\n]*)", "\n<span class='pinktext'>%1</span>")
+    :gsub("(.)(%a[%w%+%-%.]*://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url)
 
-  s = s:gsub("(.)(%a[%w%+%-%.]*://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url)
+    :gsub("\6", insert_escaped(iblocks))
+    :gsub("\5", insert_escaped(blocks))
 
-  s = s:gsub("\6", insert_escaped(iblocks))
-  s = s:gsub("\5", insert_escaped(blocks))
+    :gsub("\4", "&quot;")
+    :gsub("\3", "&#39;")
+    :gsub("\2", "&gt;")
+    :gsub("\1", "&lt;")
 
-  s = s:gsub("\4", "&quot;")
-  s = s:gsub("\3", "&#39;")
-  s = s:gsub("\2", "&gt;")
-  s = s:gsub("\1", "&lt;")
-
-  s = s:gsub("^\n+", "")
-  s = s:gsub("\n+$", "")
-  s = s:gsub("\n", "<br />")
+    :gsub("^\n+", "")
+    :gsub("\n+$", "")
+    :gsub("\n", "<br />")
 
   return s
 end
