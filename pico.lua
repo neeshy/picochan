@@ -469,10 +469,12 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename)
       elseif class == "archive" then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
-      elseif class == "video" or (class == "audio" and file["Width"] and file["Height"]) then
-        printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
-      elseif class == "audio" then
-        printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
+      elseif class == "video" or class == "audio" then
+        if file["Width"] and file["Height"] then
+          printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
+        else
+          printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
+        end
       end
 
       printf("</div>")
