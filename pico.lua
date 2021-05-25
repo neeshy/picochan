@@ -1877,14 +1877,19 @@ handlers["/webring.json"] = function()
 end
 
 local path_info = os.getenv("PATH_INFO")
-for patt, func in pairs(handlers) do
-  patt = "^" .. patt .. "$"
+if path_info then
+  for patt, func in pairs(handlers) do
+    patt = "^" .. patt .. "$"
 
-  if path_info:match(patt) then
-    path_info:gsub(patt, func)
-    cgi.finalize()
+    if path_info:match(patt) then
+      path_info:gsub(patt, func)
+      cgi.finalize()
+    end
   end
+
+  cgi.headers["Status"] = "404 Not Found"
+  html.error("Page Not Found", "The specified page does not exist.")
 end
 
-cgi.headers["Status"] = "404 Not Found"
-html.error("Page Not Found", "The specified page does not exist.")
+cgi.headers["Status"] = "500 Internal Server Error"
+html.error("Internal Server Error", "Request path was not provided")
