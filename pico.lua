@@ -721,7 +721,7 @@ end
 function html.form.board_delete()
   printf("<form method='POST'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
   printf("</form>")
 end
