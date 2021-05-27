@@ -122,10 +122,6 @@ th, td {
     padding: 3px 5px;
 }
 
-fieldset {
-    border: none;
-}
-
 form label {
     text-align: left;
     display: inline-block;
