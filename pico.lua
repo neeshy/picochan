@@ -1135,8 +1135,8 @@ handlers["/Mod/account/create"] = function()
   html.brc("create account", "Create account")
 
   if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(cgi.POST, "name", "password", "type", "board") then
-      printf("%s", select(2, pico.account.create(cgi.POST["name"], cgi.POST["password"], cgi.POST["type"], cgi.POST["board"])))
+    if tbl_validate(cgi.POST, "name", "password", "type") then
+      printf("%s", select(2, pico.account.create(cgi.POST["name"], cgi.POST["password"], cgi.POST["type"], cgi.POST["board"] ~= "" and cgi.POST["board"] or nil)))
     else
       cgi.headers["Status"] = "400 Bad Request"
       html.error("Action failed", "Invalid request")
