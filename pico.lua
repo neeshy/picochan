@@ -681,7 +681,7 @@ function html.form.postform(board_tbl, parent)
   printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength=64 /><br />")
   printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 />")
   printf(  "<input type='submit' value='Post' accesskey='s' /><br />")
-  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"])
+  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"])
 
   for i = 1, board_tbl["PostMaxFiles"] do
     printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />" ..
@@ -789,11 +789,11 @@ function html.form.banner_delete(board, banners)
 end
 
 function html.form.account_create()
-  printf("<form id='account-create' method='POST'>")
+  printf("<form method='POST'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />")
   printf(  "<label for='type'>Type</label>")
-  printf(  "<select form='account-create' id='type' name='type'>")
+  printf(  "<select id='type' name='type'>")
   printf(    "<option value='admin'>Administrator</option>")
   printf(    "<option value='bo'>Board Owner</option>")
   printf(    "<option value='gvol'>Global Volunteer</option>")
@@ -821,10 +821,10 @@ function html.form.account_config()
 end
 
 function html.form.endpoint_add()
-  printf("<form id='endpoint-add' method='POST'>")
+  printf("<form method='POST'>")
   printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
   printf(  "<label for='type'>Type</label>")
-  printf(  "<select form='endpoint-add' id='type' name='type'>")
+  printf(  "<select id='type' name='type'>")
   printf(    "<option value='following' selected>Following</option>")
   printf(    "<option value='known'>Known Only</option>")
   printf(    "<option value='blacklist'>Blacklisted</option>")
@@ -864,15 +864,15 @@ function html.form.endpoint_config(endpoint)
 end
 
 function html.form.globalconfig(varname)
-  printf("<form id='globalconfig' method='POST'>")
+  printf("<form method='POST'>")
   printf("<input type='hidden' name='name' value='%s' />", varname)
   printf("<label for='value'>%s</label>", varname)
 
   if varname == "frontpage" or varname == "announce" then
-    printf("<textarea id='value' name='value' form='globalconfig' cols=40 rows=12 autofocus>%s</textarea>",
+    printf("<textarea id='value' name='value' cols=40 rows=12 autofocus>%s</textarea>",
            html.striphtml(pico.global.get(varname) or "") or "")
   elseif varname == "theme" then
-    printf("<select id='value' name='value' form='globalconfig' autofocus>")
+    printf("<select id='value' name='value' autofocus>")
     local theme = pico.global.get("theme")
     local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
     for t in themes:lines() do
@@ -880,7 +880,7 @@ function html.form.globalconfig(varname)
     end
     printf("</select>")
   elseif varname == "defaultboardview" then
-    printf("<select id='value' name='value' form='globalconfig' autofocus>")
+    printf("<select id='value' name='value' autofocus>")
     printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "")
     printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "")
     printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "")
@@ -894,10 +894,10 @@ function html.form.globalconfig(varname)
 end
 
 function html.form.themeconfig()
-  printf("<form id='themeconfig' method='POST'>")
+  printf("<form method='POST'>")
   printf("<label for='theme'>theme</label>")
 
-  printf("<select id='theme' name='theme' form='themeconfig' autofocus>")
+  printf("<select id='theme' name='theme' autofocus>")
   local theme = pico.global.get("theme")
   local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
   for t in themes:lines() do
