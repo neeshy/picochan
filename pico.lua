@@ -91,11 +91,11 @@ function html.begin(...)
   printf(    "<a href='' accesskey='r'></a>")
   printf(    "<a href='#postform' accesskey='p'></a>")
   printf(    "</nav>")
-  printf(    "<div id='content'>")
+  printf(    "<main>")
 end
 
 function html.finish()
-  printf("</div></body></html>\r\n")
+  printf("</main></body></html>\r\n")
   printf("<!-- %d ms generation time -->\r\n", os.clock() * 1000)
 end
 
