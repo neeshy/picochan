@@ -607,9 +607,10 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>")
 end
 
-function html.renderpages(prefix, page, prev, next)
+function html.renderpages(prefix, page, next)
   printf("<div class='page-switcher'>")
   printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
+  local prev = page > 1
   if prev then
     printf("<a href='%s/%d'>[Prev]</a>", prefix, page - 1)
   end
@@ -647,7 +648,7 @@ function html.renderindex(index_tbl, board)
   end
 end
 
-function html.renderrecent(recent_tbl, board, page, prev, next)
+function html.renderrecent(recent_tbl, board)
   for i = 1, #recent_tbl do
     if i ~= 1 then
       printf("<hr class='invisible'>")
@@ -1499,10 +1500,9 @@ handlers["/Log"] = function(page)
     html.error("Page not found", "Page number too high: %s", page)
   end
 
-  prev = page > 1
   next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0
 
-  html.renderpages("/Log", page, prev, next)
+  html.renderpages("/Log", page, next)
   html.table.begin("Account", "Board", "Date", "Description")
 
   for i = 1, #log_tbl do
@@ -1514,7 +1514,7 @@ handlers["/Log"] = function(page)
   end
 
   html.table.finish()
-  html.renderpages("/Log", page, prev, next)
+  html.renderpages("/Log", page, next)
   html.cfinish()
 end
 
@@ -1685,7 +1685,7 @@ handlers["/(Overboard)/index"] = function(board, page)
   end
 
   html.renderindex(index_tbl, board)
-  html.renderpages(string.format("/%s/index", board), page, page > 1,
+  html.renderpages(string.format("/%s/index", board), page,
                    #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0)
   html.finish()
 end
@@ -1717,7 +1717,7 @@ handlers["/(Overboard)/recent"] = function(board, page)
   end
 
   html.renderrecent(recent_tbl, board)
-  html.renderpages(string.format("/%s/recent", board), page, page > 1,
+  html.renderpages(string.format("/%s/recent", board), page,
                    #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0)
   html.finish()
 end
