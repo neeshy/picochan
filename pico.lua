@@ -670,7 +670,7 @@ function html.cfinish()
 end
 
 function html.form.postform(board_tbl, parent)
-  printf("<form id='postform' action='/Post' method='POST' enctype='multipart/form-data'>")
+  printf("<form id='postform' action='/Post' method='post' enctype='multipart/form-data'>")
   printf(  "<input name='board' value='%s' type='hidden' />", board_tbl["Name"])
 
   if parent ~= nil then
@@ -703,7 +703,7 @@ function html.form.postform(board_tbl, parent)
 end
 
 function html.form.mod_login()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />")
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
@@ -711,7 +711,7 @@ function html.form.mod_login()
 end
 
 function html.form.board_create()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
   printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />")
   printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />")
@@ -720,7 +720,7 @@ function html.form.board_create()
 end
 
 function html.form.board_delete()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
@@ -728,7 +728,7 @@ function html.form.board_delete()
 end
 
 function html.form.board_config_select()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -737,7 +737,7 @@ end
 function html.form.board_config(board)
   local board_tbl = pico.board.tbl(board)
 
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<input type='hidden' name='Name' value='%s' />", board)
   printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]))
   printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""))
@@ -762,7 +762,7 @@ function html.form.board_config(board)
 end
 
 function html.form.banner_add()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
   printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
@@ -770,14 +770,14 @@ function html.form.banner_add()
 end
 
 function html.form.banner_delete_select()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
 function html.form.banner_delete(board, banners)
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<input type='hidden' name='board' value='%s' />", board)
   printf(  "<label for='file'>File</label><br />")
   for i = 1, #banners do
@@ -790,7 +790,7 @@ function html.form.banner_delete(board, banners)
 end
 
 function html.form.account_create()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />")
   printf(  "<label for='type'>Type</label>")
@@ -806,7 +806,7 @@ function html.form.account_create()
 end
 
 function html.form.account_delete()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
@@ -814,7 +814,7 @@ function html.form.account_delete()
 end
 
 function html.form.account_config()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"])
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
@@ -822,7 +822,7 @@ function html.form.account_config()
 end
 
 function html.form.endpoint_add()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
   printf(  "<label for='type'>Type</label>")
   printf(  "<select id='type' name='type'>")
@@ -835,7 +835,7 @@ function html.form.endpoint_add()
 end
 
 function html.form.endpoint_remove()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
@@ -843,7 +843,7 @@ function html.form.endpoint_remove()
 end
 
 function html.form.endpoint_config_select()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='Endpoint'>Endpoint</label><input id='Endpoint' name='Endpoint' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -852,7 +852,7 @@ end
 function html.form.endpoint_config(endpoint)
   local endpoint_tbl = pico.webring.endpoint.tbl(endpoint)
 
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl["Endpoint"]))
   printf(  "<label for='Type'>Type</label>")
   printf(  "<select id='Type' name='Type'>")
@@ -865,7 +865,7 @@ function html.form.endpoint_config(endpoint)
 end
 
 function html.form.globalconfig(varname)
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf("<input type='hidden' name='name' value='%s' />", varname)
   printf("<label for='value'>%s</label>", varname)
 
@@ -895,7 +895,7 @@ function html.form.globalconfig(varname)
 end
 
 function html.form.themeconfig()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf("<label for='theme'>theme</label>")
 
   printf("<select id='theme' name='theme' autofocus>")
@@ -917,14 +917,14 @@ function html.form.themeconfig()
 end
 
 function html.form.mod_action_reason()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />")
   printf(  "<input type='submit' value='Continue' />")
   printf("</form>")
 end
 
 function html.form.mod_move_thread()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<input type='submit' value='Continue' />")
@@ -932,7 +932,7 @@ function html.form.mod_move_thread()
 end
 
 function html.form.mod_multidelete()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
   printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />")
   printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />")
@@ -942,7 +942,7 @@ function html.form.mod_multidelete()
 end
 
 function html.form.mod_pattdelete()
-  printf("<form method='POST'>")
+  printf("<form method='post'>")
   printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<input type='submit' value='Continue' />")
