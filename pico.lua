@@ -816,7 +816,7 @@ end
 function html.form.account_config()
   printf("<form method='post'>")
   printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current["Name"])
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
   printf("</form>")
 end
