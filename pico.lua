@@ -1641,8 +1641,10 @@ local function board_header(board_tbl)
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
   html.announce()
-  printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
-  html.form.postform(board_tbl, nil)
+  if pico.account.current or board_tbl["Lock"] ~= 1 then
+    printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
+    html.form.postform(board_tbl, nil)
+  end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl["Name"])
   printf("<a href='/%s/index'>[Index]</a> ", board_tbl["Name"])
   printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl["Name"])
@@ -1771,8 +1773,10 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board, html.striphtml(board_tbl["Title"]))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
   html.announce()
-  printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
-  html.form.postform(board_tbl, post)
+  if pico.account.current or (board_tbl["Lock"] ~= 1 and thread_tbl[1]["Lock"] ~= 1) then
+    printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
+    html.form.postform(board_tbl, post)
+  end
   printf("<hr />")
 
   for i = 1, #thread_tbl do
@@ -1789,7 +1793,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   printf("<span class='float-right'>")
   printf("<a href=''>[Update]</a> ")
-  printf("<a href='#postform'>[Reply]</a> ")
+  if pico.account.current or (board_tbl["Lock"] ~= 1 and thread_tbl[1]["Lock"] ~= 1) then
+    printf("<a href='#postform'>[Reply]</a> ")
+  end
   printf("%d replies", thread_tbl[1]["ReplyCount"])
   printf("</span>")
 
