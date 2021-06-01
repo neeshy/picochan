@@ -918,8 +918,8 @@ end
 
 function html.form.mod_action_reason()
   printf("<form method='post'>")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus />")
-  printf(  "<input type='submit' value='Continue' />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
@@ -927,7 +927,7 @@ function html.form.mod_move_thread()
   printf("<form method='post'>")
   printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<input type='submit' value='Continue' />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
@@ -937,7 +937,7 @@ function html.form.mod_multidelete()
   printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />")
   printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<input type='submit' value='Continue' />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
@@ -945,7 +945,7 @@ function html.form.mod_pattdelete()
   printf("<form method='post'>")
   printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<input type='submit' value='Continue' />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
