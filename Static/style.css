@@ -188,6 +188,10 @@ form textarea {
     resize: both;
 }
 
+div.post-container + form {
+    margin-top: 5px;
+}
+
 form#postform {
     position: fixed;
     top: calc(3.5ch + 1px);
