@@ -356,15 +356,20 @@ function pico.board.index(name, page)
   local pagesize = pico.global.get("indexpagesize")
   local windowsize = pico.global.get("indexwindowsize")
 
-  local index_tbl = {}
+  local where = name and "WHERE Board = ? " or ""
   local sql = "SELECT Board, Number FROM Threads " ..
-              (name and "WHERE Board = ? " or "") ..
+              where ..
               "ORDER BY " ..
               (name and "Sticky DESC, " or "") ..
               "LastBumpDate DESC LIMIT ? OFFSET ?"
+  local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Threads " .. where
+
   local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
                            or db:q(sql, pagesize, (page - 1) * pagesize)
+  local pagecount = name and db:r1(pagecount_sql, pagesize, name)
+                          or db:r1(pagecount_sql, pagesize)
 
+  local index_tbl = {}
   for i = 1, #thread_ops do
     index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
                         "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
@@ -377,21 +382,27 @@ function pico.board.index(name, page)
     end
   end
 
-  return index_tbl
+  return index_tbl, pagecount
 end
 
 function pico.board.recent(name, page)
   page = tonumber(page) or 1
   local pagesize = pico.global.get("recentpagesize")
-  local sql = "SELECT * FROM Posts " ..
-              (name and "WHERE Board = ? " or "") ..
-              "ORDER BY Date DESC LIMIT ? OFFSET ?"
+
+  local where = name and "WHERE Board = ? " or ""
+  local sql = "SELECT * FROM Posts " ..  where ..  "ORDER BY Date DESC LIMIT ? OFFSET ?"
+  local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Posts " .. where
+
   local recent_tbl = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
                            or db:q(sql, pagesize, (page - 1) * pagesize)
+  local pagecount = name and db:r1(pagecount_sql, pagesize, name)
+                          or db:r1(pagecount_sql, pagesize)
+
   for i = 1, #recent_tbl do
     recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"])
   end
-  return recent_tbl
+
+  return recent_tbl, pagecount
 end
 
 function pico.board.banner.get(board)
@@ -1049,7 +1060,8 @@ end
 function pico.log.retrieve(page)
   page = tonumber(page) or 1
   pagesize = pico.global.get("logpagesize")
-  return db:q("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize)
+  return db:q("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize),
+         db:r1("SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Logs", pagesize)
 end
 
 --

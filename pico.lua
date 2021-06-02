@@ -607,18 +607,47 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>")
 end
 
-function html.renderpages(prefix, page, next)
-  printf("<div class='page-switcher'>")
-  printf("<span class='page-switcher-curr'>Page: %d</span> ", page)
-  local prev = page > 1
-  if prev then
-    printf("<a href='%s/%d'>[Prev]</a>", prefix, page - 1)
+function html.renderpages(prefix, page, pagecount)
+  local start, stop
+  if page <= 5 then
+    start = 1
+    stop = pagecount < 10 and pagecount or 10
+  elseif page + 5 > pagecount then
+    start = pagecount < 10 and 1 or (pagecount - 9)
+    stop = pagecount
+  else
+    start = page - 5
+    stop = page + 5
   end
-  if next then
-    if prev then
+
+  printf("<div class='page-switcher'>")
+  if page > 1 then
+    printf("<a href='%s/1'>[First]</a> <a href='%s/%d'>[Prev]</a>", prefix, prefix, page - 1)
+  else
+    printf("[First] [Prev]")
+  end
+  printf("<div class='page-switcher-list'>")
+  if start > 1 then
+    printf("... ")
+  end
+  for i = start, stop do
+    if i ~= start then
       printf(" ")
     end
-    printf("<a class='float-right' href='%s/%d'>[Next]</a>", prefix, page + 1)
+    if i == page then
+      printf("[%d]", i)
+    else
+      printf("<a href='%s/%d'>[%d]</a>", prefix, i, i)
+    end
+  end
+  if stop < pagecount then
+    printf(" ...")
+  end
+  printf("</div>")
+  if page < pagecount then
+    printf("<div class='float-right'><a href='%s/%d'>[Next]</a> <a href='%s/%d'>[Last]</a></div>", prefix, page + 1, prefix, pagecount)
+  else
+    printf("<div class='float-right'>[Next] [Last]</div>")
   end
   printf("</div>")
 end
@@ -1494,15 +1523,13 @@ handlers["/Log"] = function(page)
     html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local log_tbl = pico.log.retrieve(page)
-  if #log_tbl == 0 and page ~= 1 then
+  local log_tbl, pagecount = pico.log.retrieve(page)
+  if page > pagecount then
     cgi.headers["Status"] = "404 Not Found"
     html.error("Page not found", "Page number too high: %s", page)
   end
 
-  next = #log_tbl == pico.global.get("logpagesize") and #pico.log.retrieve(page + 1) ~= 0
-
-  html.renderpages("/Log", page, next)
+  html.renderpages("/Log", page, pagecount)
   html.table.begin("Account", "Board", "Date", "Description")
 
   for i = 1, #log_tbl do
@@ -1514,7 +1541,7 @@ handlers["/Log"] = function(page)
   end
 
   html.table.finish()
-  html.renderpages("/Log", page, next)
+  html.renderpages("/Log", page, pagecount)
   html.cfinish()
 end
 
@@ -1680,15 +1707,14 @@ handlers["/(Overboard)/index"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local index_tbl = pico.board.index(boardval, page)
-  if #index_tbl == 0 and page ~= 1 then
+  local index_tbl, pagecount = pico.board.index(boardval, page)
+  if page > pagecount then
     cgi.headers["Status"] = "404 Not Found"
     html.error("Page not found", "Page number too high: %s", page)
   end
 
   html.renderindex(index_tbl, board)
-  html.renderpages(string.format("/%s/index", board), page,
-                   #index_tbl == pico.global.get("indexpagesize") and #pico.board.index(boardval, page + 1) ~= 0)
+  html.renderpages(string.format("/%s/index", board), page, pagecount)
   html.finish()
 end
 
@@ -1712,15 +1738,14 @@ handlers["/(Overboard)/recent"] = function(board, page)
     html.error("Page not found", "Page number too low: %s", page)
   end
 
-  local recent_tbl = pico.board.recent(boardval, page)
-  if #recent_tbl == 0 and page ~= 1 then
+  local recent_tbl, pagecount = pico.board.recent(boardval, page)
+  if page > pagecount then
     cgi.headers["Status"] = "404 Not Found"
     html.error("Page not found", "Page number too high: %s", page)
   end
 
   html.renderrecent(recent_tbl, board)
-  html.renderpages(string.format("/%s/recent", board), page,
-                   #recent_tbl == pico.global.get("recentpagesize") and #pico.board.recent(boardval, page + 1) ~= 0)
+  html.renderpages(string.format("/%s/recent", board), page, pagecount)
   html.finish()
 end
 

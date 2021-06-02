@@ -417,6 +417,16 @@ code, span.code {
     max-width: max-content;
 }
 
+div.page-switcher {
+    display: table;
+    width: 100%;
+}
+
+div.page-switcher-list {
+    display: table-cell;
+    text-align: center;
+}
+
 .invisible {
     display: none;
 }
