@@ -8,10 +8,10 @@ function date.iso8601(d)
   end
 
   -- ISO8601 extended formats
-  datetime = "^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)"
-  msec = "%.%d%d%d"
-  offsets = {"(Z)$", "([+-]%d%d:%d%d)$", "([+-]%d%d)$"}
-  patterns = {}
+  local datetime = "^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)"
+  local msec = "%.%d%d%d"
+  local offsets = {"(Z)$", "([+-]%d%d)$", "([+-]%d%d:%d%d)$"}
+  local patterns = {}
 
   for i = 1, #offsets do
     patterns[#patterns + 1] = datetime .. offsets[i]
