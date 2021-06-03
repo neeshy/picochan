@@ -654,11 +654,12 @@ function pico.file.add(f)
     p = io.popen("exec ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r")
   elseif class == "image" or extension == "pdf" or extension == "ps" then
-    os.execute("exec convert -strip Media/" .. filename .. ((extension == "pdf" or extension == "ps") and "[0]" or "") ..
-               " -coalesce -filter Catrom -thumbnail 200x200 " .. ((extension == "pdf" or extension == "ps" or extension == "svg") and "PNG:" or "") ..
-               "Media/thumb/" .. filename)
+    local prefix = (extension == "pdf" or extension == "ps" or extension == "svg") and "PNG:" or ""
+    local frame = (extension == "pdf" or extension == "ps") and "[0]" or ""
+    os.execute("exec convert -strip Media/" .. filename .. frame ..
+               " -coalesce -filter Catrom -thumbnail 200x200 " .. prefix ..  "Media/thumb/" .. filename)
     os.execute("exec convert -strip Media/" .. filename ..
-               "[0] -coalesce -filter Catrom -quality 60 -thumbnail 100x70 Media/icon/" .. filename)
+               "[0] -coalesce -filter Catrom -quality 60 -thumbnail 100x70 " .. prefix .. "Media/icon/" .. filename)
     p = io.popen("exec identify -format '%wx%h' Media/" .. filename .. "[0]", "r")
   end
 
