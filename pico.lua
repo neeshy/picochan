@@ -1532,6 +1532,7 @@ handlers["/Log"] = function(page)
 
   if pagecount > 1 then
     html.renderpages("/Log", page, pagecount)
+    printf("<hr />")
   end
 
   html.table.begin("Account", "Board", "Date", "Description")
@@ -1545,6 +1546,7 @@ handlers["/Log"] = function(page)
   html.table.finish()
 
   if pagecount > 1 then
+    printf("<hr />")
     html.renderpages("/Log", page, pagecount)
   end
   html.cfinish()
