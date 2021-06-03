@@ -330,23 +330,36 @@ function pico.board.configure(board_tbl)
   return true, "Board configured successfully"
 end
 
-function pico.board.catalog(name)
+function pico.board.catalog(name, page)
   if name and not pico.board.exists(name) then
     return nil, "Board does not exist"
   end
 
-  local pagesize = pico.global.get(name and "catalogsize" or "overboardsize")
+  page = tonumber(page) or 1
+  local pagesize = pico.global.get(name and "catalogpagesize" or "overboardpagesize")
+
+  local where = name and "Threads.Board = ? "
+                      or "Threads.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) "
   local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
               "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
-              "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
-              (name and "AND Posts.Board = ? "
-                     or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
+              "WHERE (Sequence = 1 OR Sequence IS NULL) AND " ..
+              where ..
               "ORDER BY " ..
-              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC "
+              (name and "Sticky DESC, LastBumpDate DESC, Threads.Number DESC "
                      or "LastBumpDate DESC ") ..
-              "LIMIT ?"
-  return name and db:q(sql, name, pagesize)
-               or db:q(sql, pagesize)
+              "LIMIT ? OFFSET ?"
+  local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Threads WHERE " .. where
+
+  local catalog_tbl, pagecount
+  if name then
+    catalog_tbl = db:q(sql, name, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize, name)
+  else
+    catalog_tbl = db:q(sql, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize)
+  end
+
+  return catalog_tbl, pagecount
 end
 
 function pico.board.index(name, page)
@@ -366,10 +379,14 @@ function pico.board.index(name, page)
               "LastBumpDate DESC LIMIT ? OFFSET ?"
   local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Threads " .. where
 
-  local thread_ops = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
-                           or db:q(sql, pagesize, (page - 1) * pagesize)
-  local pagecount = name and db:r1(pagecount_sql, pagesize, name)
-                          or db:r1(pagecount_sql, pagesize)
+  local thread_ops, pagecount
+  if name then
+    thread_ops = db:q(sql, name, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize, name)
+  else
+    thread_ops = db:q(sql, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize)
+  end
 
   local index_tbl = {}
   for i = 1, #thread_ops do
@@ -388,6 +405,10 @@ function pico.board.index(name, page)
 end
 
 function pico.board.recent(name, page)
+  if name and not pico.board.exists(name) then
+    return nil, "Board does not exist"
+  end
+
   page = tonumber(page) or 1
   local pagesize = pico.global.get("recentpagesize")
 
@@ -395,10 +416,14 @@ function pico.board.recent(name, page)
   local sql = "SELECT * FROM Posts " ..  where ..  "ORDER BY Date DESC LIMIT ? OFFSET ?"
   local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Posts " .. where
 
-  local recent_tbl = name and db:q(sql, name, pagesize, (page - 1) * pagesize)
-                           or db:q(sql, pagesize, (page - 1) * pagesize)
-  local pagecount = name and db:r1(pagecount_sql, pagesize, name)
-                          or db:r1(pagecount_sql, pagesize)
+  local recent_tbl, pagecount
+  if name then
+    recent_tbl = db:q(sql, name, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize, name)
+  else
+    recent_tbl = db:q(sql, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1(pagecount_sql, pagesize)
+  end
 
   for i = 1, #recent_tbl do
     recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"])

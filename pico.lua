@@ -673,7 +673,7 @@ function html.renderindex(index_tbl, board)
       html.renderpost(index_tbl[i][j], overboard)
     end
 
-    printf("</div><hr />")
+    printf("</div>")
   end
 end
 
@@ -684,7 +684,6 @@ function html.renderrecent(recent_tbl, board)
     end
     html.renderpost(recent_tbl[i], board == "Overboard", true)
   end
-  printf("<hr />")
 end
 
 function html.brc(title, redheader)
@@ -1032,8 +1031,8 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>")
   html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>")
   html.list.entry("<a href='/Mod/global/defaultboardview'>Change default board view</a>")
-  html.list.entry("<a href='/Mod/global/catalogsize'>Change catalog page size</a>")
-  html.list.entry("<a href='/Mod/global/overboardsize'>Change overboard catalog page size</a>")
+  html.list.entry("<a href='/Mod/global/catalogpagesize'>Change catalog page size</a>")
+  html.list.entry("<a href='/Mod/global/overboardpagesize'>Change overboard catalog page size</a>")
   html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>")
   html.list.entry("<a href='/Mod/global/indexwindowsize'>Change index window size</a>")
   html.list.entry("<a href='/Mod/global/recentpagesize'>Change recent posts page size</a>")
@@ -1680,18 +1679,37 @@ local function board_header(board_tbl)
   printf("<a class='float-right' href=''>[Update]</a><hr />")
 end
 
-handlers["/(Overboard)/catalog"] = function()
-  overboard_header()
-  html.rendercatalog(pico.board.catalog())
+handlers["/(Overboard)/catalog"] = function(board, page)
+  local overboard = board == "Overboard"
+  local boardval
+  if overboard then
+    overboard_header()
+  else
+    boardval = board
+    board_header(pico.board.tbl(board))
+  end
+
+  page = tonumber(page) or 1
+  if page <= 0 then
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too low: %s", page)
+  end
+
+  local catalog_tbl, pagecount = pico.board.catalog(boardval, page)
+  if page > pagecount then
+    cgi.headers["Status"] = "404 Not Found"
+    html.error("Page not found", "Page number too high: %s", page)
+  end
+
+  html.rendercatalog(catalog_tbl)
+  printf("<hr />")
+  html.renderpages(string.format("/%s/catalog", board), page, pagecount)
   html.finish()
 end
 
-handlers["/([%l%d]+)/catalog"] = function(board)
-  local board_tbl = pico.board.tbl(board)
-  board_header(board_tbl)
-  html.rendercatalog(pico.board.catalog(board))
-  html.finish()
-end
+handlers["/(Overboard)/catalog/(%d)"] = handlers["/(Overboard)/catalog"]
+handlers["/([%l%d]+)/catalog"] = handlers["/(Overboard)/catalog"]
+handlers["/([%l%d]+)/catalog/(%d)"] = handlers["/(Overboard)/catalog"]
 
 handlers["/(Overboard)/index"] = function(board, page)
   local overboard = board == "Overboard"
@@ -1716,6 +1734,7 @@ handlers["/(Overboard)/index"] = function(board, page)
   end
 
   html.renderindex(index_tbl, board)
+  printf("<hr />")
   html.renderpages(string.format("/%s/index", board), page, pagecount)
   html.finish()
 end
@@ -1747,6 +1766,7 @@ handlers["/(Overboard)/recent"] = function(board, page)
   end
 
   html.renderrecent(recent_tbl, board)
+  printf("<hr />")
   html.renderpages(string.format("/%s/recent", board), page, pagecount)
   html.finish()
 end
@@ -1765,6 +1785,7 @@ elseif defaultboardview == "recent" then
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/recent"]
 else
   handlers["/(Overboard)"] = handlers["/(Overboard)/catalog"]
+  handlers["/(Overboard)/(%d+)"] = handlers["/(Overboard)/catalog"]
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"]
 end
 
