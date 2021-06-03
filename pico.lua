@@ -1696,8 +1696,11 @@ local function board_view(board_func, render_func, view)
       html.error("Page not found", "Page number too low: %s", page)
     end
 
-    local tbl, pagecount = board_func(boardval, page)
-    if page > pagecount then
+    local tbl, pagecount, msg = board_func(boardval, page)
+    if not tbl then
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Page not found", "Cannot display %s: %s", view, msg)
+    elseif page > pagecount then
       cgi.headers["Status"] = "404 Not Found"
       html.error("Page not found", "Page number too high: %s", page)
     end

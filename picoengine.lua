@@ -332,7 +332,7 @@ end
 
 function pico.board.catalog(name, page)
   if name and not pico.board.exists(name) then
-    return nil, "Board does not exist"
+    return nil, nil, "Board does not exist"
   end
 
   page = tonumber(page) or 1
@@ -364,7 +364,7 @@ end
 
 function pico.board.index(name, page)
   if name and not pico.board.exists(name) then
-    return nil, "Board does not exist"
+    return nil, nil, "Board does not exist"
   end
 
   page = tonumber(page) or 1
@@ -406,7 +406,7 @@ end
 
 function pico.board.recent(name, page)
   if name and not pico.board.exists(name) then
-    return nil, "Board does not exist"
+    return nil, nil, "Board does not exist"
   end
 
   page = tonumber(page) or 1
