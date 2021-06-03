@@ -1530,9 +1530,11 @@ handlers["/Log"] = function(page)
     html.error("Page not found", "Page number too high: %s", page)
   end
 
-  html.renderpages("/Log", page, pagecount)
-  html.table.begin("Account", "Board", "Date", "Description")
+  if pagecount > 1 then
+    html.renderpages("/Log", page, pagecount)
+  end
 
+  html.table.begin("Account", "Board", "Date", "Description")
   for i = 1, #log_tbl do
     local entry = log_tbl[i]
     html.table.entry(entry["Account"] or "<i>SYSTEM</i>",
@@ -1540,9 +1542,11 @@ handlers["/Log"] = function(page)
                      html.date(entry["Date"]),
                      html.striphtml(entry["Description"]))
   end
-
   html.table.finish()
-  html.renderpages("/Log", page, pagecount)
+
+  if pagecount > 1 then
+    html.renderpages("/Log", page, pagecount)
+  end
   html.cfinish()
 end
 
@@ -1702,8 +1706,10 @@ local function board_view(board_func, render_func, view)
       board_header(pico.board.tbl(board))
     end
     render_func(tbl)
-    printf("<hr />")
-    html.renderpages(string.format("/%s/%s", board, view), page, pagecount)
+    if pagecount > 1 then
+      printf("<hr />")
+      html.renderpages(string.format("/%s/%s", board, view), page, pagecount)
+    end
     html.finish()
   end
 end
