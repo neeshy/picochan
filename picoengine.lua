@@ -335,16 +335,18 @@ function pico.board.catalog(name)
     return nil, "Board does not exist"
   end
 
+  local pagesize = pico.global.get(name and "catalogsize" or "overboardsize")
   local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
               "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) " ..
               (name and "AND Posts.Board = ? "
                      or "AND Posts.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) ") ..
               "ORDER BY " ..
-              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC LIMIT 1000"
-                     or "LastBumpDate DESC LIMIT 100")
-  return name and db:q(sql, name)
-               or db:q(sql)
+              (name and "Sticky DESC, LastBumpDate DESC, Posts.Number DESC "
+                     or "LastBumpDate DESC ") ..
+              "LIMIT ?"
+  return name and db:q(sql, name, pagesize)
+               or db:q(sql, pagesize)
 end
 
 function pico.board.index(name, page)
