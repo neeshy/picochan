@@ -1679,98 +1679,46 @@ local function board_header(board_tbl)
   printf("<a class='float-right' href=''>[Update]</a><hr />")
 end
 
-handlers["/(Overboard)/catalog"] = function(board, page)
-  local overboard = board == "Overboard"
-  local boardval
-  if overboard then
-    overboard_header()
-  else
-    boardval = board
-    board_header(pico.board.tbl(board))
-  end
+local function board_view(board_func, render_func, view)
+  return function(board, page)
+    local overboard = board == "Overboard"
+    local boardval = not overboard and board or nil
 
-  page = tonumber(page) or 1
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too low: %s", page)
-  end
+    page = tonumber(page) or 1
+    if page <= 0 then
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Page not found", "Page number too low: %s", page)
+    end
 
-  local catalog_tbl, pagecount = pico.board.catalog(boardval, page)
-  if page > pagecount then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too high: %s", page)
-  end
+    local tbl, pagecount = board_func(boardval, page)
+    if page > pagecount then
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Page not found", "Page number too high: %s", page)
+    end
 
-  html.rendercatalog(catalog_tbl)
-  printf("<hr />")
-  html.renderpages(string.format("/%s/catalog", board), page, pagecount)
-  html.finish()
+    if overboard then
+      overboard_header()
+    else
+      board_header(pico.board.tbl(board))
+    end
+    render_func(tbl)
+    printf("<hr />")
+    html.renderpages(string.format("/%s/%s", board, view), page, pagecount)
+    html.finish()
+  end
 end
 
+handlers["/(Overboard)/catalog"] = board_view(pico.board.catalog, html.rendercatalog, "catalog")
 handlers["/(Overboard)/catalog/(%d)"] = handlers["/(Overboard)/catalog"]
 handlers["/([%l%d]+)/catalog"] = handlers["/(Overboard)/catalog"]
 handlers["/([%l%d]+)/catalog/(%d)"] = handlers["/(Overboard)/catalog"]
 
-handlers["/(Overboard)/index"] = function(board, page)
-  local overboard = board == "Overboard"
-  local boardval
-  if overboard then
-    overboard_header()
-  else
-    boardval = board
-    board_header(pico.board.tbl(board))
-  end
-
-  page = tonumber(page) or 1
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too low: %s", page)
-  end
-
-  local index_tbl, pagecount = pico.board.index(boardval, page)
-  if page > pagecount then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too high: %s", page)
-  end
-
-  html.renderindex(index_tbl, board)
-  printf("<hr />")
-  html.renderpages(string.format("/%s/index", board), page, pagecount)
-  html.finish()
-end
-
+handlers["/(Overboard)/index"] = board_view(pico.board.index, html.renderindex, "index")
 handlers["/(Overboard)/index/(%d+)"] = handlers["/(Overboard)/index"]
 handlers["/([%l%d]+)/index"] = handlers["/(Overboard)/index"]
 handlers["/([%l%d]+)/index/(%d+)"] = handlers["/(Overboard)/index"]
 
-handlers["/(Overboard)/recent"] = function(board, page)
-  local overboard = board == "Overboard"
-  local boardval
-  if overboard then
-    overboard_header()
-  else
-    boardval = board
-    board_header(pico.board.tbl(board))
-  end
-
-  page = tonumber(page) or 1
-  if page <= 0 then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too low: %s", page)
-  end
-
-  local recent_tbl, pagecount = pico.board.recent(boardval, page)
-  if page > pagecount then
-    cgi.headers["Status"] = "404 Not Found"
-    html.error("Page not found", "Page number too high: %s", page)
-  end
-
-  html.renderrecent(recent_tbl, board)
-  printf("<hr />")
-  html.renderpages(string.format("/%s/recent", board), page, pagecount)
-  html.finish()
-end
-
+handlers["/(Overboard)/recent"] = board_view(pico.board.recent, html.renderrecent, "recent")
 handlers["/(Overboard)/recent/(%d+)"] = handlers["/(Overboard)/recent"]
 handlers["/([%l%d]+)/recent"] = handlers["/(Overboard)/recent"]
 handlers["/([%l%d]+)/recent/(%d+)"] = handlers["/(Overboard)/recent"]
