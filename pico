@@ -842,9 +842,9 @@ elseif cgi.pathinfo[1] == "System" then
       html.container.begin();
 
       local board_tbl = pico.board.tbl(cgi.pathinfo[5]);
-      local post_tbl, msg = pico.post.tbl(cgi.pathinfo[5], cgi.pathinfo[6]);
+      local post_tbl = pico.post.tbl(cgi.pathinfo[5], cgi.pathinfo[6]);
       if not post_tbl then
-        html.error("Action failed", "Cannot find post: %s", msg);
+        html.error("Action failed", "Cannot find post /%s/%d", cgi.pathinfo[5], cgi.pathinfo[6]);
       end
 
       if POST["reason"] and POST["reason"] ~= "" then
