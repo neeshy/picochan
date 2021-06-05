@@ -498,7 +498,7 @@ function html.form.postform(board_tbl, parent)
   printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>");
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength=64 placeholder='%s' /><br />", pico.global.get("defaultpostname"));
   printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength=64 /><br />");
-  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 />");
+  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 autocomplete=off />");
   printf(  "<input type='submit' value='Post' accesskey='s' /><br />");
   printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' form='postform' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"]);
 
@@ -511,7 +511,7 @@ function html.form.postform(board_tbl, parent)
     local captchaid, captchab64 = pico.captcha.create();
 
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid);
-    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength=6 required /><br />");
+    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength=6 autocomplete=off required /><br />");
     printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captchab64);
   end
 
