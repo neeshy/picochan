@@ -255,7 +255,7 @@ function html.picofmt(post_tbl, disable_refs)
 
   if not disable_refs then
     s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%d+)", handle_xbrefs);
-    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/(%s)", handle_xbrefs);
+    s = s:gsub("&gt;&gt;&gt;/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs);
     s = s:gsub("&gt;&gt;(%d+)", handle_refs);
   end
 
