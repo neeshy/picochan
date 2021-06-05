@@ -315,10 +315,10 @@ function html.threadflags(post_tbl)
       or post_tbl["Autosage"] == 1 or post_tbl["Cycle"] == 1) then
     printf("<span class='thread-flags'>");
     printf("%s%s%s%s",
-      post_tbl["Sticky"]   == 1 and "(S)" or "",
-      post_tbl["Lock"]     == 1 and "(L)" or "",
-      post_tbl["Autosage"] == 1 and "(A)" or "",
-      post_tbl["Cycle"]    == 1 and "(C)" or "");
+      post_tbl["Sticky"]   == 1 and "📌" or "",
+      post_tbl["Lock"]     == 1 and "🔒" or "",
+      post_tbl["Autosage"] == 1 and "⚓" or "",
+      post_tbl["Cycle"]    == 1 and "♻️" or "");
     printf("</span>");
   end
 end
