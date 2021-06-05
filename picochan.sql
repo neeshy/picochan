@@ -148,7 +148,7 @@ CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
    AND (SELECT ThreadCaptcha FROM Boards WHERE Name = NEW.Board) = FALSE
    AND (SELECT COUNT(*) FROM Posts WHERE Board = NEW.Board AND Parent IS NULL AND Date > (STRFTIME('%s', 'now') - 3600))
        > (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board)
-   AND (SELECT CaptchaTriggerPPH FROM Boards WHERE Name = NEW.Board) > 0
+   AND (SELECT CaptchaTriggerTPH FROM Boards WHERE Name = NEW.Board) > 0
 BEGIN
   UPDATE Boards SET ThreadCaptcha = TRUE WHERE Name = NEW.Board;
   INSERT INTO Logs (Board, Date, Description) VALUES (NEW.Board, STRFTIME('%s', 'now'),
