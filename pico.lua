@@ -236,29 +236,29 @@ function html.picofmt(post_tbl)
     return s
   end
 
-  local function handle_refs(number)
+  local function handle_refs(number, append)
     local ref_post_tbl = pico.post.tbl(post_tbl["Board"], number, true)
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2%d</a></s>", number)
+      return string.format("<s><a class='reference'>\2\2%s</a></s>%s", number, append)
     else
-      return string.format("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>",
-                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number)
+      return string.format("<a class='reference' href='/%s/%s#%s'>\2\2%s</a>%s",
+                           ref_post_tbl["Board"], ref_post_tbl["Parent"] or number, number, number, append)
     end
   end
 
-  local function handle_xbrefs(board, number)
+  local function handle_xbrefs(board, number, append)
     if not tonumber(number) then
-      return string.format("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s", board, board, number)
+      return string.format("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s%s", board, board, number, append)
     end
 
     local ref_post_tbl = pico.post.tbl(board, number, true)
 
     if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2\2/%s/%s</a></s>", board, number or "")
+      return string.format("<s><a class='reference'>\2\2\2/%s/%s</a></s>%s", board, number, append)
     else
-      return string.format("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>",
-                           board, ref_post_tbl["Parent"] or number, number, board, number)
+      return string.format("<a class='reference' href='/%s/%s#%s'>\2\2\2/%s/%s</a>%s",
+                           board, ref_post_tbl["Parent"] or number, number, board, number, append)
     end
   end
 
@@ -308,7 +308,7 @@ function html.picofmt(post_tbl)
     end
   end
 
-  local s = ("\n" .. post_tbl["Comment"])
+  local s = ("\n" .. post_tbl["Comment"] .. "\n")
     :gsub("[\1-\8\11-\31\127]", "")
 
     :gsub("&", "&amp;")
@@ -322,9 +322,8 @@ function html.picofmt(post_tbl)
     :gsub("\5([^\n])", "\5\n%1")
     :gsub("`([^\n]-)`", handle_code(iblocks, "\6", "<span class='code'>", "</span>"))
 
-    :gsub("\2\2\2/([%d%l]-)/(%d+)", handle_xbrefs)
-    :gsub("\2\2\2/([%d%l]-)/([%s!,%.:;%?])", handle_xbrefs)
-    :gsub("\2\2(%d+)", handle_refs)
+    :gsub("\2\2\2/([%d%l]-)/(%d-)([%s!,%.:;%?])", handle_xbrefs)
+    :gsub("\2\2(%d+)([%s!,%.:;%?])", handle_refs)
 
     :gsub("\3\3\3([^\n]-)\3\3\3", "<b>%1</b>")
     :gsub("\3\3([^\n]-)\3\3", "<i>%1</i>")
