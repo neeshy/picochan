@@ -922,8 +922,8 @@ function pico.post.pattdelete(pattern, reason)
   if not auth then return auth, msg end
   if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end
 
-  db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", "%" .. pattern .. "%")
-  pico.log.insert(board, "Deleted posts matching pattern '%%%s%%' for reason: %s", pattern, reason)
+  db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", pattern)
+  pico.log.insert(board, "Deleted posts matching pattern '%s' for reason: %s", pattern, reason)
   return true, "Posts deleted successfully"
 end
 
