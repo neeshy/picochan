@@ -335,7 +335,7 @@ function html.picofmt(post_tbl)
     :gsub("\n(\2[^\n]*)", "\n<span class='greentext'>%1</span>")
     :gsub("\n(\1[^\n]*)", "\n<span class='pinktext'>%1</span>")
 
-    :gsub("(.)(%a[%w%+%-%.]*://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url)
+    :gsub("(.)(https?://[%w!\4#%$%%&\3%(%)%*%+,%-%./:;\1=\2%?@%[\\%]%^_`{|}~]+)", handle_url)
 
     :gsub("\6", insert_escaped(iblocks))
     :gsub("\5", insert_escaped(blocks))
