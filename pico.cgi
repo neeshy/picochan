@@ -1,4 +1,4 @@
-#!/usr/local/bin/luajit
+#!/usr/bin/luajit
 -- Picochan CGI Frontend
 
 local status, err = pcall(require, "pico")
