@@ -4,7 +4,6 @@
 local pico = require("picoengine")
 local cgi = require("picoaux.cgi")
 local json = require("picoaux.json")
-local curl = require("picoaux.curl")
 local date = require("picoaux.date")
 
 require("picoaux.iomisc")
@@ -1556,33 +1555,36 @@ handlers["/Log/(%d+)"] = handlers["/Log"]
 handlers["/Boards"] = function()
   local known = pico.webring.tbl()["known"]
   local webring_boards = {}
+  local curl_loaded, curl = pcall(require, "picoaux.curl")
 
-  for headers, body in curl.multi_request(known) do
-    if headers["status"] == 200 then
-      local status, boards = pcall(function()
-        local webring = assert(json.decode(body))
-        local site_name = assert(webring["name"])
-        local site_boards = assert(webring["boards"])
-        local boards = {}
-        for j = 1, #site_boards do
-          local board = {}
-          board["site_name"] = site_name
-          board["name"] = html.striphtml(site_boards[j]["uri"]) or ""
-          board["title"] = html.striphtml(site_boards[j]["title"]) or ""
-          board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or ""
-          board["path"] = html.striphtml(site_boards[j]["path"]) or ""
-          board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or ""
-          board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or ""
-          board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"])
-          board["last"] = board["last"] and html.date(board["last"], true) or ""
+  if curl_loaded then
+    for headers, body in curl.multi_request(known) do
+      if headers["status"] == 200 then
+        local status, boards = pcall(function()
+          local webring = assert(json.decode(body))
+          local site_name = assert(webring["name"])
+          local site_boards = assert(webring["boards"])
+          local boards = {}
+          for j = 1, #site_boards do
+            local board = {}
+            board["site_name"] = site_name
+            board["name"] = html.striphtml(site_boards[j]["uri"]) or ""
+            board["title"] = html.striphtml(site_boards[j]["title"]) or ""
+            board["subtitle"] = html.striphtml(site_boards[j]["subtitle"]) or ""
+            board["path"] = html.striphtml(site_boards[j]["path"]) or ""
+            board["pph"] = html.striphtml(site_boards[j]["postsPerHour"]) or ""
+            board["total"] = html.striphtml(site_boards[j]["totalPosts"]) or ""
+            board["last"] = date.iso8601(site_boards[j]["lastPostTimestamp"])
+            board["last"] = board["last"] and html.date(board["last"], true) or ""
 
-          boards[#boards + 1] = board
-        end
-        return boards
-      end)
-      if status then
-        for j = 1, #boards do
-          webring_boards[#webring_boards + 1] = boards[j]
+            boards[#boards + 1] = board
+          end
+          return boards
+        end)
+        if status then
+          for j = 1, #boards do
+            webring_boards[#webring_boards + 1] = boards[j]
+          end
         end
       end
     end

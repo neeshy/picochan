@@ -8,6 +8,8 @@ FFmpeg            mp3 opus vorbis theora     https://ffmpeg.org/
 ImageMagick       jpeg png webp svg zlib     https://imagemagick.org/
 curl              ssl                        https://curl.se/
 
+NOTE: curl is optional
+
 One of the following dependencies must be installed to provide the Courier font
 which is required for captcha generation.
 
