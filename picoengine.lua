@@ -1112,7 +1112,7 @@ function pico.captcha.create()
 
   local p = assert(io.popen(string.format(
     "convert -size 290x70 xc:white -bordercolor black -border 5 " ..
-    "-fill black -stroke black -strokewidth 1 -pointsize 40 -font Courier " ..
+    "-fill black -stroke black -strokewidth 1 -pointsize 40 -font Courier-New " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
