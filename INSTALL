@@ -3,11 +3,13 @@ DEPENDENCY        BUILD CONFIGURATION        HOMEPAGE
 LuaJIT                                       https://luajit.org/
 SQLite                                       https://sqlite.org/
 Argon2                                       https://github.com/P-H-C/phc-winner-argon2
+OpenSSL                                      https://www.openssl.org/
 FFmpeg            mp3 opus vorbis theora     https://ffmpeg.org/
                   vpx x264 x265
 ImageMagick       jpeg png webp svg zlib     https://imagemagick.org/
 curl              ssl                        https://curl.se/
 
+NOTE: LibreSSL may be substituted for OpenSSL
 NOTE: curl is optional
 
 One of the following dependencies must be installed to provide the Courier font
