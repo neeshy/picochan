@@ -61,6 +61,10 @@ h1.redheader, h1#boardtitle {
     margin-top: 5px;
 }
 
+h1#boardtitle a {
+    color: inherit;
+}
+
 h2#boardsubtitle {
     font-weight: normal;
     font-size: 10pt;

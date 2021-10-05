@@ -1673,7 +1673,8 @@ local function board_header(board_tbl)
   if banner then
     printf("<img id='banner' src='/Media/%s' height=100 />", banner)
   end
-  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board_tbl["Name"], html.striphtml(board_tbl["Title"]))
+  printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
+         board_tbl["Name"], board_tbl["Name"], html.striphtml(board_tbl["Title"]))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
   html.announce()
   if pico.account.current or board_tbl["Lock"] ~= 1 then
@@ -1778,7 +1779,8 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   if banner then
     printf("<img id='banner' src='/Media/%s' height=100 />", banner)
   end
-  printf("<h1 id='boardtitle'>/%s/ - %s</h1>", board, html.striphtml(board_tbl["Title"]))
+  printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
+         board, board, html.striphtml(board_tbl["Title"]))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl["Subtitle"] or ""))
   html.announce()
   if pico.account.current or (board_tbl["Lock"] ~= 1 and thread_tbl[1]["Lock"] ~= 1) then
