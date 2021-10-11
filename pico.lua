@@ -79,7 +79,7 @@ function html.begin(...)
   local boards = pico.board.list()
   for i = 1, #boards do
     printf("<li class='board'><a href='/%s/' title='%s'>/%s/</a></li>",
-           boards[i]["Name"], boards[i]["Title"], boards[i]["Name"])
+           boards[i]["Name"], html.striphtml(boards[i]["Title"]), boards[i]["Name"])
   end
 
   if pico.account.current then
@@ -1608,8 +1608,8 @@ handlers["/Boards"] = function()
   local board_list_tbl = pico.board.list()
   for i = 1, #board_list_tbl do
     local board = board_list_tbl[i]["Name"]
-    local title = board_list_tbl[i]["Title"]
-    local subtitle = board_list_tbl[i]["Subtitle"] or ""
+    local title = html.striphtml(board_list_tbl[i]["Title"])
+    local subtitle = html.striphtml(board_list_tbl[i]["Subtitle"] or "")
     local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1)
     local tpd1d = pico.board.stats.threadrate(board, 24, 1)
     local ppd7d = pico.board.stats.postrate(board, 24, 7)
