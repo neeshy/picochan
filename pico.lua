@@ -447,7 +447,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
         if spoiler then
           printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
         else
-          printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
+          printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[THUMB]' />",
                  filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
         end
         printf("<div class='post-file-fullsize'></div>")
@@ -1671,7 +1671,7 @@ local function board_header(board_tbl)
   html.begin("/%s/", board_tbl["Name"])
   local banner = pico.board.banner.get(board_tbl["Name"])
   if banner then
-    printf("<img id='banner' src='/Media/%s' height='100' />", banner)
+    printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board_tbl["Name"], board_tbl["Name"], html.striphtml(board_tbl["Title"]))
@@ -1777,7 +1777,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
                                  or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)))
   local banner = pico.board.banner.get(board)
   if banner then
-    printf("<img id='banner' src='/Media/%s' height='100' />", banner)
+    printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl["Title"]))
