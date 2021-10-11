@@ -443,7 +443,8 @@ function html.renderpostfiles(post_tbl, unprivileged)
                filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0)
 
         printf("<label>")
-        printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i)
+        printf("<input id='%s-%d-%d' class='invisible' type='checkbox' />",
+               post_tbl["Board"], post_tbl["Number"], i)
         if spoiler then
           printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
         else
