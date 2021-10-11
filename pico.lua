@@ -445,7 +445,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<label>")
         printf("<input id='%s-%d-%d' type='checkbox' hidden />", post_tbl["Board"], post_tbl["Number"], i)
         if spoiler then
-          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' />")
+          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
         else
           printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' />",
                  filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
@@ -453,7 +453,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<div class='post-file-fullsize'></div>")
         printf("</label>")
       elseif spoiler then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width=100 height=70 alt='[SPL]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' /></a>", filename)
       elseif extension == "svg" then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
       elseif extension == "pdf" or extension == "ps" then
@@ -461,11 +461,11 @@ function html.renderpostfiles(post_tbl, unprivileged)
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
                filename, filename, width, height, extension:upper())
       elseif extension == "epub" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/epub.png' width=100 height=70 alt='[EPUB]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/epub.png' width='100' height='70' alt='[EPUB]' /></a>", filename)
       elseif extension == "txt" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width=100 height=70 alt='[TXT]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width='100' height='70' alt='[TXT]' /></a>", filename)
       elseif class == "archive" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width=100 height=70 alt='[ARCH]' /></a>", filename)
+        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width='100' height='70' alt='[ARCH]' /></a>", filename)
       elseif class == "video" or class == "audio" then
         if file["Width"] and file["Height"] then
           printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
@@ -560,7 +560,7 @@ function html.rendercatalog(catalog_tbl)
 
     if post_tbl["File"] then
       if post_tbl["Spoiler"] == 1 then
-        printf("<img alt='***' src='/Static/spoiler.png' width=100 height=70 />")
+        printf("<img alt='***' src='/Static/spoiler.png' width='100' height='70' />")
       else
         local extension = pico.file.extension(post_tbl["File"])
         local class = pico.file.class(extension)
@@ -568,19 +568,19 @@ function html.rendercatalog(catalog_tbl)
         if class == "image" or class == "video" or extension == "pdf" or extension == "ps" or
             (class == "audio" and post_tbl["FileWidth"] and post_tbl["FileHeight"]) then
           if post_tbl["FileWidth"] and post_tbl["FileHeight"] then
-            printf("<img alt='***' src='/Media/icon/%s' width=%d height=%d />",
+            printf("<img alt='***' src='/Media/icon/%s' width='%d' height='%d' />",
                    post_tbl["File"], thumbsize(post_tbl["FileWidth"], post_tbl["FileHeight"], 100, 70))
           else
             printf("<img alt='***' src='/Media/icon/%s' />", post_tbl["File"])
           end
         elseif class == "audio" then
-          printf("<img alt='***' src='/Static/audio.png' width=100 height=70 />")
+          printf("<img alt='***' src='/Static/audio.png' width='100' height='70' />")
         elseif class == "archive" then
-          printf("<img alt='***' src='/Static/archive.png' width=100 height=70 />")
+          printf("<img alt='***' src='/Static/archive.png' width='100' height='70' />")
         elseif extension == "epub" then
-          printf("<img alt='***' src='/Static/epub.png' width=100 height=70 />")
+          printf("<img alt='***' src='/Static/epub.png' width='100' height='70' />")
         elseif extension == "txt" then
-          printf("<img alt='***' src='/Static/txt.png' width=100 height=70 />")
+          printf("<img alt='***' src='/Static/txt.png' width='100' height=70 />")
         end
       end
     else
@@ -704,15 +704,15 @@ function html.form.postform(board_tbl, parent)
   end
 
   printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength=64 /><br />")
-  printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength=64 /><br />")
-  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength=64 />")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength='64' /><br />")
+  printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength='64' /><br />")
+  printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength='64' />")
   printf(  "<input type='submit' value='Post' accesskey='s' /><br />")
-  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' rows=5 cols=35 maxlength=%d></textarea><br />", board_tbl["PostMaxLength"])
+  printf(  "<label for='comment'>Comment</label><textarea id='comment' name='comment' rows='5' cols='35' maxlength='%d'></textarea><br />", board_tbl["PostMaxLength"])
 
   for i = 1, board_tbl["PostMaxFiles"] do
     printf("<label for='file%d'>File %d</label><input id='file%d' name='file%d' type='file' />" ..
-           "<label for='spoiler%d'>Spoiler</label><input id='spoiler%d' name='spoiler%d' type='checkbox' value=1 />%s",
+           "<label for='spoiler%d'>Spoiler</label><input id='spoiler%d' name='spoiler%d' type='checkbox' value='1' />%s",
            i, i, i, i, i, i, i, i ~= board_tbl["PostMaxFiles"] and "<br />" or "")
   end
 
@@ -721,7 +721,7 @@ function html.form.postform(board_tbl, parent)
     local captchaid, captchab64 = pico.captcha.create()
 
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
-    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength=6 required /><br />")
+    printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength='6' required /><br />")
     printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captchab64)
   end
 
@@ -765,24 +765,24 @@ function html.form.board_config(board)
 
   printf("<form method='post'>")
   printf(  "<input type='hidden' name='Name' value='%s' />", board)
-  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength=32 required /><br />", html.striphtml(board_tbl["Title"]))
-  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength=64 /><br />", html.striphtml(board_tbl["Subtitle"] or ""))
-  printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value=1 %s/><br />", board_tbl["Lock"] == 1 and "checked " or "")
-  printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value=1 %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "")
-  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxFiles"])
-  printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' min=0 required /><br />", board_tbl["ThreadMinLength"])
-  printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxLength"])
-  printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxNewlines"])
-  printf(  "<label for='PostMaxDblNewlines'>PostMaxDblNewlines</label><input id='PostMaxDblNewlines' name='PostMaxDblNewlines' type='number' value='%d' min=0 required /><br />", board_tbl["PostMaxDblNewlines"])
-  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["TPHLimit"] or "")
-  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%s' min=1 /><br />", board_tbl["PPHLimit"] or "")
-  printf(  "<label for='ThreadCaptcha'>ThreadCaptcha</label><input id='ThreadCaptcha' name='ThreadCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["ThreadCaptcha"] == 1 and "checked " or "")
-  printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value=1 %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "")
-  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerTPH"] or "")
-  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' min=1 /><br />", board_tbl["CaptchaTriggerPPH"] or "")
-  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%s' min=0 /><br />", board_tbl["BumpLimit"] or "")
-  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%s' min=0 /><br />", board_tbl["PostLimit"] or "")
-  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%s' min=0 /><br />", board_tbl["ThreadLimit"] or "")
+  printf(  "<label for='Title'>Title</label><input id='Title' name='Title' type='text' value='%s' maxlength='32' required /><br />", html.striphtml(board_tbl["Title"]))
+  printf(  "<label for='Subtitle'>Subtitle</label><input id='Subtitle' name='Subtitle' type='text' value='%s' maxlength='64' /><br />", html.striphtml(board_tbl["Subtitle"] or ""))
+  printf(  "<label for='Lock'>Lock</label><input id='Lock' name='Lock' type='checkbox' value='1' %s/><br />", board_tbl["Lock"] == 1 and "checked " or "")
+  printf(  "<label for='DisplayOverboard'>DisplayOverboard</label><input id='DisplayOverboard' name='DisplayOverboard' type='checkbox' value='1' %s/><br />", board_tbl["DisplayOverboard"] == 1 and "checked " or "")
+  printf(  "<label for='PostMaxFiles'>PostMaxFiles</label><input id='PostMaxFiles' name='PostMaxFiles' type='number' value='%d' min='0' required /><br />", board_tbl["PostMaxFiles"])
+  printf(  "<label for='ThreadMinLength'>ThreadMinLength</label><input id='ThreadMinLength' name='ThreadMinLength' type='number' value='%d' min='0' required /><br />", board_tbl["ThreadMinLength"])
+  printf(  "<label for='PostMaxLength'>PostMaxLength</label><input id='PostMaxLength' name='PostMaxLength' type='number' value='%d' min='0' required /><br />", board_tbl["PostMaxLength"])
+  printf(  "<label for='PostMaxNewlines'>PostMaxNewlines</label><input id='PostMaxNewlines' name='PostMaxNewlines' type='number' value='%d' min='0' required /><br />", board_tbl["PostMaxNewlines"])
+  printf(  "<label for='PostMaxDblNewlines'>PostMaxDblNewlines</label><input id='PostMaxDblNewlines' name='PostMaxDblNewlines' type='number' value='%d' min='0' required /><br />", board_tbl["PostMaxDblNewlines"])
+  printf(  "<label for='TPHLimit'>TPHLimit</label><input id='TPHLimit' name='TPHLimit' type='number' value='%s' min='1' /><br />", board_tbl["TPHLimit"] or "")
+  printf(  "<label for='PPHLimit'>PPHLimit</label><input id='PPHLimit' name='PPHLimit' type='number' value='%s' min='1' /><br />", board_tbl["PPHLimit"] or "")
+  printf(  "<label for='ThreadCaptcha'>ThreadCaptcha</label><input id='ThreadCaptcha' name='ThreadCaptcha' type='checkbox' value='1' %s/><br />", board_tbl["ThreadCaptcha"] == 1 and "checked " or "")
+  printf(  "<label for='PostCaptcha'>PostCaptcha</label><input id='PostCaptcha' name='PostCaptcha' type='checkbox' value='1' %s/><br />", board_tbl["PostCaptcha"] == 1 and "checked " or "")
+  printf(  "<label for='CaptchaTriggerTPH'>CaptchaTriggerTPH</label><input id='CaptchaTriggerTPH' name='CaptchaTriggerTPH' type='number' value='%s' min='1' /><br />", board_tbl["CaptchaTriggerTPH"] or "")
+  printf(  "<label for='CaptchaTriggerPPH'>CaptchaTriggerPPH</label><input id='CaptchaTriggerPPH' name='CaptchaTriggerPPH' type='number' value='%s' min='1' /><br />", board_tbl["CaptchaTriggerPPH"] or "")
+  printf(  "<label for='BumpLimit'>BumpLimit</label><input id='BumpLimit' name='BumpLimit' type='number' value='%s' min='0' /><br />", board_tbl["BumpLimit"] or "")
+  printf(  "<label for='PostLimit'>PostLimit</label><input id='PostLimit' name='PostLimit' type='number' value='%s' min='0' /><br />", board_tbl["PostLimit"] or "")
+  printf(  "<label for='ThreadLimit'>ThreadLimit</label><input id='ThreadLimit' name='ThreadLimit' type='number' value='%s' min='0' /><br />", board_tbl["ThreadLimit"] or "")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />")
   printf("</form>")
 end
@@ -818,7 +818,7 @@ end
 function html.form.account_create()
   printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength=128 required /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength='128' required /><br />")
   printf(  "<label for='type'>Type</label>")
   printf(  "<select id='type' name='type'>")
   printf(    "<option value='admin'>Administrator</option>")
@@ -896,7 +896,7 @@ function html.form.globalconfig(varname)
   printf("<label for='value'>%s</label>", varname)
 
   if varname == "frontpage" or varname == "announce" then
-    printf("<textarea id='value' name='value' cols=40 rows=12 autofocus>%s</textarea>",
+    printf("<textarea id='value' name='value' cols='40' rows='12' autofocus>%s</textarea>",
            html.striphtml(pico.global.get(varname) or "") or "")
   elseif varname == "theme" then
     printf("<select id='value' name='value' autofocus>")
@@ -1671,7 +1671,7 @@ local function board_header(board_tbl)
   html.begin("/%s/", board_tbl["Name"])
   local banner = pico.board.banner.get(board_tbl["Name"])
   if banner then
-    printf("<img id='banner' src='/Media/%s' height=100 />", banner)
+    printf("<img id='banner' src='/Media/%s' height='100' />", banner)
   end
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board_tbl["Name"], board_tbl["Name"], html.striphtml(board_tbl["Title"]))
@@ -1777,7 +1777,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
                                  or html.striphtml(thread_tbl[1]["Comment"]:sub(1, 64)))
   local banner = pico.board.banner.get(board)
   if banner then
-    printf("<img id='banner' src='/Media/%s' height=100 />", banner)
+    printf("<img id='banner' src='/Media/%s' height='100' />", banner)
   end
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl["Title"]))
