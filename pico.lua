@@ -599,7 +599,7 @@ function html.rendercatalog(catalog_tbl)
 
     printf("</div>")
 
-    printf("<hr class='invisible'>")
+    printf("<hr class='invisible' />")
   end
 
   printf("</div>")
@@ -656,7 +656,7 @@ function html.renderindex(index_tbl, board)
     printf("<div class='index-thread'>")
     html.renderpost(index_tbl[i][1], overboard)
 
-    printf("<hr class='invisible'>")
+    printf("<hr class='invisible' />")
 
     printf("<span class='index-thread-summary'>")
     if index_tbl[i][1]["RepliesOmitted"] > 0 then
@@ -667,7 +667,7 @@ function html.renderindex(index_tbl, board)
     printf("</span>")
 
     for j = 2, #index_tbl[i] do
-      printf("<hr class='invisible'>")
+      printf("<hr class='invisible' />")
       html.renderpost(index_tbl[i][j], overboard)
     end
 
@@ -678,7 +678,7 @@ end
 function html.renderrecent(recent_tbl, board)
   for i = 1, #recent_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible'>")
+      printf("<hr class='invisible' />")
     end
     html.renderpost(recent_tbl[i], board == "Overboard", true)
   end
@@ -1791,7 +1791,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   for i = 1, #thread_tbl do
     if i ~= 1 then
-      printf("<hr class='invisible'>")
+      printf("<hr class='invisible' />")
     end
     html.renderpost(thread_tbl[i])
   end
