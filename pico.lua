@@ -437,7 +437,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
       printf("</div>")
 
       if class == "image" and extension ~= "svg" then
-        printf("<style>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize " ..
+        printf("<style type='text/css'>input[type='checkbox']#%s-%d-%d:checked + img.post-file-thumbnail + div.post-file-fullsize " ..
                "{background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));}</style>",
                post_tbl["Board"], post_tbl["Number"], i,
                filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0)
