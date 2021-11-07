@@ -230,7 +230,7 @@ function html.picofmt(post_tbl)
     local s = html.striphtml(post_tbl["Comment"])
       :gsub("[\1-\8\11-\31\127]", "")
       :gsub("^\n+", "")
-      :gsub("\n+$", "")
+      :gsub("%s+$", "")
       :gsub("\n", "<br />")
     return s
   end
@@ -345,7 +345,7 @@ function html.picofmt(post_tbl)
     :gsub("\1", "&lt;")
 
     :gsub("^\n+", "")
-    :gsub("\n+$", "")
+    :gsub("%s+$", "")
     :gsub("\n", "<br />")
 
   return s
