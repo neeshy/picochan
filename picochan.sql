@@ -212,10 +212,16 @@ BEGIN
            AND NOT Sticky);
 END;
 
-CREATE TRIGGER decrement_replycount BEFORE DELETE ON Posts
+CREATE TRIGGER unbump_thread AFTER DELETE ON Posts
   WHEN OLD.Parent IS NOT NULL
 BEGIN
   UPDATE Threads SET ReplyCount = ReplyCount - 1 WHERE Board = OLD.Board AND Number = OLD.Parent;
+  UPDATE Threads SET LastBumpDate =
+    (SELECT MAX(Date) FROM Posts WHERE Board = OLD.Board AND (Number = OLD.Parent OR Parent = OLD.Parent)
+      AND (Email IS NULL OR NOT (Email = 'sage' OR Email LIKE 'sage %' OR Email LIKE '% sage' OR Email LIKE '% sage %')))
+  WHERE Board = OLD.Board AND Number = OLD.Parent AND NOT Autosage
+   AND ((SELECT BumpLimit FROM Boards WHERE Name = OLD.Board) IS NULL
+    OR ReplyCount <= (SELECT BumpLimit FROM Boards WHERE Name = OLD.Board));
 END;
 
 CREATE TRIGGER delete_old_sessions BEFORE INSERT ON Sessions
