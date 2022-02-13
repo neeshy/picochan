@@ -209,9 +209,9 @@ CREATE TRIGGER slide_thread BEFORE INSERT ON Threads
 BEGIN
   DELETE FROM Posts
   WHERE Board = NEW.Board AND Number =
-    (SELECT Number FROM Threads
+    (SELECT MIN(Number) FROM Threads
      WHERE LastBumpDate = (SELECT MIN(LastBumpDate) FROM Threads WHERE Board = NEW.Board AND NOT Sticky)
-           AND NOT Sticky ORDER BY Number ASC LIMIT 1);
+           AND NOT Sticky);
 END;
 
 CREATE TRIGGER decrement_replycount BEFORE DELETE ON Posts

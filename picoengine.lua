@@ -507,7 +507,7 @@ function pico.board.stats.totalposts(board)
 end
 
 function pico.board.stats.lastbumpdate(board)
-  return db:r1("SELECT LastBumpDate FROM Threads WHERE Board = ? ORDER BY LastBumpDate DESC LIMIT 1", board)
+  return db:r1("SELECT MAX(LastBumpDate) FROM Threads WHERE Board = ?", board)
 end
 
 --
