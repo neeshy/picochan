@@ -162,12 +162,10 @@ BEGIN
   UPDATE Posts SET Date = STRFTIME('%s', 'now') WHERE NEW.Date = 0 AND ROWID = NEW.ROWID;
   UPDATE Threads SET ReplyCount = ReplyCount + 1 WHERE Board = NEW.Board AND Number = NEW.Parent;
   UPDATE Threads SET LastBumpDate = (SELECT Date FROM Posts WHERE ROWID = NEW.ROWID)
-  WHERE Board = NEW.Board AND Number = NEW.Parent
+  WHERE Board = NEW.Board AND Number = NEW.Parent AND NOT Autosage
    AND (NEW.Email IS NULL OR NOT (NEW.Email = 'sage' OR NEW.Email LIKE 'sage %' OR NEW.Email LIKE '% sage' OR NEW.Email LIKE '% sage %'))
-   AND NOT (SELECT Autosage FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
    AND ((SELECT BumpLimit FROM Boards WHERE Name = NEW.Board) IS NULL
-    OR (SELECT ReplyCount FROM Threads WHERE Board = NEW.Board AND Number = NEW.Parent)
-       <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board));
+    OR ReplyCount <= (SELECT BumpLimit FROM Boards WHERE Name = NEW.Board));
 END;
 
 CREATE TRIGGER auto_enable_captcha_per_thread AFTER INSERT ON Posts
