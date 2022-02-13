@@ -367,6 +367,7 @@ function html.modlinks(post_tbl)
   else
     printf("<a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
     printf("<a href='/Mod/post/move/%s/%d' title='Move Thread'>[M]</a>", board, number)
+    printf("<a href='/Mod/post/merge/%s/%d' title='Merge Thread'>[R]</a>", board, number)
     printf("<a href='/Mod/post/sticky/%s/%d' title='Sticky Thread'>[S]</a>", board, number)
     printf("<a href='/Mod/post/lock/%s/%d' title='Lock Thread'>[L]</a>", board, number)
     printf("<a href='/Mod/post/autosage/%s/%d' title='Autosage Thread'>[A]</a>", board, number)
@@ -954,6 +955,14 @@ function html.form.mod_move_thread()
   printf("</form>")
 end
 
+function html.form.mod_merge_thread()
+  printf("<form method='post'>")
+  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='number' min='1' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
+end
+
 function html.form.mod_multidelete()
   printf("<form method='post'>")
   printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
@@ -1421,6 +1430,12 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
           html.error("Action failed", "Invalid request")
         end
         result, msg = pico.thread.move(board, post, cgi.POST["destination"], cgi.POST["reason"])
+      elseif operation == "merge" then
+        if not (tbl_validate(cgi.POST, "destination") and tonumber(cgi.POST["destination"])) then
+          cgi.headers["Status"] = "400 Bad Request"
+          html.error("Action failed", "Invalid request")
+        end
+        result, msg = pico.thread.merge(board, post, tonumber(cgi.POST["destination"]), cgi.POST["reason"])
       else
         result, msg = pico.thread.toggle(operation, board, post, cgi.POST["reason"])
       end
@@ -1432,6 +1447,8 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
 
         if operation == "move" then
           cgi.headers["Location"] = "/" .. cgi.POST["destination"]
+        elseif operation == "merge" then
+          cgi.headers["Location"] = "/" .. board .. "/" .. cgi.POST["destination"]
         elseif operation == "delete" then
           cgi.headers["Location"] =
             post_tbl["Parent"] and ("/" .. board .. "/" .. post_tbl["Parent"])
@@ -1455,7 +1472,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
                  operation == "autosage" or
                  operation == "cycle"
   local toggle = thread or operation == "spoiler"
-  thread = (thread or operation == "move" or operation == "delete") and
+  thread = (thread or operation == "move" or operation == "merge" or operation == "delete") and
            not post_tbl["Parent"]
 
   printf("You are about to %s%s the following %s:",
@@ -1467,6 +1484,8 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
 
   if operation == "move" then
     html.form.mod_move_thread()
+  elseif operation == "merge" then
+    html.form.mod_merge_thread()
   else
     html.form.mod_action_reason()
   end
@@ -1477,6 +1496,7 @@ end
 handlers["/Mod/post/(unlink)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(spoiler)/([%l%d]+)/(%d+)/([%l%d.]+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(move)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
+handlers["/Mod/post/(merge)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(sticky)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(lock)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]
 handlers["/Mod/post/(autosage)/([%l%d]+)/(%d+)"] = handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"]

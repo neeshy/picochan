@@ -1070,6 +1070,24 @@ function pico.thread.move(board, number, newboard, reason)
   return true, "Thread moved successfully"
 end
 
+function pico.thread.merge(board, number, newthread, reason)
+  local auth, msg = permit("admin gvol bo lvol", "post", board)
+  if not auth then return auth, msg end
+
+  if not pico.thread.exists(board, number) then
+    return false, "Source thread does not exist"
+  elseif not pico.thread.exists(board, newthread) then
+    return false, "Destination thread does not exist"
+  end
+
+  db:e("BEGIN TRANSACTION")
+  db:e("UPDATE Posts SET Parent = ? WHERE Board = ? AND (Number = ? OR Parent = ?)", newthread, board, number, number)
+  db:e("DELETE FROM Threads WHERE Board = ? AND Number = ?", board, number)
+  db:e("END TRANSACTION")
+  pico.log.insert(board, "Merged thread /%s/%d into /%s/%d for reason: %s", board, number, board, newthread, reason)
+  return true, "Thread merged successfully"
+end
+
 function pico.thread.exists(board, number)
   return db:b("SELECT TRUE FROM Threads WHERE Board = ? AND Number = ?", board, number)
 end
