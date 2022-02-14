@@ -351,7 +351,7 @@ img.post-file-thumbnail, video.post-video, audio.post-audio {
     float: left;
 }
 
-img.post-file-thumbnail, video.post-video, audio.post-audio, div.post-file-fullsize {
+img.post-file-thumbnail, img.post-file-fullsize, video.post-video, audio.post-audio {
     margin-top: 1.3ch;
     margin-right: 1.3ch;
 }
@@ -364,24 +364,18 @@ input[type=checkbox]:checked + img.post-file-thumbnail {
     display: none;
 }
 
-input[type=checkbox]:checked + img.post-file-thumbnail + div.post-file-fullsize {
+input[type=checkbox]:checked + img.post-file-thumbnail + img.post-file-fullsize {
     display: block;
 }
 
-div.post-file-fullsize {
+img.post-file-fullsize {
     display: none;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    background-origin: content-box;
-    max-width: 90vw;
-    max-height: 90vh;
-    float: right;
+    max-width: 100%;
     margin-bottom: 1.3ch;
     cursor: pointer;
 }
 
-div.post-file-single div.post-file-fullsize {
+div.post-file-single img.post-file-fullsize {
     float: left;
 }
 

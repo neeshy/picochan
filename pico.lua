@@ -447,8 +447,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
           printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[THUMB]' />",
                  filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
         end
-        printf("<div class='post-file-fullsize' style=\"background-image: url('/Media/%s'); width: calc(90vh * (%d/%d)); height: calc(90vw * (%d/%d));\"></div>",
-               filename, file["Width"] or 0, file["Height"] or 0, file["Height"] or 0, file["Width"] or 0)
+        printf("<img class='post-file-fullsize' src='/Media/%s' alt='[IMG]' loading='lazy' />", filename)
         printf("</label>")
       elseif spoiler then
         printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' /></a>", filename)
