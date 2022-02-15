@@ -400,23 +400,21 @@ function html.renderpostfiles(post_tbl, unprivileged)
   end
 
   local file_tbl = post_tbl["Files"]
-  local truncate = #file_tbl == 1 and 64 or 24
 
   for i = 1, #file_tbl do
     local file = file_tbl[i]
     local filename = file["Name"]
     local downloadname = file["DownloadName"]
-    downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename
     local spoiler = file["Spoiler"] == 1
     local extension = pico.file.extension(filename)
     local class = pico.file.class(extension)
 
     printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "")
     printf("<div class='post-file-info'>")
-    printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
-           filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
+    printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s</a><br />%s%s",
+           filename, html.striphtml(downloadname),
            formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "")
-    printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension)
+    printf(" <a href='/Media/%s' title='Download file' download='%s'>(dl)</a>", filename, html.striphtml(downloadname))
 
     if not unprivileged
         and pico.account.current

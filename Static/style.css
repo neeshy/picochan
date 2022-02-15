@@ -303,6 +303,18 @@ div.post-file, div.post-file-single {
     overflow-wrap: anywhere;
 }
 
+div.post-file-info>a:first-child {
+    display: inline-block;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+div.post-file-info>a:first-child:hover {
+    max-width: 100%;
+}
+
 img.post-file-thumbnail {
     cursor: pointer;
 }
