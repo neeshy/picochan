@@ -134,7 +134,7 @@ function html.list.begin()
   printf("<ul>")
 end
 
-function html.list.finish(ordered)
+function html.list.finish()
   printf("</ul>")
 end
 
@@ -649,7 +649,7 @@ function html.renderpages(prefix, page, pagecount)
 end
 
 function html.renderindex(index_tbl, board)
-  overboard = board == "Overboard"
+  local overboard = board == "Overboard"
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>")
     html.renderpost(index_tbl[i][1], overboard)
@@ -1004,7 +1004,7 @@ end
 
 local function tbl_validate(tbl, ...)
   for i = 1, select("#", ...) do
-    v = tbl[select(i, ...)]
+    local v = tbl[select(i, ...)]
     if v == nil or v == "" then
       return false
     end
@@ -1407,7 +1407,6 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
   html.redheader("Modify or Delete a Post")
   html.container.begin()
 
-  local board_tbl = pico.board.tbl(board)
   local post_tbl = pico.post.tbl(board, post)
   if not post_tbl then
     html.error("Action failed", "Cannot find post %d on board %s", post, board)
@@ -1860,7 +1859,7 @@ handlers["/Post"] = function()
     html.error("Action failed", "Invalid request")
   end
 
-  board_tbl = pico.board.tbl(cgi.POST["board"])
+  local board_tbl = pico.board.tbl(cgi.POST["board"])
   if not board_tbl then
     cgi.headers["Status"] = "400 Bad Request"
     html.error("Board Not Found", "The board you specified does not exist.")

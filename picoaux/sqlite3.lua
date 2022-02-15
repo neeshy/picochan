@@ -279,8 +279,9 @@ end
 
 function metatable_stmt:bind_values(...)
   for i = 1, select("#", ...) do
-    if self:bind(i, select(i, ...)) ~= sqlite3.OK then
-      return err
+    local ret = self:bind(i, select(i, ...))
+    if ret ~= sqlite3.OK then
+      return ret
     end
   end
 

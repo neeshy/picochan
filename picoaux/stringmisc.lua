@@ -3,19 +3,17 @@
 require("picoaux.mathmisc")
 
 function string.random(length, pattern)
-  local length = length or 64
-  local pattern = pattern or "%w"
+  length = length or 64
+  pattern = pattern or "%w"
   local result = ""
-  local ascii = {}
-  local dict = ""
 
+  local ascii = {}
   for i = 0, 255 do
     ascii[#ascii + 1] = string.char(i)
   end
-
   ascii = table.concat(ascii)
-  dict = ascii:gsub("[^" .. pattern .. "]", "")
 
+  local dict = ascii:gsub("[^" .. pattern .. "]", "")
   while string.len(result) < length do
     local randidx = math.csrandom(1, string.len(dict))
     local randbyte = dict:byte(randidx)

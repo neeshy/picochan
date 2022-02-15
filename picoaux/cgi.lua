@@ -31,7 +31,7 @@ local function unescape(s)
 end
 
 local function parsequery(s)
-  -- Convert pluses to spaces, and split on both & and 
+  -- Convert pluses to spaces, and split on both & and ;
   local query = s:gsub("%+", " "):gsub(";", "&"):tokenize("&")
   local ret = {}
   for i = 1, #query do

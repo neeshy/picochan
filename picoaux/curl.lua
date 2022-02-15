@@ -419,7 +419,7 @@ function curl.multi_request(urls)
   -- copy urls table
   local u = {}
   for i = 1, #urls do
-    v = urls[i]
+    local v = urls[i]
     assert(type(v) == "string", string.format("incorrect datatype for element %d of parameter 'urls'", i))
     u[i] = v
   end

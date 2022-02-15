@@ -670,7 +670,7 @@ function pico.file.add(f)
   end
 
   if (not width) or (not height) then
-    width, height = nil
+    width, height = nil, nil
   end
 
   db:e("INSERT INTO Files VALUES (?, ?, ?, ?)", filename, size, width, height)
@@ -898,14 +898,14 @@ function pico.post.multidelete(board, include, exclude, reason)
   end
 
   for i = 1, #inclist do
-    result, msg = genspec(inclist[i], sql, sqlp)
+    local result, msg = genspec(inclist[i], sql, sqlp)
     if not result then return result, msg end
   end
   sql[#sql + 1] = ") AND NOT (FALSE"
   if exclude then
     local exclist = exclude:tokenize()
     for i = 1, #exclist do
-      result, msg = genspec(exclist[i], sql, sqlp)
+      local result, msg = genspec(exclist[i], sql, sqlp)
       if not result then return result, msg end
     end
   end
@@ -923,7 +923,7 @@ function pico.post.pattdelete(pattern, reason)
   if not pattern or #pattern < 6 then return false, "Invalid or too short include pattern" end
 
   db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", pattern)
-  pico.log.insert(board, "Deleted posts matching pattern '%s' for reason: %s", pattern, reason)
+  pico.log.insert(nil, "Deleted posts matching pattern '%s' for reason: %s", pattern, reason)
   return true, "Posts deleted successfully"
 end
 
@@ -1105,7 +1105,7 @@ end
 
 function pico.log.retrieve(page)
   page = tonumber(page) or 1
-  pagesize = pico.global.get("logpagesize")
+  local pagesize = pico.global.get("logpagesize")
   return db:q("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize),
          db:r1("SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Logs", pagesize)
 end
