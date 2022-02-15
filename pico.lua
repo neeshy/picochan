@@ -402,78 +402,76 @@ function html.renderpostfiles(post_tbl, unprivileged)
   local file_tbl = post_tbl["Files"]
   local truncate = #file_tbl == 1 and 64 or 24
 
-  if file_tbl then
-    for i = 1, #file_tbl do
-      local file = file_tbl[i]
-      local filename = file["Name"]
-      local downloadname = file["DownloadName"]
-      downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename
-      local spoiler = file["Spoiler"] == 1
-      local extension = pico.file.extension(filename)
-      local class = pico.file.class(extension)
+  for i = 1, #file_tbl do
+    local file = file_tbl[i]
+    local filename = file["Name"]
+    local downloadname = file["DownloadName"]
+    downloadname = (downloadname and downloadname ~= "") and downloadname:gsub("%.([^.]-)$", "") or filename
+    local spoiler = file["Spoiler"] == 1
+    local extension = pico.file.extension(filename)
+    local class = pico.file.class(extension)
 
-      printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "")
-      printf("<div class='post-file-info'>")
-      printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
-             filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
-             formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "")
-      printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension)
+    printf("<div class='post-file%s'>", #file_tbl == 1 and "-single" or "")
+    printf("<div class='post-file-info'>")
+    printf("<a href='/Media/%s' title='Open file in new tab' target='_blank'>%s.%s</a><br />%s%s",
+           filename, html.striphtml(#downloadname > truncate and downloadname:sub(1, truncate) .. ".." or downloadname), extension,
+           formatfilesize(file["Size"]), file["Width"] and (" " .. file["Width"] .. "x" .. file["Height"]) or "")
+    printf(" <a href='/Media/%s' title='Download file' download='%s.%s'>(dl)</a>", filename, html.striphtml(downloadname), extension)
 
-      if not unprivileged
-          and pico.account.current
-          and (not pico.account.current["Board"] or pico.account.current["Board"] == post_tbl["Board"]) then
-        printf(" <span class='mod-links'>")
-        printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename)
-        printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
-               post_tbl["Board"], post_tbl["Number"], filename)
+    if not unprivileged
+        and pico.account.current
+        and (not pico.account.current["Board"] or pico.account.current["Board"] == post_tbl["Board"]) then
+      printf(" <span class='mod-links'>")
+      printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
+             post_tbl["Board"], post_tbl["Number"], filename)
+      printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
+             post_tbl["Board"], post_tbl["Number"], filename)
 
-        if not pico.account.current["Board"] then
-          printf("<a href='/Mod/file/delete/%s' title='Delete File'>[D]</a>",
-                 filename)
-        end
-
-        printf("</span>")
+      if not pico.account.current["Board"] then
+        printf("<a href='/Mod/file/delete/%s' title='Delete File'>[D]</a>",
+               filename)
       end
 
-      printf("</div>")
-
-      if class == "image" and extension ~= "svg" then
-        printf("<label>")
-        printf("<input class='invisible' type='checkbox' />",
-               post_tbl["Board"], post_tbl["Number"], i)
-        if spoiler then
-          printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
-        else
-          printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[THUMB]' />",
-                 filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
-        end
-        printf("<img class='post-file-fullsize' src='/Media/%s' alt='[IMG]' loading='lazy' />", filename)
-        printf("</label>")
-      elseif spoiler then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' /></a>", filename)
-      elseif extension == "svg" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
-      elseif extension == "pdf" or extension == "ps" then
-        local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200)
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
-               filename, filename, width, height, extension:upper())
-      elseif extension == "epub" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/epub.png' width='100' height='70' alt='[EPUB]' /></a>", filename)
-      elseif extension == "txt" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width='100' height='70' alt='[TXT]' /></a>", filename)
-      elseif class == "archive" then
-        printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width='100' height='70' alt='[ARCH]' /></a>", filename)
-      elseif class == "video" or class == "audio" then
-        if file["Width"] and file["Height"] then
-          printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
-        else
-          printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
-        end
-      end
-
-      printf("</div>")
+      printf("</span>")
     end
+
+    printf("</div>")
+
+    if class == "image" and extension ~= "svg" then
+      printf("<label>")
+      printf("<input class='invisible' type='checkbox' />",
+             post_tbl["Board"], post_tbl["Number"], i)
+      if spoiler then
+        printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
+      else
+        printf("<img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[THUMB]' />",
+               filename, thumbsize(file["Width"] or 0, file["Height"] or 0, 200, 200))
+      end
+      printf("<img class='post-file-fullsize' src='/Media/%s' alt='[IMG]' loading='lazy' />", filename)
+      printf("</label>")
+    elseif spoiler then
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' /></a>", filename)
+    elseif extension == "svg" then
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' alt='[SVG]' /></a>", filename, filename)
+    elseif extension == "pdf" or extension == "ps" then
+      local width, height = thumbsize(file["Width"] or 200, file["Height"] or 200, 200, 200)
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Media/thumb/%s' width='%d' height='%d' alt='[%s]' /></a>",
+             filename, filename, width, height, extension:upper())
+    elseif extension == "epub" then
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/epub.png' width='100' height='70' alt='[EPUB]' /></a>", filename)
+    elseif extension == "txt" then
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/txt.png' width='100' height='70' alt='[TXT]' /></a>", filename)
+    elseif class == "archive" then
+      printf("<a href='/Media/%s' target='_blank'><img class='post-file-thumbnail' src='/Static/archive.png' width='100' height='70' alt='[ARCH]' /></a>", filename)
+    elseif class == "video" or class == "audio" then
+      if file["Width"] and file["Height"] then
+        printf("<video class='post-video' controls loop preload='none' src='/Media/%s' poster='/Media/thumb/%s'></video>", filename, filename)
+      else
+        printf("<audio class='post-audio' controls loop preload='none' src='/Media/%s'></audio>", filename)
+      end
+    end
+
+    printf("</div>")
   end
 end
 
