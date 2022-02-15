@@ -1,7 +1,6 @@
 body {
     font-family: monospace;
-    margin: 0;
-    padding: 0 1.3ch 1.3ch 1.3ch;
+    margin: 1.3ch;
 }
 
 a, a:visited {
@@ -24,7 +23,6 @@ nav#topbar {
 }
 
 nav#topbar>ul {
-    list-style-type: none;
     margin: 0;
     padding: 0;
 }
@@ -36,10 +34,6 @@ nav#topbar>ul>li {
 
 nav#topbar>ul>li.system>a {
     font-weight: bold;
-}
-
-nav#topbar>ul>li.board>a {
-    font-weight: normal;
 }
 
 nav#topbar>ul>span#logged-in-notification {
@@ -103,7 +97,6 @@ h2.barheader {
 
 div.container ul {
     list-style: none;
-    margin: 0;
     padding-left: 16px;
 }
 
@@ -127,38 +120,33 @@ th, td {
 }
 
 form label {
-    text-align: left;
     display: inline-block;
     min-width: 18ch;
     vertical-align: top;
     margin-right: 5px;
+    margin-bottom: 5px;
     padding: 3px 5px;
 }
 
-input {
+form input,
+form input[type=file]::file-selector-button {
     font-family: inherit;
 }
 
 form input[type=text],
 form input[type=password],
 form input[type=number],
-form input[type=checkbox] {
-    height: 2.15ch;
-    margin-right: 5px;
-    margin-bottom: 5px;
+form input[type=checkbox],
+form input[type=submit],
+form input[type=file]::file-selector-button,
+form select,
+form textarea {
     border-width: 1px;
     border-style: solid;
 }
 
-form input[type=file]::file-selector-button {
-    border-width: 1px;
-    border-style: solid;
-}
-
-form input[type=submit] {
-    padding: 1px 5px;
-    border-width: 1px;
-    border-style: solid;
+form textarea {
+    resize: both;
 }
 
 form input[type=radio] {
@@ -175,21 +163,6 @@ form input[type=radio] + label {
 form input[type=radio] + label>img {
     display: block;
     max-height: 100px;
-}
-
-form select {
-    margin-right: 5px;
-    margin-bottom: 5px;
-    border-width: 1px;
-    border-style: solid;
-}
-
-form textarea {
-    margin-right: 5px;
-    margin-bottom: 5px;
-    border-width: 1px;
-    border-style: solid;
-    resize: both;
 }
 
 div.post-container + form {
@@ -223,15 +196,19 @@ form#postform label {
 
 form#postform textarea {
     width: calc(100% - 7ch - 25px);
-    max-width: calc(100% - 7ch - 20px);
+    min-width: calc(100% - 7ch - 25px);
+    max-width: calc(100% - 7ch - 25px);
     margin: 0 0 5px 0;
+}
+
+form#postform input[type=submit] {
+    margin-left: 5px;
 }
 
 form#postform input[type=file] {
     max-width: 300px;
     vertical-align: top;
     margin-right: 5px;
-    margin-bottom: 5px;
 }
 
 a#new-post {
@@ -247,7 +224,6 @@ hr {
     border: none;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    clear: both;
 }
 
 div.catalog-container {
@@ -263,21 +239,16 @@ div.catalog-thread {
     padding: 10px;
     border-width: 1px;
     border-style: solid;
-    text-align: center;
     overflow: auto;
     scrollbar-width: thin;
 }
 
-div.catalog-thread-info {
+div.catalog-thread-info, div.catalog-thread-subject {
     font-weight: bold;
 }
 
 div.catalog-thread-lastbumpdate {
     font-size: 7.5pt;
-}
-
-div.catalog-thread-subject {
-    font-weight: bold;
 }
 
 div.index-thread span.index-thread-summary {
@@ -319,23 +290,17 @@ div.post-header span.post-number a {
     text-decoration: none;
 }
 
-div.post-header a.referrer {
+div.post-header a.referrer, div.post-file-info {
     font-size: 7.5pt;
 }
 
 div.post-file {
     display: inline-block;
     margin: 0 1.3ch 1.3ch 0;
-    overflow-wrap: anywhere;
 }
 
-div.post-file-single {
-    display: inline;
+div.post-file, div.post-file-single {
     overflow-wrap: anywhere;
-}
-
-div.post-file-info {
-    font-size: 7.5pt;
 }
 
 img.post-file-thumbnail {
