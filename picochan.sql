@@ -267,4 +267,3 @@ INSERT INTO GlobalConfig VALUES ('indexwindowsize', 5);
 INSERT INTO GlobalConfig VALUES ('recentpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('logpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('maxfilesize', 16777216);
-INSERT INTO GlobalConfig VALUES ('url', 'http://localhost');

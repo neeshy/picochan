@@ -33,6 +33,7 @@ if jit.os == "BSD" then
 end
 
 local sitename = pico.global.get("sitename") or "Picochan"
+local siteurl = (os.getenv("REQUEST_SCHEME") or "http") .. "://" .. (os.getenv("HTTP_HOST") or "localhost")
 local defaultpostname = pico.global.get("defaultpostname") or "Anonymous"
 local defaultboardview = pico.global.get("defaultboardview") or "catalog"
 
@@ -1029,7 +1030,6 @@ handlers["/Mod"] = function()
   html.list.begin()
   html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>")
   html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>")
-  html.list.entry("<a href='/Mod/global/url'>Change site URL</a>")
   html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>")
   html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>")
   html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>")
@@ -1905,7 +1905,7 @@ end
 
 handlers["/webring.json"] = function()
   cgi.headers["Content-Type"] = "application/json"
-  printf("%s", json.encode(pico.webring.tbl()))
+  printf("%s", json.encode(pico.webring.tbl(sitename, siteurl)))
 end
 
 local path_info = os.getenv("PATH_INFO")

@@ -1172,17 +1172,35 @@ end
 -- WEBRING FUNCTIONS
 --
 
-function pico.webring.tbl()
+function pico.webring.tbl(sitename, siteurl)
   local tbl = {}
-  tbl["name"] = pico.global.get("sitename")
-  tbl["url"] = pico.global.get("url")
-  tbl["endpoint"] = tbl["url"] .. "/webring.json"
-  tbl["logo"] = {tbl["url"] .. "/Static/logo.png"}
+  if sitename and siteurl then
+    tbl["name"] = sitename
+    tbl["url"] = siteurl
+    tbl["endpoint"] = siteurl .. "/webring.json"
+    tbl["logo"] = {siteurl .. "/Static/logo.png"}
+
+    tbl["boards"] = {}
+    local boards = pico.board.list()
+    for i = 1, #boards do
+      local board = {}
+      local board_tbl = boards[i]
+      board["uri"] = board_tbl["Name"]
+      board["title"] = board_tbl["Title"]
+      board["subtitle"] = board_tbl["Subtitle"]
+      board["path"] = siteurl .. "/" .. board_tbl["Name"] .. "/"
+      board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1)
+      board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"])
+      board["tags"] = {}
+      local lastbumpdate = pico.board.stats.lastbumpdate(board_tbl["Name"])
+      board["lastPostTimestamp"] = lastbumpdate and os.date("!%Y-%m-%dT%H:%M:%SZ", lastbumpdate)
+      tbl["boards"][i] = board
+    end
+  end
 
   tbl["following"] = {}
   tbl["known"] = {}
   tbl["blacklist"] = {}
-  tbl["boards"] = {}
 
   local hosts = db:q("SELECT * FROM Webring")
   for i = 1, #hosts do
@@ -1192,22 +1210,6 @@ function pico.webring.tbl()
     if type == "following" then
       tbl["known"][#tbl["known"] + 1] = host["Endpoint"]
     end
-  end
-
-  local boards = pico.board.list()
-  for i = 1, #boards do
-    local board = {}
-    local board_tbl = boards[i]
-    board["uri"] = board_tbl["Name"]
-    board["title"] = board_tbl["Title"]
-    board["subtitle"] = board_tbl["Subtitle"]
-    board["path"] = tbl["url"] .. "/" .. board_tbl["Name"] .. "/"
-    board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1)
-    board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"])
-    board["tags"] = {}
-    local lastbumpdate = pico.board.stats.lastbumpdate(board_tbl["Name"])
-    board["lastPostTimestamp"] = lastbumpdate and os.date("!%Y-%m-%dT%H:%M:%SZ", lastbumpdate)
-    tbl["boards"][i] = board
   end
 
   return tbl
