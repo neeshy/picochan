@@ -224,6 +224,7 @@ hr {
     border: none;
     border-bottom-width: 1px;
     border-bottom-style: solid;
+    clear: both;
 }
 
 div.catalog-container {
