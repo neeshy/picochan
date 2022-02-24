@@ -376,6 +376,10 @@ span.redtext {
     letter-spacing: -0.7px;
 }
 
+span.spoiler {
+    cursor: none;
+}
+
 code {
     margin: 1ch 0;
     padding: 1ch;
