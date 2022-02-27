@@ -599,6 +599,40 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>")
 end
 
+function html.renderindex(index_tbl, board)
+  local overboard = board == "Overboard"
+  for i = 1, #index_tbl do
+    printf("<div class='index-thread'>")
+    html.renderpost(index_tbl[i][1], overboard)
+
+    printf("<hr class='invisible' />")
+
+    printf("<span class='index-thread-summary'>")
+    if index_tbl[i][1]["RepliesOmitted"] > 0 then
+      printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"])
+    end
+
+    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
+    printf("</span>")
+
+    for j = 2, #index_tbl[i] do
+      printf("<hr class='invisible' />")
+      html.renderpost(index_tbl[i][j], overboard)
+    end
+
+    printf("</div>")
+  end
+end
+
+function html.renderrecent(recent_tbl, board)
+  for i = 1, #recent_tbl do
+    if i ~= 1 then
+      printf("<hr class='invisible' />")
+    end
+    html.renderpost(recent_tbl[i], board == "Overboard", true)
+  end
+end
+
 function html.renderpages(prefix, page, pagecount)
   local start, stop
   if page <= 5 then
@@ -642,40 +676,6 @@ function html.renderpages(prefix, page, pagecount)
     printf("<div class='float-right'>[Next] [Last]</div>")
   end
   printf("</div>")
-end
-
-function html.renderindex(index_tbl, board)
-  local overboard = board == "Overboard"
-  for i = 1, #index_tbl do
-    printf("<div class='index-thread'>")
-    html.renderpost(index_tbl[i][1], overboard)
-
-    printf("<hr class='invisible' />")
-
-    printf("<span class='index-thread-summary'>")
-    if index_tbl[i][1]["RepliesOmitted"] > 0 then
-      printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"])
-    end
-
-    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
-    printf("</span>")
-
-    for j = 2, #index_tbl[i] do
-      printf("<hr class='invisible' />")
-      html.renderpost(index_tbl[i][j], overboard)
-    end
-
-    printf("</div>")
-  end
-end
-
-function html.renderrecent(recent_tbl, board)
-  for i = 1, #recent_tbl do
-    if i ~= 1 then
-      printf("<hr class='invisible' />")
-    end
-    html.renderpost(recent_tbl[i], board == "Overboard", true)
-  end
 end
 
 function html.brc(title, redheader)
