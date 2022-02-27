@@ -599,8 +599,7 @@ function html.rendercatalog(catalog_tbl)
   printf("</div>")
 end
 
-function html.renderindex(index_tbl, board)
-  local overboard = board == "Overboard"
+function html.renderindex(index_tbl, overboard)
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>")
     html.renderpost(index_tbl[i][1], overboard)
@@ -624,12 +623,12 @@ function html.renderindex(index_tbl, board)
   end
 end
 
-function html.renderrecent(recent_tbl, board)
+function html.renderrecent(recent_tbl, overboard)
   for i = 1, #recent_tbl do
     if i ~= 1 then
       printf("<hr class='invisible' />")
     end
-    html.renderpost(recent_tbl[i], board == "Overboard", true)
+    html.renderpost(recent_tbl[i], overboard, true)
   end
 end
 
@@ -1723,7 +1722,7 @@ local function board_view(board_func, render_func, view)
     else
       board_header(pico.board.tbl(board))
     end
-    render_func(tbl)
+    render_func(tbl, overboard)
     if pagecount > 1 then
       printf("<hr />")
       html.renderpages(string.format("/%s/%s", board, view), page, pagecount)
