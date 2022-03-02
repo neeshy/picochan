@@ -13,6 +13,12 @@ local html = {}
       html.list = {}
       html.container = {}
       html.form = {}
+local views = {
+  THREAD = 0,
+  INDEX = 1,
+  RECENT = 2,
+  MOD_ACTION = 3,
+}
 
 --
 -- INITIALIZATION
@@ -473,7 +479,9 @@ function html.renderpostfiles(post_tbl, unprivileged)
   end
 end
 
-function html.renderpost(post_tbl, overboard, separate, unprivileged)
+function html.renderpost(post_tbl, overboard, view)
+  local separate = view == views.RECENT or view == views.MOD_ACTION
+
   printf("<div%s class='post-container'>",
          overboard and "" or string.format(" id='%d'", post_tbl["Number"]))
   printf("<div class='post%s'>", (separate or post_tbl["Parent"]) and "" or " thread")
@@ -525,8 +533,11 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
          post_tbl["Board"], post_tbl["Parent"] or post_tbl["Number"], post_tbl["Number"])
 
   html.threadflags(post_tbl)
-  if not unprivileged then
+  if view ~= views.MOD_ACTION then
     html.modlinks(post_tbl)
+  end
+  if view == views.INDEX and not post_tbl["Parent"] then
+    printf(" <a href='/%s/%d' title='Open Thread'>[Open]</a>", post_tbl["Board"], post_tbl["Number"])
   end
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"])
@@ -536,7 +547,7 @@ function html.renderpost(post_tbl, overboard, separate, unprivileged)
   end
 
   printf("</div>")
-  html.renderpostfiles(post_tbl, unprivileged)
+  html.renderpostfiles(post_tbl, view == views.MOD_ACTION)
   printf("<div class='post-comment'>%s</div>", html.picofmt(post_tbl))
   printf("</div></div>")
 end
@@ -602,7 +613,7 @@ end
 function html.renderindex(index_tbl, overboard)
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>")
-    html.renderpost(index_tbl[i][1], overboard)
+    html.renderpost(index_tbl[i][1], overboard, views.INDEX)
 
     printf("<hr class='invisible' />")
 
@@ -615,7 +626,7 @@ function html.renderindex(index_tbl, overboard)
 
     for j = 2, #index_tbl[i] do
       printf("<hr class='invisible' />")
-      html.renderpost(index_tbl[i][j], overboard)
+      html.renderpost(index_tbl[i][j], overboard, views.INDEX)
     end
 
     printf("</div>")
@@ -627,7 +638,7 @@ function html.renderrecent(recent_tbl, overboard)
     if i ~= 1 then
       printf("<hr class='invisible' />")
     end
-    html.renderpost(recent_tbl[i], overboard, true)
+    html.renderpost(recent_tbl[i], overboard, views.RECENT)
   end
 end
 
@@ -1472,7 +1483,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
            or "<b>" .. operation .. "</b>",
          file and " " .. file .. " from" or "",
          thread and "thread" or "post")
-  html.renderpost(post_tbl, true, true, true)
+  html.renderpost(post_tbl, true, views.MOD_ACTION)
 
   if operation == "move" then
     html.form.mod_move_thread()
@@ -1802,7 +1813,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
     if i ~= 1 then
       printf("<hr class='invisible' />")
     end
-    html.renderpost(thread_tbl[i])
+    html.renderpost(thread_tbl[i], false, views.THREAD)
   end
 
   printf("<hr />")
