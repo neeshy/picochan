@@ -394,7 +394,11 @@ function pico.board.index(name, page)
                         "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
                         "ORDER BY Number ASC",
                         thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1)
-    index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize
+    if index_tbl[i][1]["ReplyCount"] > windowsize then
+      index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize
+    else
+      index_tbl[i][1]["RepliesOmitted"] = 0
+    end
 
     for j = 1, #index_tbl[i] do
       index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"])
