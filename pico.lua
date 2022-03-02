@@ -610,8 +610,7 @@ function html.renderindex(index_tbl, overboard)
     if index_tbl[i][1]["RepliesOmitted"] > 0 then
       printf("%d replies omitted. ", index_tbl[i][1]["RepliesOmitted"])
     end
-
-    printf("Click <a href='/%s/%d'>here</a> to view full thread.", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
+    printf("<a href='/%s/%d'>View full thread</a>", index_tbl[i][1]["Board"], index_tbl[i][1]["Number"])
     printf("</span>")
 
     for j = 2, #index_tbl[i] do
