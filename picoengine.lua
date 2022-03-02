@@ -369,6 +369,7 @@ function pico.board.index(name, page)
 
   page = tonumber(page) or 1
   local pagesize = pico.global.get("indexpagesize")
+  local threadpagesize = pico.global.get("threadpagesize")
   local windowsize = pico.global.get("indexwindowsize")
 
   local where = name and "WHERE Board = ? " or ""
@@ -377,15 +378,15 @@ function pico.board.index(name, page)
               "ORDER BY " ..
               (name and "Sticky DESC, " or "") ..
               "LastBumpDate DESC LIMIT ? OFFSET ?"
-  local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Threads " .. where
+  local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1"
 
   local thread_ops, pagecount
   if name then
     thread_ops = db:q(sql, name, pagesize, (page - 1) * pagesize)
-    pagecount = db:r1(pagecount_sql, pagesize, name)
+    pagecount = db:r1(pagecount_sql .. " FROM Threads " .. where, pagesize, name)
   else
     thread_ops = db:q(sql, pagesize, (page - 1) * pagesize)
-    pagecount = db:r1(pagecount_sql, pagesize)
+    pagecount = db:r1(pagecount_sql .. " FROM Threads " .. where, pagesize)
   end
 
   local index_tbl = {}
@@ -399,6 +400,8 @@ function pico.board.index(name, page)
     else
       index_tbl[i][1]["RepliesOmitted"] = 0
     end
+    index_tbl[i][1]["PageCount"] = db:r1(pagecount_sql .. " FROM Posts WHERE Board = ? AND Parent = ?",
+                                         threadpagesize, thread_ops[i]["Board"], thread_ops[i]["Number"])
 
     for j = 1, #index_tbl[i] do
       index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"])
@@ -968,9 +971,9 @@ end
 --
 
 -- Return entire thread (parent + all replies + all file info) as a table
-function pico.thread.tbl(board, number)
+function pico.thread.tbl(board, number, page)
   if not pico.thread.exists(board, number) then
-    return nil, "Post is not a thread or does not exist"
+    return nil, nil, "Post is not a thread or does not exist"
   end
 
   local stmt = assert(db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
@@ -978,9 +981,30 @@ function pico.thread.tbl(board, number)
                                  "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC"))
 
   db:e("BEGIN TRANSACTION")
-  local thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                          "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
-                          board, number, number)
+  local thread_tbl, pagecount
+  if page then
+    local pagesize = pico.global.get("threadpagesize")
+    thread_tbl = db:q("SELECT * FROM " ..
+                      "(SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                      "WHERE Board = ? AND Number = ?) " ..
+                      "UNION ALL " ..
+                      "SELECT * FROM " ..
+                      "(SELECT *, " ..
+                      "NULL AS LastBumpDate, NULL AS Sticky, NULL AS Lock, " ..
+                      "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount " ..
+                      "FROM Posts " ..
+                      "WHERE Board = ? AND Parent = ? ORDER BY Number ASC " ..
+                      "LIMIT ? OFFSET ?)",
+                      board, number,
+                      board, number, pagesize, (page - 1) * pagesize)
+    pagecount = db:r1("SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Posts WHERE Board = ? AND Parent = ?",
+                      pagesize, board, number)
+
+  else
+    thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                      "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Number ASC",
+                      board, number, number)
+  end
   for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i]
     post_tbl["Files"] = {}
@@ -998,7 +1022,7 @@ function pico.thread.tbl(board, number)
 
   stmt:finalize()
 
-  return thread_tbl
+  return thread_tbl, pagecount
 end
 
 -- toggle sticky, lock, autosage, or cycle

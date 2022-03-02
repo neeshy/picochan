@@ -260,6 +260,7 @@ INSERT INTO GlobalConfig VALUES ('defaultpostname', 'Anonymous');
 INSERT INTO GlobalConfig VALUES ('defaultboardview', 'catalog');
 INSERT INTO GlobalConfig VALUES ('frontpage', 'Welcome to Picochan.');
 INSERT INTO GlobalConfig VALUES ('theme', 'picochan');
+INSERT INTO GlobalConfig VALUES ('threadpagesize', 50);
 INSERT INTO GlobalConfig VALUES ('catalogpagesize', 1000);
 INSERT INTO GlobalConfig VALUES ('overboardpagesize', 100);
 INSERT INTO GlobalConfig VALUES ('indexpagesize', 10);

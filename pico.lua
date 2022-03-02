@@ -42,6 +42,7 @@ local sitename = pico.global.get("sitename") or "Picochan"
 local siteurl = (os.getenv("REQUEST_SCHEME") or "http") .. "://" .. (os.getenv("HTTP_HOST") or "localhost")
 local defaultpostname = pico.global.get("defaultpostname") or "Anonymous"
 local defaultboardview = pico.global.get("defaultboardview") or "catalog"
+local threadpagesize = pico.global.get("threadpagesize") or 50
 
 cgi.initialize()
 pico.account.register_login(cgi.COOKIE["session_key"])
@@ -538,6 +539,8 @@ function html.renderpost(post_tbl, overboard, view)
   end
   if view == views.INDEX and not post_tbl["Parent"] then
     printf(" <a href='/%s/%d' title='Open Thread'>[Open]</a>", post_tbl["Board"], post_tbl["Number"])
+    printf(" <a href='/%s/%d/%d' title='Last %d Posts'>[Last]</a>",
+           post_tbl["Board"], post_tbl["Number"], post_tbl["PageCount"], threadpagesize)
   end
 
   local reflist = pico.post.refs(post_tbl["Board"], post_tbl["Number"])
@@ -1039,6 +1042,7 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>")
   html.list.entry("<a href='/Mod/global/defaultpostname'>Change default post name</a>")
   html.list.entry("<a href='/Mod/global/defaultboardview'>Change default board view</a>")
+  html.list.entry("<a href='/Mod/global/threadpagesize'>Change thread page size</a>")
   html.list.entry("<a href='/Mod/global/catalogpagesize'>Change catalog page size</a>")
   html.list.entry("<a href='/Mod/global/overboardpagesize'>Change overboard catalog page size</a>")
   html.list.entry("<a href='/Mod/global/indexpagesize'>Change index page size</a>")
@@ -1770,7 +1774,7 @@ else
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"]
 end
 
-handlers["/([%l%d]+)/(%d+)"] = function(board, post)
+handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
   local board_tbl = pico.board.tbl(board)
 
   if not board_tbl then
@@ -1778,7 +1782,15 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
     html.error("Board Not Found", "The board you specified does not exist.")
   end
 
-  local thread_tbl, msg = pico.thread.tbl(board, post)
+  if page then
+    page = tonumber(page)
+    if page <= 0 then
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Page not found", "Page number too low: %s", page)
+    end
+  end
+
+  local thread_tbl, pagecount, msg = pico.thread.tbl(board, post, page)
 
   if not thread_tbl then
     local post_tbl = pico.post.tbl(board, post)
@@ -1789,6 +1801,13 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
       cgi.headers["Status"] = "301 Moved Permanently"
       cgi.headers["Location"] = string.format("/%s/%d#%d", board, post_tbl["Parent"], post_tbl["Number"])
       cgi.finalize()
+    end
+  end
+
+  if page then
+    if page > pagecount then
+      cgi.headers["Status"] = "404 Not Found"
+      html.error("Page not found", "Page number too high: %s", page)
     end
   end
 
@@ -1817,6 +1836,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
   end
 
   printf("<hr />")
+  if page then
+    html.renderpages(string.format("/%s/%d", board, post), page, pagecount)
+  end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
   printf("<a href='/%s/index'>[Index]</a> ", board)
   printf("<a href='/%s/recent'>[Recent]</a> ", board)
@@ -1831,6 +1853,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post)
 
   html.finish()
 end
+handlers["/([%l%d]+)/(%d+)/(%d+)"] = handlers["/([%l%d]+)/(%d+)"]
 
 handlers["/Theme"] = function()
   html.brc("change theme configuration", "Change theme configuration")
