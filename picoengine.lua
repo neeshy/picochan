@@ -976,10 +976,6 @@ function pico.thread.tbl(board, number, page)
     return nil, nil, "Post is not a thread or does not exist"
   end
 
-  local stmt = assert(db:prepare("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
-                                 "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
-                                 "WHERE Board = ? AND Number = ? ORDER BY Sequence ASC"))
-
   db:e("BEGIN TRANSACTION")
   local thread_tbl, pagecount
   if page then
@@ -1006,21 +1002,9 @@ function pico.thread.tbl(board, number, page)
                       board, number, number)
   end
   for i = 1, #thread_tbl do
-    local post_tbl = thread_tbl[i]
-    post_tbl["Files"] = {}
-    if stmt:bind_values(post_tbl["Board"], post_tbl["Number"]) ~= sqlite3.OK then
-      error(db:errmsg())
-    end
-
-    while stmt:step() == sqlite3.ROW do
-      post_tbl["Files"][#post_tbl["Files"] + 1] = stmt:get_named_values()
-    end
-
-    stmt:reset()
+    thread_tbl[i]["Files"] = pico.file.list(thread_tbl[i]["Board"], thread_tbl[i]["Number"])
   end
   db:e("END TRANSACTION")
-
-  stmt:finalize()
 
   return thread_tbl, pagecount
 end
