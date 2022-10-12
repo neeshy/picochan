@@ -638,6 +638,9 @@ function html.renderindex(index_tbl, overboard)
     end
 
     printf("</div>")
+    if i ~= #index_tbl then
+      printf("<hr />")
+    end
   end
 end
 
