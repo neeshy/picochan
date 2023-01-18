@@ -31,7 +31,31 @@ Creating the database:
 
   $ sqlite3 picochan.db <picochan.sql
 
-Point your web browser at the picochan installation. Log in as an admin using
-the username 'setup' and the password 'password'. Use this account to create a
-new administrator account using your username and a different password. Then,
-delete the setup account. Picochan is now ready to use.
+Point your web browser at the picochan installation. A barebones/sample nginx
+configuration is included below:
+
+http {
+    server {
+        listen 80 default_server;
+        server_name picochanwvqfa2xsrfzlul4x4aqtog2eljll5qnj5iagpbhx2vmfqnid.onion;
+        root /srv/picochan;
+
+        location /Media {
+        }
+
+        location /Static {
+        }
+
+        location / {
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root/pico.cgi;
+            fastcgi_param PATH_INFO $uri;
+            fastcgi_pass unix:/run/fcgiwrap/fcgiwrap.sock;
+        }
+    }
+}
+
+Log in as an admin using the username 'setup' and the password 'password'. Use
+this account to create a new administrator account using your username and a
+different password. Then, delete the setup account. Picochan is now ready to
+use.
