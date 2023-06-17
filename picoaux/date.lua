@@ -10,7 +10,7 @@ function date.iso8601(d)
   -- ISO8601 extended formats
   local datetime = "^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)"
   local msec = "%.%d%d%d"
-  local offsets = {"(Z)$", "([+-]%d%d)$", "([+-]%d%d:%d%d)$"}
+  local offsets = { "(Z)$", "([+-]%d%d)$", "([+-]%d%d:%d%d)$" }
   local patterns = {}
 
   for i = 1, #offsets do
@@ -57,10 +57,10 @@ function date.iso8601(d)
   end
   local loffh, loffm = offset(os.date("%z"))
 
-  return os.time({["year"] = year, ["month"] = month, ["day"] = day,
-                  ["hour"] = hour - offh + loffh,
-                  ["min"] = min - offm + loffm,
-                  ["sec"] = sec})
+  return os.time { year = year, month = month, day = day,
+                   hour = hour - offh + loffh,
+                   min = min - offm + loffm,
+                   sec = sec }
 end
 
 return date

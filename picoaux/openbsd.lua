@@ -3,11 +3,11 @@
 local ffi = require("ffi")
 local openbsd = {}
 
-ffi.cdef([[
+ffi.cdef[[
   int pledge(const char *promises, const char *execpromises);
   int unveil(const char *path, const char *permissions);
   char *strerror(int errnum);
-]])
+]]
 
 function openbsd.pledge(promises, execpromises)
   assert(type(promises) == "string" or promises == nil, "incorrect datatype for parameter 'promises'")

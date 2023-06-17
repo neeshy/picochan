@@ -105,15 +105,15 @@ local function parseform(boundary, maxread)
         break
       end
     end
-    local name = disposition["name"]
+    local name = disposition.name
     if name then
-      local filename = disposition["filename"]
+      local filename = disposition.filename
       if filename then
         local tmpfile = assert(io.tmpfile())
         readandcheck(lineboundary, output(tmpfile))
         if assert(tmpfile:seek("end")) ~= 0 then
           assert(tmpfile:seek("set"))
-          file[name] = {["filename"] = filename, ["file"] = tmpfile}
+          file[name] = { filename = filename, file = tmpfile }
         end
       else
         local value = {}

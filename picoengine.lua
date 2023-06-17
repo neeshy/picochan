@@ -52,9 +52,9 @@ end
 --   acct board post
 local function permit(permclass, targettype, targarg)
   -- STEP 1. Check account type
-  if pico.account.current == nil then
+  if not pico.account.current then
     return false, "Action not permitted (not logged in)"
-  elseif not permclass:match(pico.account.current["Type"]) then
+  elseif not permclass:match(pico.account.current.Type) then
     return false, "Action not permitted (account type not authorized)"
   end
 
@@ -65,42 +65,42 @@ local function permit(permclass, targettype, targarg)
   end
 
   -- Special case: Admin can modify any target
-  if pico.account.current["Type"] == "admin" then
+  if pico.account.current.Type == "admin" then
     return true
   end
 
   if targettype == "acct" then
     -- Special case: Anyone can modify their own account (password change)
-    if pico.account.current["Name"] == targarg then
+    if pico.account.current.Name == targarg then
       return true
     end
 
-    if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
+    if pico.account.current.Type == "gvol" or pico.account.current.Type == "lvol" then
       return false, "Action not permitted (account type not authorized)"
-    elseif pico.account.current["Type"] == "bo" then
+    elseif pico.account.current.Type == "bo" then
       local board = db:r1("SELECT Board FROM Accounts WHERE Name = ?", targarg)
-      if board == pico.account.current["Board"] then
+      if board == pico.account.current.Board then
         return true
       else
         return false, "Action not permitted (attempt to modify account outside assigned board)"
       end
     end
   elseif targettype == "board" then
-    if pico.account.current["Type"] == "gvol" or pico.account.current["Type"] == "lvol" then
+    if pico.account.current.Type == "gvol" or pico.account.current.Type == "lvol" then
       return false, "Action not permitted (account type not authorized)"
-    elseif pico.account.current["Type"] == "bo" then
-      if targarg == pico.account.current["Board"] then
+    elseif pico.account.current.Type == "bo" then
+      if targarg == pico.account.current.Board then
         return true
       else
         return false, "Action not permitted (attempt to modify non-assigned board)"
       end
     end
   elseif targettype == "post" then
-    if pico.account.current["Type"] == "gvol" then
+    if pico.account.current.Type == "gvol" then
       return true
-    elseif (pico.account.current["Type"] == "bo")
-        or (pico.account.current["Type"] == "lvol") then
-      if targarg == pico.account.current["Board"] then
+    elseif (pico.account.current.Type == "bo")
+        or (pico.account.current.Type == "lvol") then
+      if targarg == pico.account.current.Board then
         return true
       else
         return false, "Action not permitted (attempt to modify post outside assigned board)"
@@ -151,8 +151,8 @@ function pico.account.delete(name, reason)
   end
 
   db:e("DELETE FROM Accounts WHERE Name = ?", name)
-  pico.log.insert(account_tbl["Board"], "Deleted a %s account '%s' for reason: %s",
-                  account_tbl["Type"], name, reason)
+  pico.log.insert(account_tbl.Board, "Deleted a %s account '%s' for reason: %s",
+                  account_tbl.Type, name, reason)
   return true, "Account deleted successfully"
 end
 
@@ -170,7 +170,7 @@ function pico.account.changepass(name, password)
 
   db:e("UPDATE Accounts SET PwHash = ? WHERE Name = ?",
        argon2.digest(password), name)
-  pico.log.insert(account_tbl["Board"], "Changed password of account '%s'", name)
+  pico.log.insert(account_tbl.Board, "Changed password of account '%s'", name)
   return true, "Account password changed successfully"
 end
 
@@ -178,7 +178,7 @@ end
 -- mod-only actions.
 function pico.account.login(name, password)
   if not pico.account.exists(name)
-  or not argon2.verify(password, db:r1("SELECT PwHash FROM Accounts WHERE Name = ?", name)) then
+      or not argon2.verify(password, db:r1("SELECT PwHash FROM Accounts WHERE Name = ?", name)) then
     return nil, "Invalid username or password"
   end
 
@@ -301,12 +301,12 @@ function pico.board.tbl(name)
 end
 
 function pico.board.configure(board_tbl)
-  local auth, msg = permit("admin bo", "board", board_tbl["Name"])
+  local auth, msg = permit("admin bo", "board", board_tbl.Name)
   if not auth then return auth, msg end
 
   if not board_tbl then
     return false, "Board configuration not supplied"
-  elseif not pico.board.exists(board_tbl["Name"]) then
+  elseif not pico.board.exists(board_tbl.Name) then
     return false, "Board does not exist"
   end
 
@@ -315,18 +315,18 @@ function pico.board.configure(board_tbl)
        "PostMaxDblNewlines = ?, TPHLimit = ?, PPHLimit = ?, ThreadCaptcha = ?, " ..
        "PostCaptcha = ?, CaptchaTriggerTPH = ?, CaptchaTriggerPPH = ?, " ..
        "BumpLimit = ?, PostLimit = ?, ThreadLimit = ? WHERE Name = ?",
-       board_tbl["Title"],              board_tbl["Subtitle"],
-       board_tbl["Lock"] or 0,          board_tbl["DisplayOverboard"] or 0,
-       board_tbl["PostMaxFiles"],       board_tbl["ThreadMinLength"],
-       board_tbl["PostMaxLength"],      board_tbl["PostMaxNewlines"],
-       board_tbl["PostMaxDblNewlines"], board_tbl["TPHLimit"],
-       board_tbl["PPHLimit"],           board_tbl["ThreadCaptcha"] or 0,
-       board_tbl["PostCaptcha"] or 0,   board_tbl["CaptchaTriggerTPH"],
-       board_tbl["CaptchaTriggerPPH"],  board_tbl["BumpLimit"],
-       board_tbl["PostLimit"],          board_tbl["ThreadLimit"],
-       board_tbl["Name"])
+       board_tbl.Title,              board_tbl.Subtitle,
+       board_tbl.Lock or 0,          board_tbl.DisplayOverboard or 0,
+       board_tbl.PostMaxFiles,       board_tbl.ThreadMinLength,
+       board_tbl.PostMaxLength,      board_tbl.PostMaxNewlines,
+       board_tbl.PostMaxDblNewlines, board_tbl.TPHLimit,
+       board_tbl.PPHLimit,           board_tbl.ThreadCaptcha or 0,
+       board_tbl.PostCaptcha or 0,   board_tbl.CaptchaTriggerTPH,
+       board_tbl.CaptchaTriggerPPH,  board_tbl.BumpLimit,
+       board_tbl.PostLimit,          board_tbl.ThreadLimit,
+       board_tbl.Name)
 
-  pico.log.insert(board_tbl["Name"], "Modified board configuration")
+  pico.log.insert(board_tbl.Name, "Modified board configuration")
   return true, "Board configured successfully"
 end
 
@@ -394,17 +394,17 @@ function pico.board.index(name, page)
     index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
                         "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
                         "ORDER BY Number ASC",
-                        thread_ops[i]["Board"], thread_ops[i]["Number"], thread_ops[i]["Number"], windowsize + 1)
-    if index_tbl[i][1]["ReplyCount"] > windowsize then
-      index_tbl[i][1]["RepliesOmitted"] = index_tbl[i][1]["ReplyCount"] - windowsize
+                        thread_ops[i].Board, thread_ops[i].Number, thread_ops[i].Number, windowsize + 1)
+    if index_tbl[i][1].ReplyCount > windowsize then
+      index_tbl[i][1].RepliesOmitted = index_tbl[i][1].ReplyCount - windowsize
     else
-      index_tbl[i][1]["RepliesOmitted"] = 0
+      index_tbl[i][1].RepliesOmitted = 0
     end
-    index_tbl[i][1]["PageCount"] = db:r1(pagecount_sql .. " FROM Posts WHERE Board = ? AND Parent = ?",
-                                         threadpagesize, thread_ops[i]["Board"], thread_ops[i]["Number"])
+    index_tbl[i][1].PageCount = db:r1(pagecount_sql .. " FROM Posts WHERE Board = ? AND Parent = ?",
+                                      threadpagesize, thread_ops[i].Board, thread_ops[i].Number)
 
     for j = 1, #index_tbl[i] do
-      index_tbl[i][j]["Files"] = pico.file.list(index_tbl[i][j]["Board"], index_tbl[i][j]["Number"])
+      index_tbl[i][j].Files = pico.file.list(index_tbl[i][j].Board, index_tbl[i][j].Number)
     end
   end
 
@@ -433,7 +433,7 @@ function pico.board.recent(name, page)
   end
 
   for i = 1, #recent_tbl do
-    recent_tbl[i]["Files"] = pico.file.list(recent_tbl[i]["Board"], recent_tbl[i]["Number"])
+    recent_tbl[i].Files = pico.file.list(recent_tbl[i].Board, recent_tbl[i].Number)
   end
 
   return recent_tbl, pagecount
@@ -614,7 +614,7 @@ function pico.file.class(extension)
     ["tar"]  = "archive",
     ["zip"]  = "archive",
     ["7z"]   = "archive",
-    ["rar"]  = "archive"
+    ["rar"]  = "archive",
   }
 
   return lookup[extension] or extension
@@ -719,8 +719,8 @@ end
 function pico.file.create_refs(board, number, files)
   if files ~= nil then
     for i = 1, #files do
-      if files[i]["Hash"] and files[i]["Hash"] ~= "" then
-        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i]["Hash"], files[i]["Name"], files[i]["Spoiler"], i)
+      if files[i].Hash and files[i].Hash ~= "" then
+        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i].Hash, files[i].Name, files[i].Spoiler, i)
       end
     end
   end
@@ -733,7 +733,7 @@ end
 function pico.post.tbl(board, number, omit_files)
   local post_tbl = db:r("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) WHERE Board = ? AND Number = ?", board, number)
   if post_tbl and not omit_files then
-    post_tbl["Files"] = pico.file.list(board, number)
+    post_tbl.Files = pico.file.list(board, number)
   end
   return post_tbl
 end
@@ -751,24 +751,24 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
 
   local capcode, capcode_board
   if name == "##" and pico.account.current then
-    name = pico.account.current["Name"]
-    capcode = pico.account.current["Type"]
-    capcode_board = pico.account.current["Board"]
+    name = pico.account.current.Name
+    capcode = pico.account.current.Type
+    capcode_board = pico.account.current.Board
   end
 
   comment = comment or ""
 
   if not board_tbl then
     return nil, "Board does not exist"
-  elseif board_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "board", board) then
+  elseif board_tbl.Lock == 1 and not permit("admin gvol bo lvol", "board", board) then
     return nil, "Board is locked"
-  elseif board_tbl["PPHLimit"] and pico.board.stats.postrate(board, 1, 1) > board_tbl["PPHLimit"] then
+  elseif board_tbl.PPHLimit and pico.board.stats.postrate(board, 1, 1) > board_tbl.PPHLimit then
     return nil, "Maximum post creation rate exceeded"
-  elseif #comment > board_tbl["PostMaxLength"] then
+  elseif #comment > board_tbl.PostMaxLength then
     return nil, "Post text too long"
-  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl["PostMaxNewlines"] then
+  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl.PostMaxNewlines then
     return nil, "Post contained too many newlines"
-  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl["PostMaxDblNewlines"] then
+  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl.PostMaxDblNewlines then
     return nil, "Post contained too many double newlines"
   elseif name and #name > 64 then
     return nil, "Name too long"
@@ -778,25 +778,25 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     return nil, "Subject too long"
   elseif (not files or #files == 0) and #comment == 0 then
     return nil, "Post is blank"
-  elseif ((is_thread and board_tbl["ThreadCaptcha"] == 1) or (not is_thread and board_tbl["PostCaptcha"] == 1))
+  elseif ((is_thread and board_tbl.ThreadCaptcha == 1) or (not is_thread and board_tbl.PostCaptcha == 1))
          and not pico.captcha.check(captcha_id, captcha_text) then
     return nil, "Captcha is required but no valid captcha supplied"
   elseif is_thread then
-    if board_tbl["TPHLimit"] and pico.board.stats.threadrate(board, 1, 1) > board_tbl["TPHLimit"] then
+    if board_tbl.TPHLimit and pico.board.stats.threadrate(board, 1, 1) > board_tbl.TPHLimit then
       return nil, "Maximum thread creation rate exceeded"
-    elseif #comment < board_tbl["ThreadMinLength"] then
+    elseif #comment < board_tbl.ThreadMinLength then
       return nil, "Thread text too short"
     end
   else
     local parent_tbl = pico.post.tbl(board, parent)
     if not parent_tbl then
       return nil, "Parent thread does not exist"
-    elseif parent_tbl["Parent"] then
+    elseif parent_tbl.Parent then
       return nil, "Parent post is not a thread"
-    elseif parent_tbl["Lock"] == 1 and not permit("admin gvol bo lvol", "post", board) then
+    elseif parent_tbl.Lock == 1 and not permit("admin gvol bo lvol", "post", board) then
       return nil, "Parent thread is locked"
-    elseif parent_tbl["Cycle"] ~= 1 and board_tbl["PostLimit"]
-           and parent_tbl["ReplyCount"] >= board_tbl["PostLimit"] then
+    elseif parent_tbl.Cycle ~= 1 and board_tbl.PostLimit
+           and parent_tbl.ReplyCount >= board_tbl.PostLimit then
       return nil, "Thread full"
     end
   end
@@ -871,8 +871,8 @@ function pico.post.multidelete(board, include, exclude, reason)
     return false, "Board does not exist"
   end
 
-  local sql = {"DELETE FROM Posts WHERE Board = ? AND (FALSE"}
-  local sqlp = {board}
+  local sql = { "DELETE FROM Posts WHERE Board = ? AND (FALSE" }
+  local sqlp = { board }
   local inclist = include:tokenize()
 
   local function genspec(spec, sql, sqlp)
@@ -1002,7 +1002,7 @@ function pico.thread.tbl(board, number, page)
                       board, number, number)
   end
   for i = 1, #thread_tbl do
-    thread_tbl[i]["Files"] = pico.file.list(thread_tbl[i]["Board"], thread_tbl[i]["Number"])
+    thread_tbl[i].Files = pico.file.list(thread_tbl[i].Board, thread_tbl[i].Number)
   end
   db:e("END TRANSACTION")
 
@@ -1057,20 +1057,20 @@ function pico.thread.move(board, number, newboard, reason)
 
   for i = 1, #thread_tbl do
     local post_tbl = thread_tbl[i]
-    post_tbl["Comment"] = post_tbl["Comment"]:gsub(">>(%d+)", number_lut)
-    post_tbl["Parent"] = post_tbl["Parent"] and newthread
+    post_tbl.Comment = post_tbl.Comment:gsub(">>(%d+)", number_lut)
+    post_tbl.Parent = post_tbl.Parent and newthread
 
-    for j = 1, #post_tbl["Files"] do
-      post_tbl["Files"][j] = {["Name"] = post_tbl["Files"][j]["DownloadName"],
-                              ["Hash"] = post_tbl["Files"][j]["Name"],
-                              ["Spoiler"] = post_tbl["Files"][j]["Spoiler"]}
+    for j = 1, #post_tbl.Files do
+      post_tbl.Files[j] = { Name = post_tbl.Files[j].DownloadName,
+                            Hash = post_tbl.Files[j].Name,
+                            Spoiler = post_tbl.Files[j].Spoiler }
     end
 
-    local newnumber = pico.post.set(newboard, post_tbl["Parent"], post_tbl["Date"],
-                                    post_tbl["Name"], post_tbl["Email"], post_tbl["Subject"],
-                                    post_tbl["Capcode"], post_tbl["CapcodeBoard"],
-                                    post_tbl["Comment"], post_tbl["Files"])
-    number_lut[tostring(post_tbl["Number"])] = ">>" .. tostring(newnumber)
+    local newnumber = pico.post.set(newboard, post_tbl.Parent, post_tbl.Date,
+                                    post_tbl.Name, post_tbl.Email, post_tbl.Subject,
+                                    post_tbl.Capcode, post_tbl.CapcodeBoard,
+                                    post_tbl.Comment, post_tbl.Files)
+    number_lut[tostring(post_tbl.Number)] = ">>" .. tostring(newnumber)
 
     if i == 1 then
       newthread = newnumber
@@ -1110,7 +1110,7 @@ end
 
 -- Use nil for the board parameter if the action applies to all boards.
 function pico.log.insert(board, ...)
-  local account = pico.account.current and pico.account.current["Name"]
+  local account = pico.account.current and pico.account.current.Name
   db:e("INSERT INTO Logs (Account, Board, Description) VALUES (?, ?, ?)",
        account, board, string.format(...))
 end
@@ -1187,40 +1187,40 @@ end
 function pico.webring.tbl(sitename, siteurl)
   local tbl = {}
   if sitename and siteurl then
-    tbl["name"] = sitename
-    tbl["url"] = siteurl
-    tbl["endpoint"] = siteurl .. "/webring.json"
-    tbl["logo"] = {siteurl .. "/Static/logo.png"}
+    tbl.name = sitename
+    tbl.url = siteurl
+    tbl.endpoint = siteurl .. "/webring.json"
+    tbl.logo = { siteurl .. "/Static/logo.png" }
 
-    tbl["boards"] = {}
+    tbl.boards = {}
     local boards = pico.board.list()
     for i = 1, #boards do
       local board = {}
       local board_tbl = boards[i]
-      board["uri"] = board_tbl["Name"]
-      board["title"] = board_tbl["Title"]
-      board["subtitle"] = board_tbl["Subtitle"]
-      board["path"] = siteurl .. "/" .. board_tbl["Name"] .. "/"
-      board["postsPerHour"] = pico.board.stats.postrate(board_tbl["Name"], 1, 1)
-      board["totalPosts"] = pico.board.stats.totalposts(board_tbl["Name"])
-      board["tags"] = {}
-      local lastbumpdate = pico.board.stats.lastbumpdate(board_tbl["Name"])
-      board["lastPostTimestamp"] = lastbumpdate and os.date("!%Y-%m-%dT%H:%M:%SZ", lastbumpdate)
-      tbl["boards"][i] = board
+      board.uri = board_tbl.Name
+      board.title = board_tbl.Title
+      board.subtitle = board_tbl.Subtitle
+      board.path = siteurl .. "/" .. board_tbl.Name .. "/"
+      board.postsPerHour = pico.board.stats.postrate(board_tbl.Name, 1, 1)
+      board.totalPosts = pico.board.stats.totalposts(board_tbl.Name)
+      board.tags = {}
+      local lastbumpdate = pico.board.stats.lastbumpdate(board_tbl.Name)
+      board.lastPostTimestamp = lastbumpdate and os.date("!%Y-%m-%dT%H:%M:%SZ", lastbumpdate)
+      tbl.boards[i] = board
     end
   end
 
-  tbl["following"] = {}
-  tbl["known"] = {}
-  tbl["blacklist"] = {}
+  tbl.following = {}
+  tbl.known = {}
+  tbl.blacklist = {}
 
   local hosts = db:q("SELECT * FROM Webring")
   for i = 1, #hosts do
     local host = hosts[i]
-    local type = host["Type"]
-    tbl[type][#tbl[type] + 1] = host["Endpoint"]
+    local type = host.Type
+    tbl[type][#tbl[type] + 1] = host.Endpoint
     if type == "following" then
-      tbl["known"][#tbl["known"] + 1] = host["Endpoint"]
+      tbl.known[#tbl.known + 1] = host.Endpoint
     end
   end
 
@@ -1273,14 +1273,14 @@ function pico.webring.endpoint.configure(endpoint_tbl)
 
   if not endpoint_tbl then
     return false, "Endpoint configuration not supplied"
-  elseif not pico.webring.endpoint.exists(endpoint_tbl["Endpoint"]) then
+  elseif not pico.webring.endpoint.exists(endpoint_tbl.Endpoint) then
     return false, "Endpoint does not exist"
   end
 
   db:e("UPDATE Webring SET Type = ? WHERE Endpoint = ?",
-       endpoint_tbl["Type"] or "known", endpoint_tbl["Endpoint"])
+       endpoint_tbl.Type or "known", endpoint_tbl.Endpoint)
   pico.log.insert(nil, "Modified webring endpoint configuration for '%s'",
-                  endpoint_tbl["Endpoint"])
+                  endpoint_tbl.Endpoint)
   return true, "Endpoint configured successfully"
 end
 

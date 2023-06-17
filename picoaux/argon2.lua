@@ -15,7 +15,7 @@ argon2.version_10 = 0x10
 argon2.version_13 = 0x13
 argon2.version = argon2.version_13
 
-ffi.cdef([[
+ffi.cdef[[
   typedef int argon2_type;
 
   size_t argon2_encodedlen(uint32_t t_cost, uint32_t m_cost,
@@ -30,12 +30,12 @@ ffi.cdef([[
                   const uint32_t version);
   int argon2_verify(const char *encoded, const void *pwd,
                     const size_t pwdlen, argon2_type type);
-]])
+]]
 
 local hashtype_lut = {
-  ["argon2d"] = 0,
-  ["argon2i"] = 1,
-  ["argon2id"] = 2
+  argon2d = 0,
+  argon2i = 1,
+  argon2id = 2,
 }
 
 local errcode_lut = {

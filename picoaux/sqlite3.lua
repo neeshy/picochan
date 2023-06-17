@@ -4,7 +4,7 @@ local ffi = require("ffi")
       ffi.sqlite3 = ffi.load("sqlite3")
 local sqlite3 = {}
 
-ffi.cdef([[
+ffi.cdef[[
   typedef struct sqlite3 sqlite3;
   typedef struct sqlite3_stmt sqlite3_stmt;
 
@@ -44,7 +44,7 @@ ffi.cdef([[
   const unsigned char *sqlite3_column_text(sqlite3_stmt *stmt, int column);
   const void *sqlite3_column_blob(sqlite3_stmt *stmt, int column);
   int sqlite3_column_bytes(sqlite3_stmt *stmt, int column);
-]])
+]]
 
 sqlite3.READONLY = ffi.sqlite3.SQLITE_OPEN_READONLY
 sqlite3.READWRITE = ffi.sqlite3.SQLITE_OPEN_READWRITE
@@ -62,9 +62,9 @@ metatable_db.__index = metatable_db
 metatable_stmt.__index = metatable_stmt
 
 local modes = {
-  ["r"] = sqlite3.READONLY,
-  ["w"] = sqlite3.READWRITE,
-  ["c"] = sqlite3.READWRITE + sqlite3.CREATE
+  r = sqlite3.READONLY,
+  w = sqlite3.READWRITE,
+  c = sqlite3.READWRITE + sqlite3.CREATE,
 }
 
 --
@@ -83,7 +83,7 @@ function sqlite3.open(path, mode)
     return nil, ffi.string(ffi.sqlite3.sqlite3_errmsg(db))
   end
 
-  return setmetatable({["db"] = db}, metatable_db)
+  return setmetatable({ db = db }, metatable_db)
 end
 
 --
@@ -112,14 +112,14 @@ function metatable_db:prepare(sql)
     return nil, self:errmsg()
   end
 
-  return setmetatable({["db"] = self.db, ["stmt"] = stmt[0]}, metatable_stmt)
+  return setmetatable({ db = self.db, stmt = stmt[0] }, metatable_stmt)
 end
 
 -- The following six functions are quick convenience functions which accept
 -- variable arguments. These functions call error() upon failure.
 
 -- Return a table of rows.
--- e.g. t[1]["Name"], t[1]["Address"], t[2]["Name"]
+-- e.g. t[1].Name, t[1].Address, t[2].Name
 function metatable_db:q(sql, ...)
   local stmt, errmsg = self:prepare(sql)
   if not stmt then
@@ -162,7 +162,7 @@ function metatable_db:q1(sql, ...)
 end
 
 -- Return the first row, or nil if there are none.
--- e.g. t["Name"], t["Address"]
+-- e.g. t.Name, t.Address
 function metatable_db:r(sql, ...)
   local stmt, errmsg = self:prepare(sql)
   if not stmt then

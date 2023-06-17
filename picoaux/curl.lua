@@ -4,7 +4,7 @@ local ffi = require("ffi")
       ffi.curl = ffi.load("libcurl")
 local curl = {}
 
-ffi.cdef([[
+ffi.cdef[[
   typedef void CURL;
   typedef void CURLSH;
 
@@ -409,7 +409,7 @@ ffi.cdef([[
   CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...);
   CURLcode curl_easy_perform(CURL *curl);
   void curl_easy_cleanup(CURL *curl);
-]])
+]]
 
 local long = ffi.typeof("long")
 
@@ -443,7 +443,7 @@ function curl.multi_request(urls)
     local s = ffi.string(buffer, size * nitems)
     local status = s:match("^HTTP/[%d%.]+%s+(%d+)%s+.-\r\n$")
     if status then
-      header_buffer = {["status"] = tonumber(status)}
+      header_buffer = { status = tonumber(status) }
     else
       local k, v = s:match("^([%w%-]-): (.-)\r\n$")
       if k then
