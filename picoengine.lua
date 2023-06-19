@@ -342,7 +342,7 @@ function pico.board.catalog(name, page)
   local where = name and "Threads.Board = ? "
                       or "Threads.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) "
   local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
-              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON Files.Name = FileRefs.File " ..
+              "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON FileRefs.File = Files.Name " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) AND " ..
               where ..
               "ORDER BY " ..
