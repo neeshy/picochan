@@ -285,6 +285,7 @@ function pico.board.delete(name, reason)
 
   db:e("DELETE FROM Boards WHERE Name = ?", name)
   pico.log.insert(nil, "Deleted board /%s/ for reason: %s", name, reason)
+  pico.file.clean()
   return true, "Board deleted successfully"
 end
 
@@ -490,6 +491,7 @@ function pico.board.banner.delete(board, file, reason)
 
   db:e("DELETE FROM Banners WHERE Board = ? AND File = ?", board, file)
   pico.log.insert(board, "Deleted banner %s for reason: %s", file, reason)
+  pico.file.clean()
   return true, "Banner deleted successfully"
 end
 
@@ -705,6 +707,16 @@ function pico.file.delete(filename, reason)
   return true, "File deleted successfully"
 end
 
+function pico.file.clean()
+  local files = db:q1("SELECT Name FROM Files EXCEPT SELECT File FROM FileRefs EXCEPT SELECT File FROM Banners")
+  for i = 1, #files do
+    db:e("DELETE FROM Files WHERE Name = ?", files[i])
+    os.remove("Media/" .. files[i])
+    os.remove("Media/icon/" .. files[i])
+    os.remove("Media/thumb/" .. files[i])
+  end
+end
+
 function pico.file.list(board, number)
   return db:q("SELECT Files.*, FileRefs.Name AS DownloadName, Spoiler " ..
               "FROM FileRefs JOIN Files ON FileRefs.File = Files.Name " ..
@@ -858,6 +870,7 @@ function pico.post.delete(board, number, reason)
 
   db:e("DELETE FROM Posts WHERE Board = ? AND Number = ?", board, number)
   pico.log.insert(board, "Deleted post /%s/%d for reason: %s", board, number, reason)
+  pico.file.clean()
   return true, "Post deleted successfully"
 end
 
@@ -921,6 +934,7 @@ function pico.post.multidelete(board, include, exclude, reason)
   db:e(table.concat(sql, " "), unpack(sqlp))
   pico.log.insert(board, "Deleted posts {%s}%s for reason: %s",
                   include, exclude and (" excluding {" .. exclude .. "}") or "", reason)
+  pico.file.clean()
   return true, "Posts deleted successfully"
 end
 
@@ -931,6 +945,7 @@ function pico.post.pattdelete(pattern, reason)
 
   db:e("DELETE FROM Posts WHERE Comment LIKE ? ESCAPE '$'", pattern)
   pico.log.insert(nil, "Deleted posts matching pattern '%s' for reason: %s", pattern, reason)
+  pico.file.clean()
   return true, "Posts deleted successfully"
 end
 
@@ -947,6 +962,7 @@ function pico.post.unlink(board, number, file, reason)
   db:e("DELETE FROM FileRefs WHERE Board = ? AND Number = ? AND File = ?", board, number, file)
   pico.log.insert(board, "Unlinked file %s from /%s/%d for reason: %s",
                   file, board, number, reason)
+  pico.file.clean()
   return true, "File unlinked successfully"
 end
 
