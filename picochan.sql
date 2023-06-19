@@ -224,6 +224,13 @@ BEGIN
     OR ReplyCount <= (SELECT BumpLimit FROM Boards WHERE Name = OLD.Board));
 END;
 
+CREATE TRIGGER delete_empty_posts AFTER DELETE ON FileRefs
+  WHEN (SELECT COUNT(*) FROM FileRefs WHERE Board = OLD.Board AND Number = OLD.Number) = 0
+   AND (SELECT Comment FROM Posts WHERE Board = OLD.Board AND Number = OLD.Number) = ''
+BEGIN
+  DELETE FROM Posts WHERE Board = OLD.Board AND Number = OLD.Number;
+END;
+
 CREATE TRIGGER delete_old_sessions BEFORE INSERT ON Sessions
 BEGIN
   DELETE FROM Sessions WHERE Account = NEW.Account;
