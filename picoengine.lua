@@ -694,8 +694,6 @@ function pico.file.delete(filename, reason)
 
   if not pico.file.exists(filename) then
     return false, "File does not exist"
-  elseif db:b("SELECT TRUE FROM Banners WHERE File = ?", filename) then
-    return false, "File is used as a banner"
   end
 
   db:e("DELETE FROM Files WHERE Name = ?", filename)
