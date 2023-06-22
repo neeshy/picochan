@@ -460,6 +460,10 @@ function pico.board.banner.list(board)
   return db:q1("SELECT File FROM Banners WHERE Board = ?", board)
 end
 
+function pico.board.banner.exists(board, file)
+  return db:b("SELECT TRUE FROM Banners WHERE Board = ? AND File = ?", board, file)
+end
+
 function pico.board.banner.add(board, file)
   local auth, msg = permit("admin bo", "board", board)
   if not auth then return auth, msg end
@@ -468,7 +472,7 @@ function pico.board.banner.add(board, file)
     return false, "Board does not exist"
   elseif not pico.file.exists(file) then
     return false, "File does not exist"
-  elseif db:b("SELECT TRUE FROM Banners WHERE Board = ? AND File = ?", board, file) then
+  elseif pico.board.banner.exists(board, file) then
     return false, "Banner already exists"
   end
 
@@ -485,7 +489,7 @@ function pico.board.banner.delete(board, file, reason)
     return false, "Board does not exist"
   elseif not pico.file.exists(file) then
     return false, "File does not exist"
-  elseif not db:b("SELECT TRUE FROM Banners WHERE Board = ? AND File = ?", board, file) then
+  elseif not pico.board.banner.exists(board, file) then
     return false, "Banner does not exist"
   end
 
