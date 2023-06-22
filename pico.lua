@@ -1668,9 +1668,9 @@ handlers["/Boards"] = function()
                        board.path, board.title, board.site_name, board.name),
                        board.title, board.subtitle, board.pph, board.total, board.last)
     end
+    html.table.finish()
   end
 
-  html.table.finish()
   html.cfinish()
 end
 
