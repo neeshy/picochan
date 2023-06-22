@@ -2,9 +2,9 @@
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
 local pico = require("picoengine")
-local cgi = require("picoaux.cgi")
+local cgi = require("lib.cgi")
 
-require("picoaux.iomisc")
+require("lib.iomisc")
 
 local html = {}
       html.table = {}
@@ -24,7 +24,7 @@ local views = {
 
 if jit.os == "BSD" then
   -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
-  local openbsd = require("picoaux.openbsd")
+  local openbsd = require("lib.openbsd")
   openbsd.unveil("./picochan.db", "rw")
   openbsd.unveil("./picochan.db-journal", "rwc")
   openbsd.unveil("./Media/", "rwxc")

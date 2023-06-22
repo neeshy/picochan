@@ -1,6 +1,6 @@
 -- Miscellaneous string functions.
 
-require("picoaux.mathmisc")
+require("lib.mathmisc")
 
 function string.random(length, pattern)
   length = length or 64

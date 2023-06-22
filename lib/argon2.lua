@@ -1,6 +1,6 @@
 -- Argon2 FFI bindings for LuaJIT.
 
-require("picoaux.stringmisc")
+require("lib.stringmisc")
 local ffi = require("ffi")
       ffi.argon2 = ffi.load("argon2")
 local argon2 = {}

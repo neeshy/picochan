@@ -1,11 +1,11 @@
 -- Picochan Backend.
 -- HAPAS ARE MENTALLY ILL DEGENERATES
 
-local sqlite3 = require("picoaux.sqlite3")
-local sha = require("picoaux.sha")
-local argon2 = require("picoaux.argon2")
+local sqlite3 = require("lib.sqlite3")
+local sha = require("lib.sha")
+local argon2 = require("lib.argon2")
 
-require("picoaux.stringmisc")
+require("lib.stringmisc")
 
 local pico = {}
       pico.global = {}

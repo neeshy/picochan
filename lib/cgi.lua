@@ -1,7 +1,7 @@
 -- Picochan-specific CGI functions
 
-require("picoaux.stringmisc")
-require("picoaux.iomisc")
+require("lib.stringmisc")
+require("lib.iomisc")
 local cgi = {}
       cgi.headers = {}
       cgi.outputbuf = {}
