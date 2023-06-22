@@ -3,8 +3,6 @@
 
 local pico = require("picoengine")
 local cgi = require("picoaux.cgi")
-local json = require("picoaux.json")
-local date = require("picoaux.date")
 
 require("picoaux.iomisc")
 
@@ -39,7 +37,6 @@ if jit.os == "BSD" then
 end
 
 local sitename = pico.global.get("sitename", "Picochan")
-local siteurl = (os.getenv("REQUEST_SCHEME") or "http") .. "://" .. (os.getenv("HTTP_HOST") or "localhost")
 local defaultpostname = pico.global.get("defaultpostname", "Anonymous")
 local defaultboardview = pico.global.get("defaultboardview", "catalog")
 local threadpagesize = pico.global.get("threadpagesize", 50)
@@ -856,49 +853,6 @@ function html.form.account_config()
   printf("</form>")
 end
 
-function html.form.endpoint_add()
-  printf("<form method='post'>")
-  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
-  printf(  "<label for='type'>Type</label>")
-  printf(  "<select id='type' name='type'>")
-  printf(    "<option value='following' selected>Following</option>")
-  printf(    "<option value='known'>Known Only</option>")
-  printf(    "<option value='blacklist'>Blacklisted</option>")
-  printf(  "</select><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
-  printf("</form>")
-end
-
-function html.form.endpoint_remove()
-  printf("<form method='post'>")
-  printf(  "<label for='endpoint'>Endpoint</label><input id='endpoint' name='endpoint' type='text' required autofocus /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
-  printf("</form>")
-end
-
-function html.form.endpoint_config_select()
-  printf("<form method='post'>")
-  printf(  "<label for='Endpoint'>Endpoint</label><input id='Endpoint' name='Endpoint' type='text' required autofocus /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-function html.form.endpoint_config(endpoint)
-  local endpoint_tbl = pico.webring.endpoint.tbl(endpoint)
-
-  printf("<form method='post'>")
-  printf(  "<input type='hidden' name='Endpoint' value='%s' />", html.striphtml(endpoint_tbl.Endpoint))
-  printf(  "<label for='Type'>Type</label>")
-  printf(  "<select id='Type' name='Type'>")
-  printf(    "<option value='following'%s>Following</option>", endpoint_tbl.Type == "following" and " selected" or "")
-  printf(    "<option value='known'%s>Known Only</option>", endpoint_tbl.Type == "known" and " selected" or "")
-  printf(    "<option value='blacklist'%s>Blacklisted</option>", endpoint_tbl.Type == "blacklist" and " selected" or "")
-  printf(  "</select><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Configure' />")
-  printf("</form>")
-end
-
 function html.form.globalconfig(varname)
   printf("<form method='post'>")
   printf("<input type='hidden' name='name' value='%s' />", varname)
@@ -1071,12 +1025,6 @@ handlers["/Mod"] = function()
   html.list.entry("<a href='/Mod/board/config'>Configure a board</a>")
   html.list.entry("<a href='/Mod/banner/add'>Add a banner to a board</a>")
   html.list.entry("<a href='/Mod/banner/delete'>Delete a banner from a board</a>")
-  html.list.finish()
-  html.container.barheader("Webring")
-  html.list.begin()
-  html.list.entry("<a href='/Mod/webring/add'>Add a webring endpoint</a>")
-  html.list.entry("<a href='/Mod/webring/remove'>Remove a webring endpoint</a>")
-  html.list.entry("<a href='/Mod/webring/config'>Configure a webring endpoint</a>")
   html.list.finish()
   html.cfinish()
 end
@@ -1349,69 +1297,6 @@ handlers["/Mod/banner/delete"] = function()
   html.cfinish()
 end
 
-handlers["/Mod/webring/add"] = function()
-  account_check()
-  html.brc("add webring endpoint", "Add webring endpoint")
-
-  if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(cgi.POST, "endpoint", "type") then
-      local status, msg = pico.webring.endpoint.add(cgi.POST.endpoint, cgi.POST.type)
-      printf("%s%s", (not status) and "Cannot add webring endpoint: " or "", msg)
-    else
-      cgi.headers.Status = "400 Bad Request"
-      html.error("Action failed", "Invalid request")
-    end
-  end
-
-  html.form.endpoint_add()
-  html.cfinish()
-end
-
-handlers["/Mod/webring/remove"] = function()
-  account_check()
-  html.brc("remove webring endpoint", "Remove webring endpoint")
-
-  if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(cgi.POST, "endpoint", "reason") then
-      local status, msg = pico.webring.endpoint.remove(cgi.POST.endpoint, cgi.POST.reason)
-      printf("%s%s", (not status) and "Cannot remove webring endpoint: " or "", msg)
-    else
-      cgi.headers.Status = "400 Bad Request"
-      html.error("Action failed", "Invalid request")
-    end
-  end
-
-  html.form.endpoint_remove()
-  html.cfinish()
-end
-
-handlers["/Mod/webring/config"] = function()
-  account_check()
-  html.brc("configure webring endpoint", "Configure webring endpoint")
-
-  if os.getenv("REQUEST_METHOD") == "POST" then
-    if tbl_validate(cgi.POST, "Endpoint") then
-      if pico.webring.endpoint.exists(cgi.POST.Endpoint) then
-        if tbl_validate(cgi.POST, "Type") then
-          local status, msg = pico.webring.endpoint.configure(cgi.POST)
-          printf("%s%s", (not status) and "Cannot configure webring endpoint: " or "", msg)
-        end
-        html.form.endpoint_config(cgi.POST.Endpoint)
-      else
-        printf("Cannot configure webring endpoint: Endpoint does not exist")
-        html.form.endpoint_config_select()
-      end
-    else
-      cgi.headers.Status = "400 Bad Request"
-      html.error("Action failed", "Invalid request")
-    end
-  else
-    html.form.endpoint_config_select()
-  end
-
-  html.cfinish()
-end
-
 handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post, file)
   account_check()
   html.begin("%s post", operation)
@@ -1577,47 +1462,7 @@ end
 handlers["/Log/(%d+)"] = handlers["/Log"]
 
 handlers["/Boards"] = function()
-  local known = pico.webring.tbl().known
-  local webring_boards = {}
-  local curl_loaded, curl = pcall(require, "picoaux.curl")
-
-  if curl_loaded then
-    for headers, body in curl.multi_request(known) do
-      if headers.status == 200 then
-        local status, boards = pcall(function()
-          local webring = assert(json.decode(body))
-          local site_name = assert(webring.name)
-          local site_boards = assert(webring.boards)
-          local boards = {}
-          for j = 1, #site_boards do
-            local board = {}
-            board.site_name = site_name
-            board.name = html.striphtml(site_boards[j].uri) or ""
-            board.title = html.striphtml(site_boards[j].title) or ""
-            board.subtitle = html.striphtml(site_boards[j].subtitle) or ""
-            board.path = html.striphtml(site_boards[j].path) or ""
-            board.pph = html.striphtml(site_boards[j].postsPerHour) or ""
-            board.total = html.striphtml(site_boards[j].totalPosts) or ""
-            board.last = date.iso8601(site_boards[j].lastPostTimestamp)
-            board.last = board.last and html.date(board.last, true) or ""
-
-            boards[#boards + 1] = board
-          end
-          return boards
-        end)
-        if status then
-          for j = 1, #boards do
-            webring_boards[#webring_boards + 1] = boards[j]
-          end
-        end
-      end
-    end
-  end
-
   html.brc("boards", "Board List", "wide")
-  if #webring_boards ~= 0 then
-    html.container.barheader("Local Boards")
-  end
   html.table.begin("Board", "Title", "Subtitle", "TPW (7d)", "TPD (1d)", "PPD (7d)", "PPD (1d)", "PPH (1h)", "Total Posts", "Last Activity")
 
   local g_tpw7d = 0
@@ -1658,19 +1503,6 @@ handlers["/Boards"] = function()
 
   html.table.entry("<i>GLOBAL</i>", "", "", g_tpw7d, g_tpd1d, g_ppd7d, g_ppd1d, g_pph1h, g_total, g_last and html.date(g_last, true) or "")
   html.table.finish()
-
-  if #webring_boards ~= 0 then
-    html.container.barheader("Webring Boards")
-    html.table.begin("Board", "Title", "Subtitle", "PPH", "Total Posts", "Last Activity")
-    for i = 1, #webring_boards do
-      local board = webring_boards[i]
-      html.table.entry(string.format("<a href='%s' title='%s'>%s/%s/</a>",
-                       board.path, board.title, board.site_name, board.name),
-                       board.title, board.subtitle, board.pph, board.total, board.last)
-    end
-    html.table.finish()
-  end
-
   html.cfinish()
 end
 
@@ -1926,11 +1758,6 @@ handlers["/Post"] = function()
   else
     cgi.headers.Location = "/" .. cgi.POST.board .. "/" .. cgi.POST.parent .. "#" .. number
   end
-end
-
-handlers["/webring.json"] = function()
-  cgi.headers["Content-Type"] = "application/json"
-  printf("%s", json.encode(pico.webring.tbl(sitename, siteurl)))
 end
 
 local path_info = os.getenv("PATH_INFO")

@@ -136,11 +136,6 @@ CREATE TABLE Captchas (
   ExpireDate            DATETIME        NOT NULL                                DEFAULT 0
 ) WITHOUT ROWID;
 
-CREATE TABLE Webring (
-  Endpoint              TEXT            NOT NULL        UNIQUE  PRIMARY KEY,
-  Type                  TEXT            NOT NULL                                DEFAULT 'known' CHECK(Type IN ('following', 'known', 'blacklist'))
-) WITHOUT ROWID;
-
 CREATE TRIGGER create_thread AFTER INSERT ON Posts
   WHEN NEW.Parent IS NULL
 BEGIN
