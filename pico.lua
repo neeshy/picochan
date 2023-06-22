@@ -1683,6 +1683,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
 
   html.finish()
 end
+
 handlers["/([%l%d]+)/(%d+)/(%d+)"] = handlers["/([%l%d]+)/(%d+)"]
 
 handlers["/Theme"] = function()
