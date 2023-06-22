@@ -210,6 +210,10 @@ function pico.account.logout(key)
   return true, "Account logged out successfully"
 end
 
+function pico.account.list()
+  return db:q1("SELECT Name FROM Accounts")
+end
+
 function pico.account.exists(name)
   return db:b("SELECT TRUE FROM Accounts WHERE Name = ?", name)
 end

@@ -743,6 +743,13 @@ function html.form.mod_login()
   printf("</form>")
 end
 
+local function board_selection()
+  local boards = pico.board.list()
+  for i = 1, #boards do
+    printf("<option value='%s'>/%s/ - %s</option>", boards[i].Name, boards[i].Name, boards[i].Title)
+  end
+end
+
 function html.form.board_create()
   printf("<form method='post'>")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
@@ -754,7 +761,10 @@ end
 
 function html.form.board_delete()
   printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='name'>Name</label>")
+  printf(  "<select id='name' name='name' autofocus>")
+  board_selection()
+  printf(  "</select><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
   printf("</form>")
@@ -762,7 +772,10 @@ end
 
 function html.form.board_config_select()
   printf("<form method='post'>")
-  printf(  "<label for='Name'>Name</label><input id='Name' name='Name' type='text' required autofocus /><br />")
+  printf(  "<label for='Name'>Name</label>")
+  printf(  "<select id='Name' name='Name' autofocus>")
+  board_selection()
+  printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
@@ -796,7 +809,10 @@ end
 
 function html.form.banner_add()
   printf("<form method='post'>")
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='board'>Board</label>")
+  printf(  "<select id='board' name='board' autofocus>")
+  board_selection()
+  printf(  "</select><br />")
   printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
   printf("</form>")
@@ -804,7 +820,10 @@ end
 
 function html.form.banner_delete_select()
   printf("<form method='post'>")
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='board'>Board</label>")
+  printf(  "<select id='board' name='board' autofocus>")
+  board_selection()
+  printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
@@ -820,6 +839,13 @@ function html.form.banner_delete(board, banners)
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
   printf("</form>")
+end
+
+local function account_selection(default)
+  local accounts = pico.account.list()
+  for i = 1, #accounts do
+    printf("<option value='%s'%s>%s</option>", accounts[i], accounts[i] == default and " selected" or "", accounts[i])
+  end
 end
 
 function html.form.account_create()
@@ -840,7 +866,10 @@ end
 
 function html.form.account_delete()
   printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='name'>Name</label>")
+  printf(  "<select id='name' name='name' autofocus />")
+  account_selection(pico.account.current.Name)
+  printf(  "</select><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
   printf("</form>")
@@ -848,7 +877,10 @@ end
 
 function html.form.account_config()
   printf("<form method='post'>")
-  printf(  "<label for='name'>Account</label><input id='name' name='name' type='text' value='%s' required /><br />", pico.account.current.Name)
+  printf(  "<label for='name'>Account</label>")
+  printf(  "<select id='name' name='name' autofocus /><br />")
+  account_selection(pico.account.current.Name)
+  printf(  "</select><br />")
   printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
   printf("</form>")
