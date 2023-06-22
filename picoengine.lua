@@ -998,9 +998,8 @@ function pico.thread.tbl(board, number, page)
   local thread_tbl, pagecount
   if page then
     local pagesize = pico.global.get("threadpagesize")
-    thread_tbl = db:q("SELECT * FROM " ..
-                      "(SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                      "WHERE Board = ? AND Number = ?) " ..
+    thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                      "WHERE Board = ? AND Number = ? " ..
                       "UNION ALL " ..
                       "SELECT * FROM " ..
                       "(SELECT *, " ..
