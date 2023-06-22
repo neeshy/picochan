@@ -102,11 +102,10 @@ function argon2.digest(password, argon2_type, salt, params)
                                    password, #password, salt, #salt, nil, 64,
                                    result, resultlen, hashtype_lut[argon2_type], params.version)
 
-  if errcode == 0 then
-    return ffi.string(result, resultlen)
-  else
+  if errcode ~= 0 then
     return nil, errcode_lut[errcode]
   end
+  return ffi.string(result, resultlen)
 end
 
 function argon2.verify(password, hash, argon2_type)
@@ -116,7 +115,7 @@ function argon2.verify(password, hash, argon2_type)
 
   argon2_type = argon2_type or "argon2id"
   local errcode = ffi.argon2.argon2_verify(hash, password, #password, hashtype_lut[argon2_type])
-  return (errcode == 0), errcode_lut[errcode]
+  return errcode == 0, errcode_lut[errcode]
 end
 
 return argon2

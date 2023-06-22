@@ -597,9 +597,9 @@ local function identify_file(data)
     return "svg"
   elseif not data:find("[^%w%s%p]") then
     return "txt"
-  else
-    return nil
   end
+
+  return nil
 end
 
 -- return a file's extension based on its name
@@ -1204,9 +1204,8 @@ function pico.captcha.check(id, text)
   if db:b("SELECT TRUE FROM Captchas WHERE Id = ? AND Text = LOWER(?) AND ExpireDate > STRFTIME('%s', 'now')", id, text) then
     db:e("DELETE FROM Captchas WHERE Id = ?", id)
     return true
-  else
-    return false
   end
+  return false
 end
 
 return pico

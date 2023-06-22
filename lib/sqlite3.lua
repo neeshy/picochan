@@ -232,9 +232,9 @@ function metatable_db:b(sql, ...)
     return true
   elseif ret == sqlite3.DONE then
     return false
-  else
-    error(self:errmsg(), 2)
   end
+
+  error(self:errmsg(), 2)
 end
 
 -- Return nothing
@@ -272,9 +272,9 @@ function metatable_stmt:bind(column, value)
     return ffi.sqlite3.sqlite3_bind_int(self.stmt, column, value)
   elseif value == nil then
     return ffi.sqlite3.sqlite3_bind_null(self.stmt, column)
-  else
-    error("incorrect datatype for parameter 'value'")
   end
+
+  error("incorrect datatype for parameter 'value'")
 end
 
 function metatable_stmt:bind_values(...)
@@ -312,11 +312,10 @@ function metatable_stmt:get_value(column)
     return ffi.string(ffi.sqlite3.sqlite3_column_text(self.stmt, column))
   elseif type == ffi.sqlite3.SQLITE_BLOB then
     local blob = ffi.sqlite3.sqlite3_column_blob(self.stmt, column)
-    if blob ~= nil then
-      return ffi.string(blob, ffi.sqlite3.sqlite3_column_bytes(self.stmt, column))
-    else
+    if blob == nil then
       return nil
     end
+    return ffi.string(blob, ffi.sqlite3.sqlite3_column_bytes(self.stmt, column))
   elseif type == ffi.sqlite3.SQLITE_NULL then
     return nil
   end

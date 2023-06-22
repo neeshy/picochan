@@ -17,9 +17,8 @@ function openbsd.pledge(promises, execpromises)
 
   if retval == -1 then
     return false, ffi.string(ffi.C.strerror(ffi.errno()))
-  else
-    return true
   end
+  return true
 end
 
 function openbsd.unveil(path, permissions)
@@ -30,9 +29,8 @@ function openbsd.unveil(path, permissions)
 
   if retval == -1 then
     return false, ffi.string(ffi.C.strerror(ffi.errno()))
-  else
-    return true
   end
+  return true
 end
 
 return openbsd
