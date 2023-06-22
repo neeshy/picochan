@@ -73,7 +73,7 @@ local modes = {
 
 function sqlite3.open(path, mode)
   assert(type(path) == "string", "incorrect datatype for parameter 'path'")
-  assert(modes[mode or "c"], "invalid value for parameter 'mode'")
+  assert(mode == nil or modes[mode], "invalid value for parameter 'mode'")
 
   local db = new_db()
   local err = ffi.sqlite3.sqlite3_open_v2(path, db, modes[mode or "c"], nil)
