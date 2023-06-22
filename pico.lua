@@ -38,11 +38,11 @@ if jit.os == "BSD" then
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns")
 end
 
-local sitename = pico.global.get("sitename") or "Picochan"
+local sitename = pico.global.get("sitename", "Picochan")
 local siteurl = (os.getenv("REQUEST_SCHEME") or "http") .. "://" .. (os.getenv("HTTP_HOST") or "localhost")
-local defaultpostname = pico.global.get("defaultpostname") or "Anonymous"
-local defaultboardview = pico.global.get("defaultboardview") or "catalog"
-local threadpagesize = pico.global.get("threadpagesize") or 50
+local defaultpostname = pico.global.get("defaultpostname", "Anonymous")
+local defaultboardview = pico.global.get("defaultboardview", "catalog")
+local threadpagesize = pico.global.get("threadpagesize", 50)
 
 cgi.initialize()
 pico.account.register_login(cgi.COOKIE.session_key)
@@ -63,7 +63,7 @@ function html.begin(...)
   local title = string.format(...)
   title = title and (title .. " - ") or ""
   local theme = (cgi.COOKIE.theme and io.fileexists("./Static/" .. cgi.COOKIE.theme .. ".css"))
-                and cgi.COOKIE.theme or (pico.global.get("theme") or "picochan")
+                and cgi.COOKIE.theme or pico.global.get("theme", "picochan")
 
   printf("<!DOCTYPE html>\r\n")
   printf("<html>")
@@ -122,7 +122,7 @@ function html.redheader(...)
 end
 
 function html.announce()
-  printf("<div id='announce'>%s</div>", pico.global.get("announce") or "")
+  printf("<div id='announce'>%s</div>", pico.global.get("announce", ""))
 end
 
 function html.container.begin(width)
@@ -909,7 +909,7 @@ function html.form.globalconfig(varname)
 
   if varname == "frontpage" or varname == "announce" then
     printf("<textarea id='value' name='value' cols='40' rows='12' autofocus>%s</textarea>",
-           html.striphtml(pico.global.get(varname) or "") or "")
+           html.striphtml(pico.global.get(varname, "")) or "")
   elseif varname == "theme" then
     printf("<select id='value' name='value' autofocus>")
     local theme = pico.global.get("theme")
@@ -926,7 +926,7 @@ function html.form.globalconfig(varname)
     printf("</select>")
   else
     printf("<input id='value' name='value' value='%s' type='text' autofocus />",
-           html.striphtml(pico.global.get(varname) or "") or "")
+           html.striphtml(pico.global.get(varname, "")) or "")
   end
   printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
   printf("</form>")
@@ -1030,7 +1030,7 @@ handlers["/"] = function()
   html.begin("welcome")
   html.redheader("Welcome to %s", sitename)
   html.container.begin()
-  printf("%s", pico.global.get("frontpage") or "")
+  printf("%s", pico.global.get("frontpage", ""))
   html.container.finish()
   html.finish()
 end

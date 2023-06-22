@@ -218,9 +218,13 @@ end
 -- GLOBAL CONFIGURATION FUNCTIONS
 --
 
--- retrieve value of globalconfig variable or nil if it doesn't exist
-function pico.global.get(name)
-  return db:r1("SELECT Value FROM GlobalConfig WHERE Name = ?", name)
+-- retrieve value of globalconfig variable or the default value if it doesn't exist
+function pico.global.get(name, default)
+  local value = db:r1("SELECT Value FROM GlobalConfig WHERE Name = ?", name)
+  if value ~= nil then
+    return value
+  end
+  return default
 end
 
 -- setting a globalconfig variable to nil removes it.
@@ -336,8 +340,6 @@ function pico.board.catalog(name, page)
   end
 
   page = tonumber(page) or 1
-  local pagesize = pico.global.get(name and "catalogpagesize" or "overboardpagesize")
-
   local where = name and "Threads.Board = ? "
                       or "Threads.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) "
   local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
@@ -352,9 +354,11 @@ function pico.board.catalog(name, page)
 
   local catalog_tbl, pagecount
   if name then
+    local pagesize = pico.global.get("catalogpagesize", 1000)
     catalog_tbl = db:q(sql, name, pagesize, (page - 1) * pagesize)
     pagecount = db:r1(pagecount_sql, pagesize, name)
   else
+    local pagesize = pico.global.get("overboardpagesize", 100)
     catalog_tbl = db:q(sql, pagesize, (page - 1) * pagesize)
     pagecount = db:r1(pagecount_sql, pagesize)
   end
@@ -368,9 +372,9 @@ function pico.board.index(name, page)
   end
 
   page = tonumber(page) or 1
-  local pagesize = pico.global.get("indexpagesize")
-  local threadpagesize = pico.global.get("threadpagesize")
-  local windowsize = pico.global.get("indexwindowsize")
+  local pagesize = pico.global.get("indexpagesize", 10)
+  local threadpagesize = pico.global.get("threadpagesize", 50)
+  local windowsize = pico.global.get("indexwindowsize", 5)
 
   local where = name and "WHERE Board = ? " or ""
   local sql = "SELECT Board, Number FROM Threads " ..
@@ -426,7 +430,7 @@ function pico.board.recent(name, page)
   end
 
   page = tonumber(page) or 1
-  local pagesize = pico.global.get("recentpagesize")
+  local pagesize = pico.global.get("recentpagesize", 50)
 
   local where = name and "WHERE Board = ? " or ""
   local sql = "SELECT * FROM Posts " ..  where ..  "ORDER BY Date DESC LIMIT ? OFFSET ?"
@@ -639,7 +643,7 @@ end
 function pico.file.add(f)
   local size = assert(f:seek("end"))
 
-  if size > pico.global.get("maxfilesize") then
+  if size > pico.global.get("maxfilesize", 16777216) then
     f:close()
     return nil, "File too large"
   end
@@ -1005,7 +1009,7 @@ function pico.thread.tbl(board, number, page)
   db:e("BEGIN TRANSACTION")
   local thread_tbl, pagecount
   if page then
-    local pagesize = pico.global.get("threadpagesize")
+    local pagesize = pico.global.get("threadpagesize", 50)
     thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
                       "WHERE Board = ? AND Number = ? " ..
                       "UNION ALL " ..
@@ -1142,7 +1146,7 @@ end
 
 function pico.log.retrieve(page)
   page = tonumber(page) or 1
-  local pagesize = pico.global.get("logpagesize")
+  local pagesize = pico.global.get("logpagesize", 50)
   return db:q("SELECT * FROM Logs ORDER BY ROWID DESC LIMIT ? OFFSET ?", pagesize, (page - 1) * pagesize),
          db:r1("SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1 FROM Logs", pagesize)
 end
