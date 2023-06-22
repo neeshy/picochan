@@ -41,6 +41,10 @@ nav#topbar>ul>span#logged-in-notification {
     margin-right: 1.5ch;
 }
 
+nav#topbar:not(:hover):not(:focus-within) {
+  white-space: nowrap;
+}
+
 main {
     margin-top: 30px;
 }
