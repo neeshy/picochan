@@ -35,15 +35,15 @@ db:e("PRAGMA case_sensitive_like = ON")
 pico.account.current = nil
 
 local function valid_account_name(name)
-  return (type(name) == "string") and (#name <= 16 and #name >= 1) and (not name:match("[^%w]"))
+  return type(name) == "string" and #name <= 16 and #name >= 1 and not name:match("[^%w]")
 end
 
 local function valid_account_type(type)
-  return (type == "admin" or type == "gvol" or type == "bo" or type == "lvol")
+  return type == "admin" or type == "gvol" or type == "bo" or type == "lvol"
 end
 
 local function valid_account_password(password)
-  return (type(password) == "string") and (#password >= 6 and #password <= 128)
+  return type(password) == "string" and #password >= 6 and #password <= 128
 end
 
 -- permclass is a space-separated list of one or more of the following:
@@ -243,16 +243,15 @@ end
 --
 
 local function valid_board_name(name)
-  return (type(name) == "string") and (not name:match("[^%l%d]"))
-         and (#name >= 1 and #name <= 8)
+  return type(name) == "string" and #name >= 1 and #name <= 8 and not name:match("[^%l%d]")
 end
 
 local function valid_board_title(title)
-  return (type(title) == "string") and (#title >= 1 and #title <= 32)
+  return type(title) == "string" and #title >= 1 and #title <= 32
 end
 
 local function valid_board_subtitle(subtitle)
-  return (type(subtitle) == "string") and (#subtitle >= 1 and #subtitle <= 64)
+  return type(subtitle) == "string" and #subtitle >= 1 and #subtitle <= 64
 end
 
 function pico.board.create(name, title, subtitle)
