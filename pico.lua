@@ -1701,7 +1701,7 @@ local function board_header(board_tbl)
   html.announce()
   if pico.account.current or board_tbl.Lock ~= 1 then
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
-    html.form.postform(board_tbl, nil)
+    html.form.postform(board_tbl)
   end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl.Name)
   printf("<a href='/%s/index'>[Index]</a> ", board_tbl.Name)
