@@ -252,11 +252,11 @@ function html.picofmt(post_tbl)
     number = tonumber(number)
     local ref_post_tbl = pico.post.tbl(post_tbl.Board, number, true)
 
-    if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2%d</a></s>%s", number, append)
-    else
+    if ref_post_tbl then
       return string.format("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>%s",
                            ref_post_tbl.Board, ref_post_tbl.Parent or number, number, number, append)
+    else
+      return string.format("<s><a class='reference'>\2\2%d</a></s>%s", number, append)
     end
   end
 
@@ -269,11 +269,11 @@ function html.picofmt(post_tbl)
 
     local ref_post_tbl = pico.post.tbl(board, number, true)
 
-    if not ref_post_tbl then
-      return string.format("<s><a class='reference'>\2\2\2/%s/%d</a></s>%s", board, number, append)
-    else
+    if ref_post_tbl then
       return string.format("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>%s",
                            board, ref_post_tbl.Parent or number, number, board, number, append)
+    else
+      return string.format("<s><a class='reference'>\2\2\2/%s/%d</a></s>%s", board, number, append)
     end
   end
 
@@ -1042,13 +1042,13 @@ handlers["/Mod/login"] = function()
     if tbl_validate(cgi.POST, "username", "password") then
       local session_key, errmsg = pico.account.login(cgi.POST.username, cgi.POST.password)
 
-      if not session_key then
-        printf("Cannot log in: %s", errmsg)
-      else
+      if session_key then
         cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict"
         cgi.headers.Status = "303 See Other"
         cgi.headers.Location = "/Mod"
         cgi.finalize()
+      else
+        printf("Cannot log in: %s", errmsg)
       end
     else
       cgi.headers.Status = "400 Bad Request"
@@ -1093,8 +1093,7 @@ handlers["/Mod/tools/multidelete"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "board", "ispec", "reason") then
-      local result, msg = pico.post.multidelete(cgi.POST.board, cgi.POST.ispec, cgi.POST.espec ~= "" and cgi.POST.espec or nil, cgi.POST.reason)
-      printf("%s", msg)
+      printf("%s", select(2, pico.post.multidelete(cgi.POST.board, cgi.POST.ispec, cgi.POST.espec ~= "" and cgi.POST.espec or nil, cgi.POST.reason)))
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1111,8 +1110,7 @@ handlers["/Mod/tools/pattdelete"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "pattern", "reason") then
-      local result, msg = pico.post.pattdelete(cgi.POST.pattern, cgi.POST.reason)
-      printf("%s", msg)
+      printf("%s", select(2, pico.post.pattdelete(cgi.POST.pattern, cgi.POST.reason)))
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1146,8 +1144,8 @@ handlers["/Mod/account/delete"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "reason") then
-      local status, msg = pico.account.delete(cgi.POST.name, cgi.POST.reason)
-      printf("%s%s", (not status) and "Cannot delete account: " or "", msg)
+      local result, msg = pico.account.delete(cgi.POST.name, cgi.POST.reason)
+      printf("%s%s", result and "" or "Cannot delete account: ", msg)
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1181,8 +1179,8 @@ handlers["/Mod/board/create"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "title") then
-      local status, msg = pico.board.create(cgi.POST.name, cgi.POST.title, cgi.POST.subtitle ~= "" and cgi.POST.subtitle or nil)
-      printf("%s%s", (not status) and "Cannot create board: " or "", msg)
+      local result, msg = pico.board.create(cgi.POST.name, cgi.POST.title, cgi.POST.subtitle ~= "" and cgi.POST.subtitle or nil)
+      printf("%s%s", result and "" or "Cannot create board: ", msg)
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1199,8 +1197,8 @@ handlers["/Mod/board/delete"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "name", "reason") then
-      local status, msg = pico.board.delete(cgi.POST.name, cgi.POST.reason)
-      printf("%s%s", (not status) and "Cannot delete board: " or "", msg)
+      local result, msg = pico.board.delete(cgi.POST.name, cgi.POST.reason)
+      printf("%s%s", result and "" or "Cannot delete board: ", msg)
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1227,8 +1225,8 @@ handlers["/Mod/board/config"] = function()
           cgi.POST.BumpLimit = cgi.POST.BumpLimit ~= "" and cgi.POST.BumpLimit or nil
           cgi.POST.PostLimit = cgi.POST.PostLimit ~= "" and cgi.POST.PostLimit or nil
           cgi.POST.ThreadLimit = cgi.POST.ThreadLimit ~= "" and cgi.POST.ThreadLimit or nil
-          local status, msg = pico.board.configure(cgi.POST)
-          printf("%s%s", (not status) and "Cannot configure board: " or "", msg)
+          local result, msg = pico.board.configure(cgi.POST)
+          printf("%s%s", result and "" or "Cannot configure board: ", msg)
         end
         html.form.board_config(cgi.POST.Name)
       else
@@ -1252,8 +1250,8 @@ handlers["/Mod/banner/add"] = function()
 
   if os.getenv("REQUEST_METHOD") == "POST" then
     if tbl_validate(cgi.POST, "board", "file") then
-      local status, msg = pico.board.banner.add(cgi.POST.board, cgi.POST.file)
-      printf("%s%s", (not status) and "Cannot add banner: " or "", msg)
+      local result, msg = pico.board.banner.add(cgi.POST.board, cgi.POST.file)
+      printf("%s%s", result and "" or "Cannot add banner: ", msg)
     else
       cgi.headers.Status = "400 Bad Request"
       html.error("Action failed", "Invalid request")
@@ -1274,8 +1272,8 @@ handlers["/Mod/banner/delete"] = function()
         local banners = pico.board.banner.list(cgi.POST.board)
         if #banners > 0 then
           if tbl_validate(cgi.POST, "file", "reason") then
-            local status, msg = pico.board.banner.delete(cgi.POST.board, cgi.POST.file, cgi.POST.reason)
-            printf("%s%s", (not status) and "Cannot delete banner: " or "", msg)
+            local result, msg = pico.board.banner.delete(cgi.POST.board, cgi.POST.file, cgi.POST.reason)
+            printf("%s%s", result and "" or "Cannot delete banner: ", msg)
           end
           html.form.banner_delete(cgi.POST.board, banners)
         else
@@ -1334,9 +1332,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
         result, msg = pico.thread.toggle(operation, board, post, cgi.POST.reason)
       end
 
-      if not result then
-        html.error("Action failed", "Backend returned error: %s", msg)
-      else
+      if result then
         cgi.headers.Status = "303 See Other"
 
         if operation == "move" then
@@ -1354,6 +1350,8 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
         end
 
         cgi.finalize()
+      else
+        html.error("Action failed", "Backend returned error: %s", msg)
       end
     else
       cgi.headers.Status = "400 Bad Request"
@@ -1404,12 +1402,12 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
     if tbl_validate(cgi.POST, "reason") then
       local result, msg = pico.file.delete(file, cgi.POST.reason)
 
-      if not result then
-        html.error("Action failed", "Backend returned error: %s", msg)
-      else
+      if result then
         cgi.headers.Status = "303 See Other"
         cgi.headers.Location = "/Overboard"
         cgi.finalize()
+      else
+        html.error("Action failed", "Backend returned error: %s", msg)
       end
     else
       cgi.headers.Status = "400 Bad Request"
@@ -1624,13 +1622,13 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
 
   if not thread_tbl then
     local post_tbl = pico.post.tbl(board, post)
-    if not post_tbl then
-      cgi.headers.Status = "404 Not Found"
-      html.error("Thread Not Found", "Cannot display thread: %s", msg)
-    else
+    if post_tbl then
       cgi.headers.Status = "301 Moved Permanently"
       cgi.headers.Location = string.format("/%s/%d#%d", board, post_tbl.Parent, post_tbl.Number)
       cgi.finalize()
+    else
+      cgi.headers.Status = "404 Not Found"
+      html.error("Thread Not Found", "Cannot display thread: %s", msg)
     end
   end
 
@@ -1754,10 +1752,10 @@ handlers["/Post"] = function()
 
   cgi.headers.Status = "303 See Other"
 
-  if not cgi.POST.parent then
-    cgi.headers.Location = "/" .. cgi.POST.board .. "/" .. number
-  else
+  if cgi.POST.parent then
     cgi.headers.Location = "/" .. cgi.POST.board .. "/" .. cgi.POST.parent .. "#" .. number
+  else
+    cgi.headers.Location = "/" .. cgi.POST.board .. "/" .. number
   end
 end
 
