@@ -392,10 +392,18 @@ function pico.board.index(name, page)
 
   local index_tbl = {}
   for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM (SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
-                        "WHERE Board = ? AND (Number = ? OR Parent = ?) ORDER BY Parent ASC, Number DESC LIMIT ?) " ..
+    index_tbl[i] = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+                        "WHERE Board = ? AND Number = ? " ..
+                        "UNION ALL " ..
+                        "SELECT * FROM " ..
+                        "(SELECT *, " ..
+                        "NULL AS LastBumpDate, NULL AS Sticky, NULL AS Lock, " ..
+                        "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount " ..
+                        "FROM Posts " ..
+                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) " ..
                         "ORDER BY Number ASC",
-                        thread_ops[i].Board, thread_ops[i].Number, thread_ops[i].Number, windowsize + 1)
+                        thread_ops[i].Board, thread_ops[i].Number,
+                        thread_ops[i].Board, thread_ops[i].Number, windowsize)
     if index_tbl[i][1].ReplyCount > windowsize then
       index_tbl[i][1].RepliesOmitted = index_tbl[i][1].ReplyCount - windowsize
     else
