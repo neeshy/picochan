@@ -131,6 +131,17 @@ function html.container.barheader(...)
   printf("<h2 class='barheader'>%s</h2>", string.format(...))
 end
 
+function html.brc(title, redheader, width)
+  html.begin(title)
+  html.redheader(redheader)
+  html.container.begin(width)
+end
+
+function html.cfinish()
+  html.container.finish()
+  html.finish()
+end
+
 function html.list.begin()
   printf("<ul>")
 end
@@ -688,17 +699,6 @@ function html.renderpages(prefix, page, pagecount)
     printf("<div class='float-right'>[Next] [Last]</div>")
   end
   printf("</div>")
-end
-
-function html.brc(title, redheader, width)
-  html.begin(title)
-  html.redheader(redheader)
-  html.container.begin(width)
-end
-
-function html.cfinish()
-  html.container.finish()
-  html.finish()
 end
 
 function html.form.postform(board_tbl, parent)
