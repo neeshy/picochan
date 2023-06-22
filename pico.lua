@@ -108,12 +108,9 @@ end
 
 function html.error(title, ...)
   cgi.outputbuf = {}
-  html.begin("error")
-  html.redheader(title)
-  html.container.begin()
+  html.brc("error", title)
   printf(...)
-  html.container.finish()
-  html.finish()
+  html.cfinish()
   cgi.finalize()
 end
 
@@ -696,10 +693,10 @@ function html.renderpages(prefix, page, pagecount)
   printf("</div>")
 end
 
-function html.brc(title, redheader)
+function html.brc(title, redheader, width)
   html.begin(title)
   html.redheader(redheader)
-  html.container.begin()
+  html.container.begin(width)
 end
 
 function html.cfinish()
@@ -1031,8 +1028,7 @@ handlers["/"] = function()
   html.redheader("Welcome to %s", sitename)
   html.container.begin()
   printf("%s", pico.global.get("frontpage", ""))
-  html.container.finish()
-  html.finish()
+  html.cfinish()
 end
 
 handlers["/Mod"] = function()
@@ -1542,9 +1538,7 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
 end
 
 handlers["/Log"] = function(page)
-  html.begin("logs")
-  html.redheader("Moderation Logs")
-  html.container.begin("wide")
+  html.brc("logs", "Moderation Logs", "wide")
 
   page = tonumber(page) or 1
   if page <= 0 then
@@ -1620,9 +1614,7 @@ handlers["/Boards"] = function()
     end
   end
 
-  html.begin("boards")
-  html.redheader("Board List")
-  html.container.begin("wide")
+  html.brc("boards", "Board List", "wide")
   if #webring_boards ~= 0 then
     html.container.barheader("Local Boards")
   end
