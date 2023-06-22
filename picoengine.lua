@@ -377,8 +377,9 @@ function pico.board.index(name, page)
   local sql = "SELECT Board, Number FROM Threads " ..
               where ..
               "ORDER BY " ..
-              (name and "Sticky DESC, " or "") ..
-              "LastBumpDate DESC LIMIT ? OFFSET ?"
+              (name and "Sticky DESC, LastBumpDate DESC, Threads.Number DESC "
+                     or "LastBumpDate DESC ") ..
+              "LIMIT ? OFFSET ?"
   local pagecount_sql = "SELECT ((COUNT(*) - 1) / CAST(? AS INTEGER)) + 1"
 
   local thread_ops, pagecount
