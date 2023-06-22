@@ -39,6 +39,7 @@ end
 local sitename = pico.global.get("sitename", "Picochan")
 local defaultpostname = pico.global.get("defaultpostname", "Anonymous")
 local defaultboardview = pico.global.get("defaultboardview", "catalog")
+local theme = pico.global.get("theme", "picochan")
 local threadpagesize = pico.global.get("threadpagesize", 50)
 
 cgi.initialize()
@@ -60,7 +61,7 @@ function html.begin(...)
   local title = string.format(...)
   title = title and (title .. " - ") or ""
   local theme = (cgi.COOKIE.theme and io.fileexists("./Static/" .. cgi.COOKIE.theme .. ".css"))
-                and cgi.COOKIE.theme or pico.global.get("theme", "picochan")
+                and cgi.COOKIE.theme or theme
 
   printf("<!DOCTYPE html>\r\n")
   printf("<html>")
@@ -853,6 +854,13 @@ function html.form.account_config()
   printf("</form>")
 end
 
+local function theme_selection(default)
+  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
+  for t in themes:lines() do
+    printf("<option value='%s'%s>%s</option>", t, t == default and " selected" or "", t)
+  end
+end
+
 function html.form.globalconfig(varname)
   printf("<form method='post'>")
   printf("<input type='hidden' name='name' value='%s' />", varname)
@@ -863,11 +871,7 @@ function html.form.globalconfig(varname)
            html.striphtml(pico.global.get(varname, "")) or "")
   elseif varname == "theme" then
     printf("<select id='value' name='value' autofocus>")
-    local theme = pico.global.get("theme")
-    local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
-    for t in themes:lines() do
-      printf("<option value='%s'%s>%s</option>", t, theme == t and " selected" or "", t)
-    end
+    theme_selection(theme)
     printf("</select>")
   elseif varname == "defaultboardview" then
     printf("<select id='value' name='value' autofocus>")
@@ -885,23 +889,11 @@ end
 
 function html.form.themeconfig()
   printf("<form method='post'>")
-  printf("<label for='theme'>theme</label>")
-
-  printf("<select id='theme' name='theme' autofocus>")
-  local theme = pico.global.get("theme")
-  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
-  for t in themes:lines() do
-    local selected
-    if cgi.COOKIE.theme then
-      selected = cgi.COOKIE.theme == t
-    else
-      selected = theme == t
-    end
-    printf("<option value='%s'%s>%s</option>", t, selected and " selected" or "", t)
-  end
-  printf("</select>")
-
-  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
+  printf(  "<label for='theme'>theme</label>")
+  printf(  "<select id='theme' name='theme' autofocus>")
+  theme_selection(cgi.COOKIE.theme or theme)
+  printf(  "</select>")
+  printf(  "<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
   printf("</form>")
 end
 
