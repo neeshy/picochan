@@ -14,7 +14,6 @@ function openbsd.pledge(promises, execpromises)
   assert(type(execpromises) == "string" or execpromises == nil, "incorrect datatype for parameter 'execpromises'")
 
   local retval = ffi.C.pledge(promises, execpromises)
-
   if retval == -1 then
     return false, ffi.string(ffi.C.strerror(ffi.errno()))
   end
@@ -26,7 +25,6 @@ function openbsd.unveil(path, permissions)
   assert(type(permissions) == "string" or permissions == nil, "incorrect datatype for parameter 'permissions'")
 
   local retval = ffi.C.unveil(path, permissions)
-
   if retval == -1 then
     return false, ffi.string(ffi.C.strerror(ffi.errno()))
   end

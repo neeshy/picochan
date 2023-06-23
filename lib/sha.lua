@@ -29,21 +29,16 @@ local hashlen_lut = {
 }
 
 local function hex(data)
-  local byte = string.byte
-  local sub = string.sub
   local result = {}
-
   for i = 1, #data do
-    result[#result + 1] = string.format("%02x", byte(sub(data, i, i)))
+    result[#result + 1] = string.format("%02x", string.byte(string.sub(data, i, i)))
   end
-
   return table.concat(result)
 end
 
 function sha.hash(hashtype, data)
-  assert(type(hashtype) == "string", "incorrect datatype for parameter 'hashtype'")
   assert(type(data) == "string", "incorrect datatype for parameter 'data'")
-  local hashfunc = assert(hashfunc_lut[hashtype], "invalid hash type")
+  local hashfunc = assert(hashfunc_lut[hashtype], "incorrect value for parameter 'hashtype'")
   return hex(ffi.string(hashfunc(data, #data, nil), hashlen_lut[hashtype]))
 end
 
