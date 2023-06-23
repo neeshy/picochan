@@ -33,7 +33,7 @@ if jit.os == "BSD" then
   openbsd.unveil("/tmp/", "rwc")
   openbsd.unveil("/etc/ssl/", "rx")
   openbsd.unveil("/bin/sh", "x")
-  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec inet dns")
+  openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec")
 end
 
 local sitename = pico.global.get("sitename", "Picochan")
