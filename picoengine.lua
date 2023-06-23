@@ -786,7 +786,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     capcode_board = pico.account.current.Board
   end
 
-  comment = comment or ""
+  comment = comment and comment:gsub("[\1-\8\11-\31\127]", ""):gsub("^\n+", ""):gsub("%s+$", "") or ""
 
   if not board_tbl then
     return nil, "Board does not exist"
