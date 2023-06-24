@@ -14,16 +14,15 @@ function io.readall(file, n)
   local read
   while n > 0 do
     local r = file:read(n)
-    if r then
-      if read then
-        read = read .. r
-      else
-        read = r
-      end
-      n = n - #r
-    else
+    if not r then
       break
     end
+    if read then
+      read = read .. r
+    else
+      read = r
+    end
+    n = n - #r
   end
   return read
 end
