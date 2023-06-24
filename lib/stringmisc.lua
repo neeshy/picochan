@@ -14,8 +14,8 @@ function string.random(length, pattern)
   local result = ""
 
   local dict = ascii:gsub("[^" .. pattern .. "]", "")
-  while string.len(result) < length do
-    local randidx = math.csrandom(1, string.len(dict))
+  while #result < length do
+    local randidx = math.csrandom(1, #dict)
     local randbyte = dict:byte(randidx)
     result = result .. string.char(randbyte)
   end
@@ -56,12 +56,11 @@ local RSHIFT = bit.rshift
 local LSHIFT = bit.lshift
 
 function string.base64(s)
-  local byte, rep = string.byte, string.rep
-  local pad = 2 - ((#s-1) % 3)
-  s = (s..rep("\0", pad)):gsub("...", function(cs)
-    local a, b, c = byte(cs, 1, 3)
+  local pad = 2 - ((#s - 1) % 3)
+  s = (s .. ("\0"):rep(pad)):gsub("...", function(cs)
+    local a, b, c = cs:byte(1, 3)
     return bs[RSHIFT(a, 2)] .. bs[OR(LSHIFT(AND(a, 3), 4), RSHIFT(b, 4))] ..
            bs[OR(LSHIFT(AND(b, 15), 2), RSHIFT(c, 6))] .. bs[AND(c, 63)]
   end)
-  return s:sub(1, #s-pad) .. rep("=", pad)
+  return s:sub(1, #s - pad) .. ("="):rep(pad)
 end

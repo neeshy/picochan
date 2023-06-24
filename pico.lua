@@ -207,15 +207,16 @@ function html.date(timestamp, reldisplay)
   end
 
   if decimal then
-    reltime = string.format("%.1f %s%s ago", multiple, unit, multiple == 1 and "" or "s")
+    reltime = ("%.1f %s%s ago"):format(multiple, unit, multiple == 1 and "" or "s")
   else
     multiple = math.floor(multiple)
-    reltime = string.format("%d %s%s ago", multiple, unit, multiple == 1 and "" or "s")
+    reltime = ("%d %s%s ago"):format(multiple, unit, multiple == 1 and "" or "s")
   end
 
-  return string.format("<time datetime='%s' title='%s'>%s</time>", os.date("!%F %T", timestamp),
-                       reldisplay and os.date("!%F %T %Z %z", timestamp) or reltime,
-                       reldisplay and reltime or os.date("!%F %T", timestamp))
+  return ("<time datetime='%s' title='%s'>%s</time>"):format(
+    os.date("!%F %T", timestamp),
+    reldisplay and os.date("!%F %T %Z %z", timestamp) or reltime,
+    reldisplay and reltime or os.date("!%F %T", timestamp))
 end
 
 function html.striphtml(s)
@@ -254,16 +255,16 @@ function html.picofmt(post_tbl)
     local ref_post_tbl = pico.post.tbl(post_tbl.Board, number, true)
 
     if ref_post_tbl then
-      return string.format("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>%s",
-                           ref_post_tbl.Board, ref_post_tbl.Parent or number, number, number, append)
+      return ("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>%s"):format(
+        ref_post_tbl.Board, ref_post_tbl.Parent or number, number, number, append)
     else
-      return string.format("<s><a class='reference'>\2\2%d</a></s>%s", number, append)
+      return ("<s><a class='reference'>\2\2%d</a></s>%s"):format(number, append)
     end
   end
 
   local function handle_xbrefs(board, number, append)
     if number == "" then
-      return string.format("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s", board, board, append)
+      return ("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s"):format(board, board, append)
     else
       number = tonumber(number)
     end
@@ -271,10 +272,10 @@ function html.picofmt(post_tbl)
     local ref_post_tbl = pico.post.tbl(board, number, true)
 
     if ref_post_tbl then
-      return string.format("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>%s",
-                           board, ref_post_tbl.Parent or number, number, board, number, append)
+      return ("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>%s"):format(
+        board, ref_post_tbl.Parent or number, number, board, number, append)
     else
-      return string.format("<s><a class='reference'>\2\2\2/%s/%d</a></s>%s", board, number, append)
+      return ("<s><a class='reference'>\2\2\2/%s/%d</a></s>%s"):format(board, number, append)
     end
   end
 
@@ -302,7 +303,7 @@ function html.picofmt(post_tbl)
         append = last
       end
     end
-    return string.format("%s<a href='%s'>%s</a>%s", prev, url, url, append)
+    return ("%s<a href='%s'>%s</a>%s"):format(prev, url, url, append)
   end
 
   local blocks = {}
@@ -408,11 +409,11 @@ end
 function html.renderpostfiles(post_tbl, unprivileged)
   local function formatfilesize(size)
     if size > (1024 * 1024) then
-      return string.format("%.2f MiB", (size / 1024 / 1024))
+      return ("%.2f MiB"):format(size / 1024 / 1024)
     elseif size > 1024 then
-      return string.format("%.2f KiB", (size / 1024))
+      return ("%.2f KiB"):format(size / 1024)
     else
-      return string.format("%d B", size)
+      return ("%d B"):format(size)
     end
   end
 
@@ -493,7 +494,7 @@ function html.renderpost(post_tbl, overboard, view)
   local separate = view == views.RECENT or view == views.MOD_ACTION
 
   printf("<div%s class='post-container'>",
-         overboard and "" or string.format(" id='%d'", post_tbl.Number))
+         overboard and "" or (" id='%d'"):format(post_tbl.Number))
   printf("<div class='post%s'>", (separate or post_tbl.Parent) and "" or " thread")
   printf("<div class='post-header'>")
 
@@ -1455,7 +1456,7 @@ handlers["/Log"] = function(page)
   for i = 1, #log_tbl do
     local entry = log_tbl[i]
     html.table.entry(entry.Account or "<i>SYSTEM</i>",
-                     not entry.Board and "<i>GLOBAL</i>" or string.format("<a href='/%s/'>/%s/</a>", entry.Board, entry.Board),
+                     not entry.Board and "<i>GLOBAL</i>" or ("<a href='/%s/'>/%s/</a>"):format(entry.Board, entry.Board),
                      html.date(entry.Date),
                      html.striphtml(entry.Description))
   end
@@ -1506,7 +1507,7 @@ handlers["/Boards"] = function()
       g_last = math.max(g_last, last)
     end
 
-    html.table.entry(string.format("<a href='/%s/' title='%s'>/%s/</a>", board, title, board),
+    html.table.entry(("<a href='/%s/' title='%s'>/%s/</a>"):format(board, title, board),
                      title, subtitle, tpw7d, tpd1d, ppd7d, ppd1d, pph1h, total, last and html.date(last, true) or "")
   end
 
@@ -1578,7 +1579,7 @@ local function board_view(board_func, render_func, view)
     render_func(tbl, overboard)
     if pagecount > 1 then
       printf("<hr />")
-      html.renderpages(string.format("/%s/%s", board, view), page, pagecount)
+      html.renderpages(("/%s/%s"):format(board, view), page, pagecount)
     end
     html.finish()
   end
@@ -1640,7 +1641,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
     end
 
     cgi.headers.Status = "301 Moved Permanently"
-    cgi.headers.Location = string.format("/%s/%d#%d", board, post_tbl.Parent, post_tbl.Number)
+    cgi.headers.Location = ("/%s/%d#%d"):format(board, post_tbl.Parent, post_tbl.Number)
     cgi.finalize()
   end
 
@@ -1677,7 +1678,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
 
   printf("<hr />")
   if page then
-    html.renderpages(string.format("/%s/%d", board, post), page, pagecount)
+    html.renderpages(("/%s/%d"):format(board, post), page, pagecount)
   end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
   printf("<a href='/%s/index'>[Index]</a> ", board)

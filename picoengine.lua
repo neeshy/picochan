@@ -796,9 +796,9 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     return nil, "Maximum post creation rate exceeded"
   elseif #comment > board_tbl.PostMaxLength then
     return nil, "Post text too long"
-  elseif select(2, string.gsub(comment, "\r?\n", "")) > board_tbl.PostMaxNewlines then
+  elseif select(2, comment:gsub("\r?\n", "")) > board_tbl.PostMaxNewlines then
     return nil, "Post contained too many newlines"
-  elseif select(2, string.gsub(comment, "\r?\n\r?\n", "")) > board_tbl.PostMaxDblNewlines then
+  elseif select(2, comment:gsub("\r?\n\r?\n", "")) > board_tbl.PostMaxDblNewlines then
     return nil, "Post contained too many double newlines"
   elseif name and #name > 64 then
     return nil, "Name too long"
@@ -1173,7 +1173,7 @@ function pico.captcha.create()
     by[i] = (40 + 2 * yy[i])
   end
 
-  local p = assert(io.popen(string.format(
+  local p = assert(io.popen((
     "convert -size 290x70 xc:white -bordercolor black -border 5 " ..
     "-fill black -stroke black -strokewidth 1 -pointsize 40 -font Courier-New " ..
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
@@ -1184,7 +1184,7 @@ function pico.captcha.create()
     "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
     "-fill none -strokewidth 3 " ..
     "-draw 'bezier %f,%d %f,%d %f,%d %f,%d' " ..
-    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 1 JPEG:-",
+    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 1 JPEG:-"):format(
     xx[1], yy[1], rr[1], ss[1], cc[1],
     xx[2], yy[2], rr[2], ss[2], cc[2],
     xx[3], yy[3], rr[3], ss[3], cc[3],
