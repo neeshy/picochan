@@ -2,16 +2,16 @@
 
 require("lib.mathmisc")
 
+local ascii = {}
+for i = 0, 255 do
+  ascii[#ascii + 1] = string.char(i)
+end
+ascii = table.concat(ascii)
+
 function string.random(length, pattern)
   length = length or 64
   pattern = pattern or "%w"
   local result = ""
-
-  local ascii = {}
-  for i = 0, 255 do
-    ascii[#ascii + 1] = string.char(i)
-  end
-  ascii = table.concat(ascii)
 
   local dict = ascii:gsub("[^" .. pattern .. "]", "")
   while string.len(result) < length do
@@ -43,19 +43,19 @@ function string.tokenize(input, delimiter, max)
   return result
 end
 
+local bs = { [0] =
+  "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P",
+  "Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f",
+  "g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v",
+  "w","x","y","z","0","1","2","3","4","5","6","7","8","9","+","/",
+}
+
 local AND = bit.band
 local OR = bit.bor
 local RSHIFT = bit.rshift
 local LSHIFT = bit.lshift
 
 function string.base64(s)
-  local bs = { [0] =
-    "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P",
-    "Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f",
-    "g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v",
-    "w","x","y","z","0","1","2","3","4","5","6","7","8","9","+","/",
-  }
-
   local byte, rep = string.byte, string.rep
   local pad = 2 - ((#s-1) % 3)
   s = (s..rep("\0", pad)):gsub("...", function(cs)
