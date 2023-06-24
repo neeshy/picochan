@@ -81,7 +81,7 @@ local function parseform(boundary, maxread)
 
   local buf
   local function readandcheck(delimiter, func)
-    buf = io.readuntil(io.input(), buf, delimiter, chunksize, func)
+    buf = io.input():readuntil(buf, delimiter, chunksize, func)
     if buf then
       bytesread = bytesread + #delimiter
       checklength()

@@ -23,8 +23,8 @@ function string.random(length, pattern)
   return result
 end
 
-function string.tokenize(input, delimiter, max)
-  if input == nil or delimiter == "" then
+function string:tokenize(delimiter, max)
+  if self == nil or delimiter == "" then
     return nil
   end
 
@@ -32,13 +32,13 @@ function string.tokenize(input, delimiter, max)
 
   local result = {}
   local pos = 1
-  local first, last = input:find(delimiter, pos, true)
+  local first, last = self:find(delimiter, pos, true)
   while first and (not max or #result < max) do
-    result[#result + 1] = input:sub(pos, first - 1)
+    result[#result + 1] = self:sub(pos, first - 1)
     pos = last + 1
-    first, last = input:find(delimiter, pos, true)
+    first, last = self:find(delimiter, pos, true)
   end
-  result[#result + 1] = input:sub(pos)
+  result[#result + 1] = self:sub(pos)
 
   return result
 end
@@ -55,12 +55,12 @@ local OR = bit.bor
 local RSHIFT = bit.rshift
 local LSHIFT = bit.lshift
 
-function string.base64(s)
-  local pad = 2 - ((#s - 1) % 3)
-  s = (s .. ("\0"):rep(pad)):gsub("...", function(cs)
+function string:base64()
+  local pad = 2 - ((#self - 1) % 3)
+  self = (self .. ("\0"):rep(pad)):gsub("...", function(cs)
     local a, b, c = cs:byte(1, 3)
     return bs[RSHIFT(a, 2)] .. bs[OR(LSHIFT(AND(a, 3), 4), RSHIFT(b, 4))] ..
            bs[OR(LSHIFT(AND(b, 15), 2), RSHIFT(c, 6))] .. bs[AND(c, 63)]
   end)
-  return s:sub(1, #s - pad) .. ("="):rep(pad)
+  return self:sub(1, #self - pad) .. ("="):rep(pad)
 end

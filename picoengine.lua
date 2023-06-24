@@ -693,7 +693,7 @@ function pico.file.add(f)
   end
 
   if p then
-    local dimensions = string.tokenize(p:read("*a"), "x")
+    local dimensions = p:read("*a"):tokenize("x")
     p:close()
     width, height = tonumber(dimensions[1]), tonumber(dimensions[2])
   end
@@ -1201,7 +1201,7 @@ function pico.captcha.create()
   local captcha_id = string.random(16)
   db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc))
 
-  return captcha_id, string.base64(captcha_data)
+  return captcha_id, captcha_data:base64()
 end
 
 function pico.captcha.check(id, text)

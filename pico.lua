@@ -60,7 +60,7 @@ end
 function html.begin(...)
   local title = string.format(...)
   title = title and (title .. " - ") or ""
-  local theme = (cgi.COOKIE.theme and io.fileexists("./Static/" .. cgi.COOKIE.theme .. ".css"))
+  local theme = (cgi.COOKIE.theme and io.exists("./Static/" .. cgi.COOKIE.theme .. ".css"))
                 and cgi.COOKIE.theme or theme
 
   printf("<!DOCTYPE html>\r\n")
@@ -1706,7 +1706,7 @@ handlers["/Theme"] = function()
       html.error("Action failed", "Invalid request")
     end
 
-    if not io.fileexists("./Static/" .. cgi.POST.theme .. ".css") then
+    if not io.exists("./Static/" .. cgi.POST.theme .. ".css") then
       cgi.headers.Status = "400 Bad Request"
       html.error("Theme not found", "Cannot find theme file: %s", cgi.POST.theme)
     end

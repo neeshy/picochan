@@ -1,19 +1,12 @@
 -- Miscellaneous io functions.
 
-function io.fileexists(path)
-  local f = io.open(path, "r")
-  if f ~= nil then
-    f:close()
-    return true
-  end
-  return false
-end
+local file = getmetatable(io.stdin)
 
-function io.readall(file, n)
-  -- guarantee n bytes are read or EOF is reached
+-- guarantee n bytes are read or EOF is reached
+function file:readall(n)
   local read
   while n > 0 do
-    local r = file:read(n)
+    local r = self:read(n)
     if not r then
       break
     end
@@ -27,13 +20,13 @@ function io.readall(file, n)
   return read
 end
 
-function io.readuntil(file, buf, delimiter, chunksize, out)
+function file:readuntil(buf, delimiter, chunksize, out)
   if delimiter == "" then
     return nil
   end
 
-  file = file or io.input()
-  buf = buf or file:read(chunksize)
+  self = self or io.input()
+  buf = buf or self:read(chunksize)
   delimiter = delimiter or " "
 
   local pos = 1
@@ -48,7 +41,7 @@ function io.readuntil(file, buf, delimiter, chunksize, out)
     -- Read in enough to determine if delmiter exists.
     -- This is required for the case where the delimiter is
     -- a multi-character string present between two chunks.
-    local read = io.readall(file, #delimiter)
+    local read = self:readall(#delimiter)
     if not read then
       out(buf:sub(pos))
       return nil
@@ -65,10 +58,27 @@ function io.readuntil(file, buf, delimiter, chunksize, out)
     buf = read
     pos = 1
     if #buf < chunksize then
-      read = file:read(chunksize - #buf)
+      read = self:read(chunksize - #buf)
       if read then
         buf = buf .. read
       end
     end
   end
+end
+
+function io.readall(file, n)
+  return file:readall(n)
+end
+
+function io.readuntil(file, buf, delimiter, chunksize, out)
+  return file:readuntil(buf, delimiter, chunksize, out)
+end
+
+function io.exists(path)
+  local f = io.open(path, "r")
+  if f ~= nil then
+    f:close()
+    return true
+  end
+  return false
 end
