@@ -4,6 +4,7 @@
 local pico = require("picoengine")
 local cgi = require("lib.cgi")
 
+require("lib.stringmisc")
 require("lib.iomisc")
 
 local html = {}
@@ -726,11 +727,11 @@ function html.form.postform(board_tbl, parent)
 
   if parent == nil and board_tbl.ThreadCaptcha == 1
       or parent ~= nil and board_tbl.PostCaptcha == 1 then
-    local captchaid, captchab64 = pico.captcha.create()
+    local captchaid, captcha = pico.captcha.create()
 
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
     printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength='6' required /><br />")
-    printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captchab64)
+    printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captcha:base64())
   end
 
   printf("</form>")

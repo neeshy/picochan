@@ -1159,7 +1159,7 @@ end
 -- CAPTCHA FUNCTIONS
 --
 
--- return a captcha id and a base64 encoded image (jpeg)
+-- return a captcha image (jpeg) and its associated id
 function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{}
 
@@ -1201,7 +1201,7 @@ function pico.captcha.create()
   local captcha_id = string.random(16)
   db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc))
 
-  return captcha_id, captcha_data:base64()
+  return captcha_id, captcha_data
 end
 
 function pico.captcha.check(id, text)
