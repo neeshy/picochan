@@ -1382,9 +1382,9 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
            not post_tbl.Parent
 
   printf("You are about to %s%s the following %s:",
-         toggle and "toggle the <b>" .. operation .. "</b> attribute for"
-                 or "<b>" .. operation .. "</b>",
-         file and " " .. file .. " from" or "",
+         toggle and ("toggle the <b>" .. operation .. "</b> attribute for")
+                 or ("<b>" .. operation .. "</b>"),
+         file and (" " .. file .. " from") or "",
          thread and "thread" or "post")
   html.renderpost(post_tbl, true, views.MOD_ACTION)
 
