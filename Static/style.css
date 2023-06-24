@@ -42,7 +42,7 @@ nav#topbar>ul>span#logged-in-notification {
 }
 
 nav#topbar:not(:hover):not(:focus-within) {
-  white-space: nowrap;
+    white-space: nowrap;
 }
 
 main {
