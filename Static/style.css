@@ -11,7 +11,7 @@ a:hover {
     text-decoration: underline;
 }
 
-nav#topbar {
+nav {
     width: 100%;
     position: fixed;
     left: 0;
@@ -20,28 +20,24 @@ nav#topbar {
     padding-bottom: 0.25ch;
     border-bottom-width: 1px;
     border-bottom-style: solid;
+    z-index: 1;
 }
 
-nav#topbar>ul {
-    margin: 0;
-    padding: 0;
+nav a {
+    display: inline-block;
 }
 
-nav#topbar>ul>li {
-    display: inline;
+nav a.system, nav a.board {
     margin-left: 1.5ch;
-}
-
-nav#topbar>ul>li.system>a {
     font-weight: bold;
 }
 
-nav#topbar>ul>span#logged-in-notification {
+nav span#logged-in-notification {
     float: right;
     margin-right: 1.5ch;
 }
 
-nav#topbar:not(:hover):not(:focus-within) {
+nav:not(:hover):not(:focus-within) {
     white-space: nowrap;
 }
 

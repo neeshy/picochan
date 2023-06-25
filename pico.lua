@@ -75,17 +75,17 @@ function html.begin(...)
   printf(    "<meta name='viewport' content='width=device-width, initial-scale=1.0' />")
   printf(  "</head>")
   printf(  "<body>")
-  printf(    "<nav id='topbar'><ul>")
-  printf(      "<li class='system'><a href='/' accesskey='`'>main</a></li>")
-  printf(      "<li class='system'><a href='/Mod' accesskey='1'>mod</a></li>")
-  printf(      "<li class='system'><a href='/Log' accesskey='2'>log</a></li>")
-  printf(      "<li class='system'><a href='/Boards' accesskey='3'>boards</a></li>")
-  printf(      "<li class='system'><a href='/Overboard' accesskey='4'>overboard</a></li>")
-  printf(      "<li class='system'><a href='/Theme' accesskey='5'>theme</a></li>")
+  printf(    "<nav>")
+  printf(      "<a class='system' href='/' accesskey='`'>main</a>")
+  printf(      "<a class='system' href='/Mod' accesskey='1'>mod</a>")
+  printf(      "<a class='system' href='/Log' accesskey='2'>log</a>")
+  printf(      "<a class='system' href='/Boards' accesskey='3'>boards</a>")
+  printf(      "<a class='system' href='/Overboard' accesskey='4'>overboard</a>")
+  printf(      "<a class='system' href='/Theme' accesskey='5'>theme</a>")
 
   local boards = pico.board.list()
   for i = 1, #boards do
-    printf("<li class='board'><a href='/%s/' title='%s'>/%s/</a></li>",
+    printf("<a class='board' href='/%s/' title='%s'>/%s/</a>",
            boards[i].Name, html.striphtml(boards[i].Title), boards[i].Name)
   end
 
@@ -93,9 +93,8 @@ function html.begin(...)
     printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current.Name)
   end
 
-  printf(    "</ul>")
-  printf(    "<a href='' accesskey='r'></a>")
-  printf(    "<a href='#postform' accesskey='p'></a>")
+  printf(      "<a href='' accesskey='r'></a>")
+  printf(      "<a href='#postform' accesskey='p'></a>")
   printf(    "</nav>")
   printf(    "<main>")
 end

@@ -7,16 +7,16 @@ a, a:visited {
     color: #666;
 }
 
-nav#topbar {
+nav {
     background-color: #98E;
     border-bottom-color: #000;
 }
 
-nav#topbar>ul>li.system>a {
+nav a.system {
     color: #EEE;
 }
 
-nav#topbar>ul>li.board>a {
+nav a.board {
     color: #DDD;
 }
 
