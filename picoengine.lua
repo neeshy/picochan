@@ -809,6 +809,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
   elseif (not files or #files == 0) and #comment == 0 then
     return nil, "Post is blank"
   elseif ((is_thread and board_tbl.ThreadCaptcha == 1) or (not is_thread and board_tbl.PostCaptcha == 1))
+         and not permit("admin gvol bo lvol", "post", board)
          and not pico.captcha.check(captcha_id, captcha_text) then
     return nil, "Captcha is required but no valid captcha supplied"
   elseif is_thread then

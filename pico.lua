@@ -54,6 +54,10 @@ local function thumbsize(w, h, mw, mh)
   return math.min(w, mw, math.floor(w / h * mh + 0.5)), math.min(h, mh, math.floor(h / w * mw + 0.5))
 end
 
+local function permit(board)
+  return pico.account.current and (not pico.account.current.Board or pico.account.current.Board == board)
+end
+
 --
 -- HTML FUNCTIONS
 --
@@ -375,8 +379,7 @@ function html.modlinks(post_tbl)
   local board = post_tbl.Board
   local number = post_tbl.Number
 
-  if (not pico.account.current)
-      or (pico.account.current.Board and pico.account.current.Board ~= board) then
+  if not permit(board) then
     return
   end
 
@@ -434,9 +437,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
            formatfilesize(file.Size), file.Width and (" " .. file.Width .. "x" .. file.Height) or "")
     printf(" <a href='/Media/%s' title='Download file' download='%s'>(dl)</a>", filename, html.striphtml(downloadname))
 
-    if not unprivileged
-        and pico.account.current
-        and (not pico.account.current.Board or pico.account.current.Board == post_tbl.Board) then
+    if not unprivileged and permit(post_tbl.Board) then
       printf(" <span class='mod-links'>")
       printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
              post_tbl.Board, post_tbl.Number, filename)
@@ -724,8 +725,9 @@ function html.form.postform(board_tbl, parent)
            i, i, i, i, i, i, i, i ~= board_tbl.PostMaxFiles and "<br />" or "")
   end
 
-  if parent == nil and board_tbl.ThreadCaptcha == 1
-      or parent ~= nil and board_tbl.PostCaptcha == 1 then
+  if (parent == nil and board_tbl.ThreadCaptcha == 1
+      or parent ~= nil and board_tbl.PostCaptcha == 1)
+      and not permit(board) then
     local captchaid, captcha = pico.captcha.create()
 
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
@@ -1541,7 +1543,7 @@ local function board_header(board_tbl)
          board_tbl.Name, board_tbl.Name, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announce()
-  if pico.account.current or board_tbl.Lock ~= 1 then
+  if board_tbl.Lock ~= 1 or permit(board_tbl.Name) then
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
     html.form.postform(board_tbl)
   end
@@ -1663,7 +1665,8 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
          board, board, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announce()
-  if pico.account.current or (board_tbl.Lock ~= 1 and thread_tbl[1].Lock ~= 1) then
+  local replyable = (board_tbl.Lock ~= 1 and thread_tbl[1].Lock ~= 1) or permit(board_tbl.Name)
+  if replyable then
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
     html.form.postform(board_tbl, post)
   end
@@ -1686,7 +1689,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
 
   printf("<span class='float-right'>")
   printf("<a href=''>[Update]</a> ")
-  if pico.account.current or (board_tbl.Lock ~= 1 and thread_tbl[1].Lock ~= 1) then
+  if replyable then
     printf("<a href='#postform'>[Reply]</a> ")
   end
   printf("%d replies", thread_tbl[1].ReplyCount)
