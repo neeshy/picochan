@@ -23,7 +23,7 @@ local function unescape(s)
   return s:gsub("%%(%x%x)", function(x)
     local digit = 0
     for i = 1, 2 do
-      local xb = x:byte(i, i + 1)
+      local xb = x:byte(i)
       digit = digit * 16 + xb - (xb >= A and (A - 10) or zero)
     end
     return string.char(digit)
