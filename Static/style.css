@@ -29,6 +29,9 @@ nav a {
 
 nav a.system, nav a.board {
     margin-left: 1.5ch;
+}
+
+nav a.system {
     font-weight: bold;
 }
 
@@ -100,7 +103,7 @@ div.container ul {
     padding-left: 16px;
 }
 
-div.container ul>li::before {
+div.container ul > li::before {
     content: "*";
     padding-right: 8px;
 }
@@ -160,7 +163,7 @@ form input[type=radio] + label {
     padding: 8px;
 }
 
-form input[type=radio] + label>img {
+form input[type=radio] + label > img {
     display: block;
     max-height: 100px;
 }
@@ -303,7 +306,7 @@ div.post-file, div.post-file-single {
     overflow-wrap: anywhere;
 }
 
-div.post-file-info>a:first-child {
+div.post-file-info > a:first-child {
     display: inline-block;
     max-width: 200px;
     white-space: nowrap;
@@ -311,7 +314,7 @@ div.post-file-info>a:first-child {
     text-overflow: ellipsis;
 }
 
-div.post-file-info>a:first-child:hover {
+div.post-file-info > a:first-child:hover {
     max-width: 100%;
 }
 
