@@ -1,6 +1,6 @@
 body {
-    font-family: monospace;
     margin: calc(1.5em + 1.8ch + 1px) 1.3ch 1.3ch 1.3ch;
+    font-family: monospace;
 }
 
 a, a:visited {
@@ -12,15 +12,15 @@ a:hover {
 }
 
 nav {
-    width: 100%;
     position: fixed;
-    left: 0;
     top: 0;
-    padding-top: 0.25ch;
-    padding-bottom: 0.25ch;
+    left: 0;
+    z-index: 1;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    z-index: 1;
+    padding-top: 0.25ch;
+    padding-bottom: 0.25ch;
+    width: 100%;
     line-height: 1.5;
 }
 
@@ -51,8 +51,8 @@ img#banner {
 }
 
 h1.redheader, h1#boardtitle {
-    text-align: center;
     margin-top: 5px;
+    text-align: center;
 }
 
 h1#boardtitle a {
@@ -60,24 +60,24 @@ h1#boardtitle a {
 }
 
 h2#boardsubtitle {
+    margin-top: -15px;
+    text-align: center;
     font-weight: normal;
     font-size: 10pt;
-    text-align: center;
-    margin-top: -15px;
 }
 
 div#announce {
+    margin-bottom: 10px;
     text-align: center;
     font-weight: bold;
     font-size: 13pt;
-    margin-bottom: 10px;
 }
 
 div.container {
     margin: auto;
-    padding: 10px;
     border-width: 1px;
     border-style: solid;
+    padding: 10px;
 }
 
 div.container.narrow {
@@ -89,25 +89,25 @@ div.container.wide {
 }
 
 h2.barheader {
-    margin-left: -10px;
     margin-right: -10px;
+    margin-left: -10px;
     padding-left: 10px;
     font-size: 12pt;
 }
 
 div.container ul {
-    list-style: none;
     padding-left: 16px;
+    list-style: none;
 }
 
 div.container ul > li::before {
-    content: "*";
     padding-right: 8px;
+    content: "*";
 }
 
 table {
-    border-spacing: 2px;
     width: 100%;
+    border-spacing: 2px;
 }
 
 th {
@@ -121,11 +121,11 @@ th, td {
 
 form label {
     display: inline-block;
-    min-width: 18ch;
-    vertical-align: top;
     margin-right: 5px;
     margin-bottom: 5px;
     padding: 3px 5px;
+    min-width: 18ch;
+    vertical-align: top;
 }
 
 form input,
@@ -150,14 +150,14 @@ form textarea {
 }
 
 form input[type=radio] {
-    vertical-align: middle;
     margin-left: 18ch;
+    vertical-align: middle;
 }
 
 form input[type=radio] + label {
-    vertical-align: middle;
     margin-bottom: 8px;
     padding: 8px;
+    vertical-align: middle;
 }
 
 form input[type=radio] + label > img {
@@ -170,6 +170,7 @@ div.post-container + form {
 }
 
 form#postform {
+    display: none;
     position: fixed;
     top: calc(1.5em + 1.8ch + 1px);
     right: 1.3ch;
@@ -177,7 +178,6 @@ form#postform {
     border-style: solid;
     padding: 5px;
     max-width: 90%;
-    display: none;
 }
 
 form#postform:target {
@@ -190,15 +190,15 @@ form#postform a.close-button {
 }
 
 form#postform label {
-    min-width: min-content;
     width: 7ch;
+    min-width: min-content;
 }
 
 form#postform textarea {
+    margin: 0 0 5px 0;
     width: calc(100% - 7ch - 25px);
     min-width: calc(100% - 7ch - 25px);
     max-width: calc(100% - 7ch - 25px);
-    margin: 0 0 5px 0;
 }
 
 form#postform input[type=submit] {
@@ -206,26 +206,26 @@ form#postform input[type=submit] {
 }
 
 form#postform input[type=file] {
+    margin-right: 5px;
     max-width: 300px;
     vertical-align: top;
-    margin-right: 5px;
 }
 
 a#new-post {
-    font-size: 15pt;
-    font-weight: bold;
     display: table;
     margin: auto;
+    font-weight: bold;
+    font-size: 15pt;
 }
 
 hr {
+    clear: both;
     margin-top: 1.3ch;
     margin-bottom: 1.3ch;
-    height: 0;
     border: none;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    clear: both;
+    height: 0;
 }
 
 div.catalog-container {
@@ -234,13 +234,13 @@ div.catalog-container {
 
 div.catalog-thread {
     display: inline-block;
-    width: 150px;
-    height: 200px;
     margin-right: 1.3ch;
     margin-bottom: 8px;
-    padding: 10px;
     border-width: 1px;
     border-style: solid;
+    padding: 10px;
+    width: 150px;
+    height: 200px;
     overflow: auto;
     scrollbar-width: thin;
 }
@@ -263,18 +263,18 @@ div.post-container {
 }
 
 div.post {
+    display: table;
     margin-top: 1.3ch;
-    padding: 1.3ch;
     border-width: 1px;
     border-style: solid;
-    display: table;
+    padding: 1.3ch;
 }
 
 div.thread {
-    background: none !important;
-    border: none;
     display: block;
+    background: none !important;
     margin-top: 0;
+    border: none;
 }
 
 div.post-container:target div.thread {
@@ -309,9 +309,9 @@ div.post-file, div.post-file-single {
 div.post-file-info > a:first-child {
     display: inline-block;
     max-width: 200px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 div.post-file-info > a:first-child:hover {
@@ -350,8 +350,8 @@ input[type=checkbox]:checked + img.post-file-thumbnail + img.post-file-fullsize 
 
 img.post-file-fullsize {
     display: none;
-    max-width: 100%;
     margin-bottom: 1.3ch;
+    max-width: 100%;
     cursor: pointer;
 }
 
@@ -360,12 +360,12 @@ div.post-file-single img.post-file-fullsize {
 }
 
 div.post-comment, div.catalog-thread-comment {
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
+    display: block;
     margin: 1.3ch;
     margin-bottom: 0.7ch;
     max-width: 150ch;
-    display: block;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 div.post-comment a, div.catalog-thread-comment a {
@@ -373,9 +373,9 @@ div.post-comment a, div.catalog-thread-comment a {
 }
 
 span.redtext {
+    letter-spacing: -0.7px;
     font-weight: bolder;
     font-size: 11pt;
-    letter-spacing: -0.7px;
 }
 
 span.spoiler {
@@ -385,14 +385,14 @@ span.spoiler {
 code {
     margin-top: 1ch;
     margin-bottom: 1ch;
-    padding: 1ch;
     border-width: 1px;
     border-style: solid;
+    padding: 1ch;
 }
 
 span.code {
-    padding-left: 0.5ch;
     padding-right: 0.5ch;
+    padding-left: 0.5ch;
 }
 
 code, span.code {
