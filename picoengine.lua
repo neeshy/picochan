@@ -346,7 +346,7 @@ function pico.board.catalog(name, page)
   page = tonumber(page) or 1
   local where = name and "Threads.Board = ? "
                       or "Threads.Board IN (SELECT Name FROM Boards WHERE DisplayOverboard) "
-  local sql = "SELECT Threads.*, Posts.*, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
+  local sql = "SELECT Posts.*, LastBumpDate, Sticky, Lock, Autosage, Cycle, ReplyCount, File, Spoiler, Width AS FileWidth, Height AS FileHeight " ..
               "FROM Threads JOIN Posts USING(Board, Number) LEFT JOIN FileRefs USING(Board, Number) LEFT JOIN Files ON FileRefs.File = Files.Name " ..
               "WHERE (Sequence = 1 OR Sequence IS NULL) AND " ..
               where ..
@@ -400,26 +400,23 @@ function pico.board.index(name, page)
 
   local index_tbl = {}
   for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+    index_tbl[i] = db:q("SELECT Posts.*, LastBumpDate, Sticky, Lock, Autosage, Cycle, ReplyCount, " ..
+                        "IIF(ReplyCount > ?, ReplyCount - ?, 0) AS RepliesOmitted, (" ..
+                        pagecount_sql .. " FROM Posts WHERE Board = Threads.Board AND Parent = Threads.Number) AS PageCount " ..
+                        "FROM Threads JOIN Posts USING(Board, Number) " ..
                         "WHERE Board = ? AND Number = ? " ..
                         "UNION ALL " ..
                         "SELECT * FROM " ..
                         "(SELECT *, " ..
                         "NULL AS LastBumpDate, NULL AS Sticky, NULL AS Lock, " ..
-                        "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount " ..
+                        "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount, " ..
+                        "NULL AS RepliesOmitted, NULL AS PageCount " ..
                         "FROM Posts " ..
                         "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) " ..
                         "ORDER BY Number ASC",
+                        windowsize, windowsize, threadpagesize,
                         thread_ops[i].Board, thread_ops[i].Number,
                         thread_ops[i].Board, thread_ops[i].Number, windowsize)
-    if index_tbl[i][1].ReplyCount > windowsize then
-      index_tbl[i][1].RepliesOmitted = index_tbl[i][1].ReplyCount - windowsize
-    else
-      index_tbl[i][1].RepliesOmitted = 0
-    end
-    index_tbl[i][1].PageCount = db:r1(pagecount_sql .. " FROM Posts WHERE Board = ? AND Parent = ?",
-                                      threadpagesize, thread_ops[i].Board, thread_ops[i].Number)
-
     for j = 1, #index_tbl[i] do
       index_tbl[i][j].Files = pico.file.list(index_tbl[i][j].Board, index_tbl[i][j].Number)
     end
@@ -1015,7 +1012,8 @@ function pico.thread.tbl(board, number, page)
   local thread_tbl, pagecount
   if page then
     local pagesize = pico.global.get("threadpagesize", 50)
-    thread_tbl = db:q("SELECT * FROM Posts LEFT JOIN Threads USING(Board, Number) " ..
+    thread_tbl = db:q("SELECT Posts.*, LastBumpDate, Sticky, Lock, Autosage, Cycle, ReplyCount " ..
+                      "FROM Threads JOIN Posts USING(Board, Number) " ..
                       "WHERE Board = ? AND Number = ? " ..
                       "UNION ALL " ..
                       "SELECT * FROM " ..
