@@ -1,6 +1,6 @@
 body {
     font-family: monospace;
-    margin: 1.3ch;
+    margin: calc(1.5em + 1.8ch + 1px) 1.3ch 1.3ch 1.3ch;
 }
 
 a, a:visited {
@@ -21,6 +21,7 @@ nav {
     border-bottom-width: 1px;
     border-bottom-style: solid;
     z-index: 1;
+    line-height: 1.5;
 }
 
 nav a {
@@ -42,10 +43,6 @@ nav span#logged-in-notification {
 
 nav:not(:hover):not(:focus-within) {
     white-space: nowrap;
-}
-
-main {
-    margin-top: 30px;
 }
 
 img#banner {
@@ -174,7 +171,7 @@ div.post-container + form {
 
 form#postform {
     position: fixed;
-    top: calc(3.5ch + 1px);
+    top: calc(1.5em + 1.8ch + 1px);
     right: 1.3ch;
     border-width: 1px;
     border-style: solid;
@@ -222,7 +219,8 @@ a#new-post {
 }
 
 hr {
-    margin: 1.3ch 0;
+    margin-top: 1.3ch;
+    margin-bottom: 1.3ch;
     height: 0;
     border: none;
     border-bottom-width: 1px;
@@ -260,8 +258,8 @@ div.index-thread span.index-thread-summary {
 }
 
 div.post-container {
-    margin-top: calc(-3ch + 1px);
-    padding-top: calc(3ch - 1px);
+    margin-top: calc(-1.5em - 0.5ch - 1px);
+    padding-top: calc(1.5em + 0.5ch + 1px);
 }
 
 div.post {
@@ -300,7 +298,8 @@ div.post-header a.referrer, div.post-file-info {
 
 div.post-file {
     display: inline-block;
-    margin: 0 1.3ch 1.3ch 0;
+    margin-right: 1.3ch;
+    margin-bottom: 1.3ch;
 }
 
 div.post-file, div.post-file-single {
@@ -384,7 +383,8 @@ span.spoiler {
 }
 
 code {
-    margin: 1ch 0;
+    margin-top: 1ch;
+    margin-bottom: 1ch;
     padding: 1ch;
     border-width: 1px;
     border-style: solid;
