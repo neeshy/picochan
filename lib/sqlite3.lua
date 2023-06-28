@@ -133,7 +133,7 @@ function metatable_db:q(sql, ...)
 
   local rows = {}
   while stmt:step() == sqlite3.ROW do
-    rows[#rows + 1] = stmt:get_named_values()
+    rows[#rows + 1] = stmt:column_values()
   end
 
   stmt:finalize()
@@ -154,7 +154,7 @@ function metatable_db:q1(sql, ...)
 
   local values = {}
   while stmt:step() == sqlite3.ROW do
-    values[#values + 1] = stmt:get_value(1)
+    values[#values + 1] = stmt:column(1)
   end
 
   stmt:finalize()
@@ -177,7 +177,7 @@ function metatable_db:r(sql, ...)
   ret = stmt:step()
   local row
   if ret == sqlite3.ROW then
-    row = stmt:get_named_values()
+    row = stmt:column_values()
   elseif ret ~= sqlite3.DONE then
     error(self:errmsg(), 2)
   end
@@ -201,7 +201,7 @@ function metatable_db:r1(sql, ...)
   ret = stmt:step()
   local value
   if ret == sqlite3.ROW then
-    value = stmt:get_value(1)
+    value = stmt:column(1)
   elseif ret ~= sqlite3.DONE then
     error(self:errmsg(), 2)
   end
@@ -284,7 +284,6 @@ function metatable_stmt:bind_values(...)
       return ret
     end
   end
-
   return sqlite3.OK
 end
 
@@ -292,15 +291,15 @@ function metatable_stmt:step()
   return ffi.sqlite3.sqlite3_step(self.stmt)
 end
 
-function metatable_stmt:columns()
+function metatable_stmt:data_count()
   return ffi.sqlite3.sqlite3_data_count(self.stmt)
 end
 
-function metatable_stmt:get_name(column)
+function metatable_stmt:column_name(column)
   return ffi.string(ffi.sqlite3.sqlite3_column_name(self.stmt, column - 1))
 end
 
-function metatable_stmt:get_value(column)
+function metatable_stmt:column(column)
   column = column - 1
   local type = ffi.sqlite3.sqlite3_column_type(self.stmt, column)
 
@@ -321,13 +320,11 @@ function metatable_stmt:get_value(column)
   end
 end
 
-function metatable_stmt:get_named_values()
+function metatable_stmt:column_values()
   local ret = {}
-
-  for i = 1, self:columns() do
-    ret[self:get_name(i)] = self:get_value(i)
+  for i = 1, self:data_count() do
+    ret[self:column_name(i)] = self:column(i)
   end
-
   return ret
 end
 
