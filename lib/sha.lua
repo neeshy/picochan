@@ -31,7 +31,7 @@ local hashlen_lut = {
 local function hex(data)
   local result = {}
   for i = 1, #data do
-    result[#result + 1] = ("%02x"):format(data:sub(i, i):byte())
+    result[#result + 1] = ("%02x"):format(data:byte(i))
   end
   return table.concat(result)
 end
