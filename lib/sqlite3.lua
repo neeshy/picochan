@@ -83,7 +83,7 @@ function sqlite3.open(path, mode)
     return nil, ffi.string(ffi.sqlite3.sqlite3_errmsg(db))
   end
 
-  return setmetatable({ db = db }, metatable_db)
+  return db
 end
 
 --
@@ -91,28 +91,28 @@ end
 --
 
 function metatable_db:close()
-  return ffi.sqlite3.sqlite3_close_v2(self.db)
+  return ffi.sqlite3.sqlite3_close_v2(self)
 end
 
 function metatable_db:busy_timeout(ms)
-  return ffi.sqlite3.sqlite3_busy_timeout(self.db, ms)
+  return ffi.sqlite3.sqlite3_busy_timeout(self, ms)
 end
 
 function metatable_db:errmsg()
-  return ffi.string(ffi.sqlite3.sqlite3_errmsg(self.db))
+  return ffi.string(ffi.sqlite3.sqlite3_errmsg(self))
 end
 
 function metatable_db:prepare(sql)
   assert(type(sql) == "string", "incorrect datatype for parameter 'sql'")
 
   local stmt = new_stmt()
-  local err = ffi.sqlite3.sqlite3_prepare_v2(self.db, sql, -1, stmt, nil)
+  local err = ffi.sqlite3.sqlite3_prepare_v2(self, sql, -1, stmt, nil)
 
   if err ~= sqlite3.OK then
     return nil, self:errmsg()
   end
 
-  return setmetatable({ db = self.db, stmt = stmt[0] }, metatable_stmt)
+  return stmt[0]
 end
 
 -- The following six functions are quick convenience functions which accept
@@ -265,13 +265,13 @@ function metatable_stmt:bind(column, value)
   local type = type(value)
 
   if type == "string" then
-    return ffi.sqlite3.sqlite3_bind_text(self.stmt, column, value, #value, ffi.cast("void *", 0))
+    return ffi.sqlite3.sqlite3_bind_text(self, column, value, #value, ffi.cast("void *", 0))
   elseif type == "number" then
-    return ffi.sqlite3.sqlite3_bind_double(self.stmt, column, value)
+    return ffi.sqlite3.sqlite3_bind_double(self, column, value)
   elseif type == "boolean" then
-    return ffi.sqlite3.sqlite3_bind_int(self.stmt, column, value)
+    return ffi.sqlite3.sqlite3_bind_int(self, column, value)
   elseif value == nil then
-    return ffi.sqlite3.sqlite3_bind_null(self.stmt, column)
+    return ffi.sqlite3.sqlite3_bind_null(self, column)
   end
 
   error("incorrect datatype for parameter 'value'")
@@ -288,33 +288,33 @@ function metatable_stmt:bind_values(...)
 end
 
 function metatable_stmt:step()
-  return ffi.sqlite3.sqlite3_step(self.stmt)
+  return ffi.sqlite3.sqlite3_step(self)
 end
 
 function metatable_stmt:data_count()
-  return ffi.sqlite3.sqlite3_data_count(self.stmt)
+  return ffi.sqlite3.sqlite3_data_count(self)
 end
 
 function metatable_stmt:column_name(column)
-  return ffi.string(ffi.sqlite3.sqlite3_column_name(self.stmt, column - 1))
+  return ffi.string(ffi.sqlite3.sqlite3_column_name(self, column - 1))
 end
 
 function metatable_stmt:column(column)
   column = column - 1
-  local type = ffi.sqlite3.sqlite3_column_type(self.stmt, column)
+  local type = ffi.sqlite3.sqlite3_column_type(self, column)
 
   if type == ffi.sqlite3.SQLITE_INTEGER then
-    return ffi.sqlite3.sqlite3_column_int(self.stmt, column)
+    return ffi.sqlite3.sqlite3_column_int(self, column)
   elseif type == ffi.sqlite3.SQLITE_FLOAT then
-    return ffi.sqlite3.sqlite3_column_double(self.stmt, column)
+    return ffi.sqlite3.sqlite3_column_double(self, column)
   elseif type == ffi.sqlite3.SQLITE_TEXT then
-    return ffi.string(ffi.sqlite3.sqlite3_column_text(self.stmt, column))
+    return ffi.string(ffi.sqlite3.sqlite3_column_text(self, column))
   elseif type == ffi.sqlite3.SQLITE_BLOB then
-    local blob = ffi.sqlite3.sqlite3_column_blob(self.stmt, column)
+    local blob = ffi.sqlite3.sqlite3_column_blob(self, column)
     if blob == nil then
       return nil
     end
-    return ffi.string(blob, ffi.sqlite3.sqlite3_column_bytes(self.stmt, column))
+    return ffi.string(blob, ffi.sqlite3.sqlite3_column_bytes(self, column))
   elseif type == ffi.sqlite3.SQLITE_NULL then
     return nil
   end
@@ -329,11 +329,14 @@ function metatable_stmt:column_values()
 end
 
 function metatable_stmt:reset()
-  return ffi.sqlite3.sqlite3_reset(self.stmt)
+  return ffi.sqlite3.sqlite3_reset(self)
 end
 
 function metatable_stmt:finalize()
-  return ffi.sqlite3.sqlite3_finalize(self.stmt)
+  return ffi.sqlite3.sqlite3_finalize(self)
 end
+
+ffi.metatype("sqlite3", metatable_db)
+ffi.metatype("sqlite3_stmt", metatable_stmt)
 
 return sqlite3
