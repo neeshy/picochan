@@ -281,6 +281,7 @@ div.thread {
 
 div.post-container:target div.thread {
     display: table;
+    margin-top: 1.3ch;
 }
 
 div.post-header span.post-thread-link,
