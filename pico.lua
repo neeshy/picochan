@@ -625,15 +625,16 @@ end
 function html.renderindex(index_tbl, overboard)
   for i = 1, #index_tbl do
     printf("<div class='index-thread'>")
-    html.renderpost(index_tbl[i][1], overboard, views.INDEX)
+    local op_tbl = index_tbl[i][1]
+    html.renderpost(op_tbl, overboard, views.INDEX)
 
     printf("<hr class='invisible' />")
 
     printf("<span class='index-thread-summary'>")
-    if index_tbl[i][1].RepliesOmitted > 0 then
-      printf("%d replies omitted. ", index_tbl[i][1].RepliesOmitted)
+    if op_tbl.RepliesOmitted > 0 then
+      printf("%d %s omitted. ", op_tbl.RepliesOmitted, op_tbl.RepliesOmitted > 1 and "replies" or "reply")
     end
-    printf("<a href='/%s/%d'>View full thread</a>", index_tbl[i][1].Board, index_tbl[i][1].Number)
+    printf("<a href='/%s/%d'>View full thread</a>", op_tbl.Board, op_tbl.Number)
     printf("</span>")
 
     for j = 2, #index_tbl[i] do
@@ -1697,7 +1698,8 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
   if replyable then
     printf("<a href='#postform'>[Reply]</a> ")
   end
-  printf("%d replies", thread_tbl[1].ReplyCount)
+  local reply_count = thread_tbl[1].ReplyCount
+  printf("%d %s", reply_count, reply_count == 1 and "reply" or "replies")
   printf("</span>")
 
   html.finish()
