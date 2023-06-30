@@ -658,27 +658,37 @@ function html.renderrecent(recent_tbl, overboard)
 end
 
 function html.renderpages(prefix, page, pagecount)
+  -- Always show the first, last, and five nearest pages. Only show an ellipses
+  -- if there would be a discontinuity of two or greater pages on either side of
+  -- the five page window.
   local start, stop
-  if page <= 5 then
+  if pagecount <= 7 then
     start = 1
-    stop = pagecount < 10 and pagecount or 10
-  elseif page + 5 > pagecount then
-    start = pagecount < 10 and 1 or (pagecount - 9)
     stop = pagecount
   else
-    start = page - 5
-    stop = page + 5
+    start = math.max(1, page - 2)
+    stop = math.min(pagecount, page + 2)
+    if start <= 3 then
+      start = 1
+    end
+    if stop + 2 >= pagecount then
+      stop = pagecount
+    end
+    if stop - start <= 3 then
+      if start == 1 then
+        stop = 5
+      else -- stop == pagecount
+        start = pagecount - 4
+      end
+    end
   end
 
   printf("<div class='page-switcher'>")
   if page > 1 then
-    printf("<a href='%s/1'>[First]</a> <a href='%s/%d'>[Prev]</a>", prefix, prefix, page - 1)
-  else
-    printf("[First] [Prev]")
+    printf("<a href='%s/%d'>&lt;&lt;</a> ", prefix, page - 1)
   end
-  printf("<div class='page-switcher-list'>")
   if start > 1 then
-    printf("... ")
+    printf("<a href='%s/1'>[1]</a> ... ", prefix)
   end
   for i = start, stop do
     if i ~= start then
@@ -691,13 +701,10 @@ function html.renderpages(prefix, page, pagecount)
     end
   end
   if stop < pagecount then
-    printf(" ...")
+    printf(" ... <a href='%s/%d'>[%d]</a> ", prefix, pagecount, pagecount)
   end
-  printf("</div>")
   if page < pagecount then
-    printf("<div class='float-right'><a href='%s/%d'>[Next]</a> <a href='%s/%d'>[Last]</a></div>", prefix, page + 1, prefix, pagecount)
-  else
-    printf("<div class='float-right'>[Next] [Last]</div>")
+    printf(" <a href='%s/%d'>&gt;&gt;</a>", prefix, page + 1)
   end
   printf("</div>")
 end
