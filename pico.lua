@@ -1309,15 +1309,15 @@ handlers["/Mod/banner/delete"] = function()
   html.cfinish()
 end
 
-handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post, file)
+handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, number, file)
   account_check()
   html.begin("%s post", operation)
   html.redheader("Modify or Delete a Post")
   html.container.begin()
 
-  local post_tbl = pico.post.tbl(board, post)
+  local post_tbl = pico.post.tbl(board, number)
   if not post_tbl then
-    html.error("Action failed", "Cannot find post %d on board %s", post, board)
+    html.error("Action failed", "Cannot find post %d on board %s", number, board)
   end
 
   if os.getenv("REQUEST_METHOD") == "POST" then
@@ -1328,25 +1328,25 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
 
     local result, msg
     if operation == "delete" then
-      result, msg = pico.post.delete(board, post, cgi.POST.reason)
+      result, msg = pico.post.delete(board, number, cgi.POST.reason)
     elseif operation == "unlink" then
-      result, msg = pico.post.unlink(board, post, file, cgi.POST.reason)
+      result, msg = pico.post.unlink(board, number, file, cgi.POST.reason)
     elseif operation == "spoiler" then
-      result, msg = pico.post.spoiler(board, post, file, cgi.POST.reason)
+      result, msg = pico.post.spoiler(board, number, file, cgi.POST.reason)
     elseif operation == "move" then
       if not tbl_validate(cgi.POST, "destination") then
         cgi.headers.Status = "400 Bad Request"
         html.error("Action failed", "Invalid request")
       end
-      result, msg = pico.thread.move(board, post, cgi.POST.destination, cgi.POST.reason)
+      result, msg = pico.thread.move(board, number, cgi.POST.destination, cgi.POST.reason)
     elseif operation == "merge" then
       if not (tbl_validate(cgi.POST, "destination") and tonumber(cgi.POST.destination)) then
         cgi.headers.Status = "400 Bad Request"
         html.error("Action failed", "Invalid request")
       end
-      result, msg = pico.thread.merge(board, post, tonumber(cgi.POST.destination), cgi.POST.reason)
+      result, msg = pico.thread.merge(board, number, tonumber(cgi.POST.destination), cgi.POST.reason)
     else
-      result, msg = pico.thread.toggle(operation, board, post, cgi.POST.reason)
+      result, msg = pico.thread.toggle(operation, board, number, cgi.POST.reason)
     end
 
     if not result then
@@ -1617,7 +1617,7 @@ else
   handlers["/([%l%d]+)/?"] = handlers["/([%l%d]+)/catalog"]
 end
 
-handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
+handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
   local board_tbl = pico.board.tbl(board)
 
   if not board_tbl then
@@ -1633,10 +1633,10 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
     end
   end
 
-  local thread_tbl, pagecount, msg = pico.thread.tbl(board, post, page)
+  local thread_tbl, pagecount, msg = pico.thread.tbl(board, number, page)
 
   if not thread_tbl then
-    local post_tbl = pico.post.tbl(board, post)
+    local post_tbl = pico.post.tbl(board, number)
 
     if not post_tbl then
       cgi.headers.Status = "404 Not Found"
@@ -1670,7 +1670,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
   local replyable = (board_tbl.Lock ~= 1 and op_tbl.Lock ~= 1) or permit(board_tbl.Name)
   if replyable then
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
-    html.form.postform(board_tbl, post)
+    html.form.postform(board_tbl, number)
   end
   printf("<hr />")
 
@@ -1683,7 +1683,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
 
   printf("<hr />")
   if page then
-    html.renderpages(("/%s/%d"):format(board, post), page, pagecount)
+    html.renderpages(("/%s/%d"):format(board, number), page, pagecount)
   end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
   printf("<a href='/%s/index'>[Index]</a> ", board)
