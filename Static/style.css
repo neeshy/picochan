@@ -18,8 +18,7 @@ nav {
     z-index: 1;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    padding-top: 0.25ch;
-    padding-bottom: 0.25ch;
+    padding: 0.25ch 1.5ch;
     width: 100%;
     line-height: 1.5;
 }
@@ -28,17 +27,13 @@ nav a {
     display: inline-block;
 }
 
-nav a.system, nav a.board {
-    margin-left: 1.5ch;
-}
-
 nav a.system {
     font-weight: bold;
 }
 
 nav span#logged-in-notification {
     float: right;
-    margin-right: 1.5ch;
+    margin-right: 3ch;
 }
 
 nav:not(:hover):not(:focus-within) {

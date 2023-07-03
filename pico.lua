@@ -78,21 +78,21 @@ function html.begin(...)
   printf(  "</head>")
   printf(  "<body>")
   printf(    "<nav>")
-  printf(      "<a class='system' href='/' accesskey='`'>main</a>")
-  printf(      "<a class='system' href='/Mod' accesskey='1'>mod</a>")
-  printf(      "<a class='system' href='/Log' accesskey='2'>log</a>")
-  printf(      "<a class='system' href='/Boards' accesskey='3'>boards</a>")
-  printf(      "<a class='system' href='/Overboard' accesskey='4'>overboard</a>")
+  printf(      "<a class='system' href='/' accesskey='`'>main</a> ")
+  printf(      "<a class='system' href='/Mod' accesskey='1'>mod</a> ")
+  printf(      "<a class='system' href='/Log' accesskey='2'>log</a> ")
+  printf(      "<a class='system' href='/Boards' accesskey='3'>boards</a> ")
+  printf(      "<a class='system' href='/Overboard' accesskey='4'>overboard</a> ")
   printf(      "<a class='system' href='/Theme' accesskey='5'>theme</a>")
 
   local boards = pico.board.list()
   for i = 1, #boards do
-    printf("<a class='board' href='/%s/' title='%s'>/%s/</a>",
+    printf(" <a class='board' href='/%s/' title='%s'>/%s/</a>",
            boards[i].Name, html.striphtml(boards[i].Title), boards[i].Name)
   end
 
   if pico.account.current then
-    printf("<span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current.Name)
+    printf(" <span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current.Name)
   end
 
   printf(      "<a href='' accesskey='r'></a>")
