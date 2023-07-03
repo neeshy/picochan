@@ -76,7 +76,7 @@ end
 
 function io.exists(path)
   local f = io.open(path, "r")
-  if f ~= nil then
+  if f then
     f:close()
     return true
   end

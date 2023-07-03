@@ -192,7 +192,7 @@ end
 -- populate the account table using an authentication key (perhaps provided by a
 -- session cookie, or by pico.account.login() above)
 function pico.account.register_login(key)
-  if pico.account.current ~= nil then
+  if pico.account.current then
     pico.account.logout(key)
   end
 
@@ -542,7 +542,7 @@ end
 
 -- return a file's extension based on its contents
 local function identify_file(data)
-  if data == nil or #data == 0 then
+  if not data or #data == 0 then
     return nil
   end
 
@@ -744,7 +744,7 @@ function pico.file.exists(name)
 end
 
 function pico.file.create_refs(board, number, files)
-  if files ~= nil then
+  if files then
     for i = 1, #files do
       if files[i].Hash and files[i].Hash ~= "" then
         db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i].Hash, files[i].Name, files[i].Spoiler, i)

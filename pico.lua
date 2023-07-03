@@ -713,7 +713,7 @@ function html.form.postform(board_tbl, parent)
   printf("<form id='postform' action='/Post' method='post' enctype='multipart/form-data'>")
   printf(  "<input name='board' value='%s' type='hidden' />", board_tbl.Name)
 
-  if parent ~= nil then
+  if parent then
     printf("<input name='parent' value='%d' type='hidden' />", parent)
   end
 
@@ -730,9 +730,9 @@ function html.form.postform(board_tbl, parent)
            i, i, i, i, i, i, i, i ~= board_tbl.PostMaxFiles and "<br />" or "")
   end
 
-  if (parent == nil and board_tbl.ThreadCaptcha == 1
-      or parent ~= nil and board_tbl.PostCaptcha == 1)
-      and not permit(board) then
+  if (not parent and board_tbl.ThreadCaptcha == 1
+      or parent and board_tbl.PostCaptcha == 1)
+      and not permit(board_tbl.Name) then
     local captchaid, captcha = pico.captcha.create()
 
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
