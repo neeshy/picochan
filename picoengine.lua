@@ -400,26 +400,28 @@ function pico.board.index(name, page)
 
   local index_tbl = {}
   for i = 1, #thread_ops do
-    index_tbl[i] = db:q("SELECT Posts.*, LastBumpDate, Sticky, Lock, Autosage, Cycle, ReplyCount, " ..
-                        "IIF(ReplyCount > ?, ReplyCount - ?, 0) AS RepliesOmitted, (" ..
-                        pagecount_sql .. " FROM Posts WHERE Board = Threads.Board AND Parent = Threads.Number) AS PageCount " ..
-                        "FROM Threads JOIN Posts USING(Board, Number) " ..
-                        "WHERE Board = ? AND Number = ? " ..
-                        "UNION ALL " ..
-                        "SELECT * FROM " ..
-                        "(SELECT *, " ..
-                        "NULL AS LastBumpDate, NULL AS Sticky, NULL AS Lock, " ..
-                        "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount, " ..
-                        "NULL AS RepliesOmitted, NULL AS PageCount " ..
-                        "FROM Posts " ..
-                        "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) " ..
-                        "ORDER BY Number ASC",
-                        windowsize, windowsize, threadpagesize,
-                        thread_ops[i].Board, thread_ops[i].Number,
-                        thread_ops[i].Board, thread_ops[i].Number, windowsize)
-    for j = 1, #index_tbl[i] do
-      index_tbl[i][j].Files = pico.file.list(index_tbl[i][j].Board, index_tbl[i][j].Number)
+    local op_tbl = thread_ops[i]
+    local thread_tbl = db:q("SELECT Posts.*, LastBumpDate, Sticky, Lock, Autosage, Cycle, ReplyCount, " ..
+                            "IIF(ReplyCount > ?, ReplyCount - ?, 0) AS RepliesOmitted, (" ..
+                            pagecount_sql .. " FROM Posts WHERE Board = Threads.Board AND Parent = Threads.Number) AS PageCount " ..
+                            "FROM Threads JOIN Posts USING(Board, Number) " ..
+                            "WHERE Board = ? AND Number = ? " ..
+                            "UNION ALL " ..
+                            "SELECT * FROM " ..
+                            "(SELECT *, " ..
+                            "NULL AS LastBumpDate, NULL AS Sticky, NULL AS Lock, " ..
+                            "NULL AS Autosage, NULL AS Cycle, NULL AS ReplyCount, " ..
+                            "NULL AS RepliesOmitted, NULL AS PageCount " ..
+                            "FROM Posts " ..
+                            "WHERE Board = ? AND Parent = ? ORDER BY Number DESC LIMIT ?) " ..
+                            "ORDER BY Number ASC",
+                            windowsize, windowsize, threadpagesize,
+                            op_tbl.Board, op_tbl.Number,
+                            op_tbl.Board, op_tbl.Number, windowsize)
+    for j = 1, #thread_tbl do
+      thread_tbl[j].Files = pico.file.list(thread_tbl[j].Board, thread_tbl[j].Number)
     end
+    index_tbl[i] = thread_tbl
   end
 
   return index_tbl, pagecount
@@ -447,7 +449,8 @@ function pico.board.recent(name, page)
   end
 
   for i = 1, #recent_tbl do
-    recent_tbl[i].Files = pico.file.list(recent_tbl[i].Board, recent_tbl[i].Number)
+    local post_tbl = recent_tbl[i]
+    post_tbl.Files = pico.file.list(post_tbl.Board, post_tbl.Number)
   end
 
   return recent_tbl, pagecount
@@ -725,10 +728,11 @@ end
 function pico.file.clean()
   local files = db:q1("SELECT Name FROM Files EXCEPT SELECT File FROM FileRefs EXCEPT SELECT File FROM Banners")
   for i = 1, #files do
-    db:e("DELETE FROM Files WHERE Name = ?", files[i])
-    os.remove("Media/" .. files[i])
-    os.remove("Media/icon/" .. files[i])
-    os.remove("Media/thumb/" .. files[i])
+    local file = files[i]
+    db:e("DELETE FROM Files WHERE Name = ?", file)
+    os.remove("Media/" .. file)
+    os.remove("Media/icon/" .. file)
+    os.remove("Media/thumb/" .. file)
   end
 end
 
@@ -746,8 +750,9 @@ end
 function pico.file.create_refs(board, number, files)
   if files then
     for i = 1, #files do
-      if files[i].Hash and files[i].Hash ~= "" then
-        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, files[i].Hash, files[i].Name, files[i].Spoiler, i)
+      local file = files[i]
+      if file.Hash and file.Hash ~= "" then
+        db:e("INSERT INTO FileRefs VALUES (?, ?, ?, ?, ?, ?)", board, number, file.Hash, file.Name, file.Spoiler, i)
       end
     end
   end
@@ -1034,7 +1039,8 @@ function pico.thread.tbl(board, number, page)
                       board, number, number)
   end
   for i = 1, #thread_tbl do
-    thread_tbl[i].Files = pico.file.list(thread_tbl[i].Board, thread_tbl[i].Number)
+    local post_tbl = thread_tbl[i]
+    post_tbl.Files = pico.file.list(post_tbl.Board, post_tbl.Number)
   end
   db:e("END TRANSACTION")
 

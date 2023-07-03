@@ -87,8 +87,9 @@ function html.begin(...)
 
   local boards = pico.board.list()
   for i = 1, #boards do
+    local board = boards[i]
     printf(" <a class='board' href='/%s/' title='%s'>/%s/</a>",
-           boards[i].Name, html.striphtml(boards[i].Title), boards[i].Name)
+           board.Name, html.striphtml(board.Title), board.Name)
   end
 
   if pico.account.current then
@@ -372,29 +373,6 @@ function html.picofmt(post_tbl)
   return s
 end
 
-function html.modlinks(post_tbl)
-  local board = post_tbl.Board
-  local number = post_tbl.Number
-
-  if not permit(board) then
-    return
-  end
-
-  printf(" <span class='mod-links'>")
-  if post_tbl.Parent then
-    printf("<a href='/Mod/post/delete/%s/%d' title='Delete Post'>[D]</a>", board, number)
-  else
-    printf("<a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
-    printf("<a href='/Mod/post/move/%s/%d' title='Move Thread'>[M]</a>", board, number)
-    printf("<a href='/Mod/post/merge/%s/%d' title='Merge Thread'>[R]</a>", board, number)
-    printf("<a href='/Mod/post/sticky/%s/%d' title='Sticky Thread'>[S]</a>", board, number)
-    printf("<a href='/Mod/post/lock/%s/%d' title='Lock Thread'>[L]</a>", board, number)
-    printf("<a href='/Mod/post/autosage/%s/%d' title='Autosage Thread'>[A]</a>", board, number)
-    printf("<a href='/Mod/post/cycle/%s/%d' title='Cycle Thread'>[C]</a>", board, number)
-  end
-  printf("</span>")
-end
-
 function html.threadflags(post_tbl)
   if (post_tbl.Sticky == 1 or post_tbl.Lock == 1
       or post_tbl.Autosage == 1 or post_tbl.Cycle == 1) then
@@ -417,6 +395,8 @@ function html.renderpostfiles(post_tbl, unprivileged)
     end
   end
 
+  local board = post_tbl.Board
+  local number = post_tbl.Number
   local file_tbl = post_tbl.Files
 
   for i = 1, #file_tbl do
@@ -434,12 +414,10 @@ function html.renderpostfiles(post_tbl, unprivileged)
            formatfilesize(file.Size), file.Width and (" " .. file.Width .. "x" .. file.Height) or "")
     printf(" <a href='/Media/%s' title='Download file' download='%s'>(dl)</a>", filename, html.striphtml(downloadname))
 
-    if not unprivileged and permit(post_tbl.Board) then
+    if not unprivileged and permit(board) then
       printf(" <span class='mod-links'>")
-      printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>",
-             post_tbl.Board, post_tbl.Number, filename)
-      printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>",
-             post_tbl.Board, post_tbl.Number, filename)
+      printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>", board, number, filename)
+      printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>", board, number, filename)
 
       if not pico.account.current.Board then
         printf("<a href='/Mod/file/delete/%s' title='Delete File'>[D]</a>", filename)
@@ -452,8 +430,7 @@ function html.renderpostfiles(post_tbl, unprivileged)
 
     if class == "image" and extension ~= "svg" then
       printf("<label>")
-      printf("<input class='invisible' type='checkbox' />",
-             post_tbl.Board, post_tbl.Number, i)
+      printf("<input class='invisible' type='checkbox' />", board, number, i)
       if spoiler then
         printf("<img class='post-file-thumbnail' src='/Static/spoiler.png' width='100' height='70' alt='[SPL]' />")
       else
@@ -490,19 +467,20 @@ end
 
 function html.renderpost(post_tbl, overboard, view)
   local separate = view == views.RECENT or view == views.MOD_ACTION
+  local board = post_tbl.Board
+  local number = post_tbl.Number
+  local parent = post_tbl.Parent
 
-  printf("<div%s class='post-container'>",
-         overboard and "" or (" id='%d'"):format(post_tbl.Number))
-  printf("<div class='post%s'>", (separate or post_tbl.Parent) and "" or " thread")
+  printf("<div%s class='post-container'>", overboard and "" or (" id='%d'"):format(number))
+  printf("<div class='post%s'>", (separate or parent) and "" or " thread")
   printf("<div class='post-header'>")
 
-  if separate or (overboard and not post_tbl.Parent) then
+  if separate or (overboard and not parent) then
     printf(" <span class='post-thread-link'>")
-    if post_tbl.Parent then
-      printf("<a href='/%s/%d'>/%s/%d</a>",
-             post_tbl.Board, post_tbl.Parent, post_tbl.Board, post_tbl.Parent)
+    if parent then
+      printf("<a href='/%s/%d'>/%s/%d</a>", board, parent, board, parent)
     else
-      printf("<a href='/%s/'>/%s/</a>", post_tbl.Board, post_tbl.Board)
+      printf("<a href='/%s/'>/%s/</a>", board, board)
     end
     printf("</span> -&gt;")
   end
@@ -538,23 +516,35 @@ function html.renderpost(post_tbl, overboard, view)
 
   printf(" <span class='post-date'>%s</span>", html.date(post_tbl.Date))
   printf(" <span class='post-number'><a href='/%s/%d#%d'>No.</a><a href='/%s/%d#postform'>%d</a></span>",
-         post_tbl.Board, post_tbl.Parent or post_tbl.Number, post_tbl.Number,
-         post_tbl.Board, post_tbl.Parent or post_tbl.Number, post_tbl.Number)
+         board, parent or number, number, board, parent or number, number)
 
   html.threadflags(post_tbl)
-  if view ~= views.MOD_ACTION then
-    html.modlinks(post_tbl)
+  if view ~= views.MOD_ACTION and permit(board) then
+    printf(" <span class='mod-links'>")
+    if parent then
+      printf("<a href='/Mod/post/delete/%s/%d' title='Delete Post'>[D]</a>", board, number)
+    else
+      printf("<a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
+      printf("<a href='/Mod/post/move/%s/%d' title='Move Thread'>[M]</a>", board, number)
+      printf("<a href='/Mod/post/merge/%s/%d' title='Merge Thread'>[R]</a>", board, number)
+      printf("<a href='/Mod/post/sticky/%s/%d' title='Sticky Thread'>[S]</a>", board, number)
+      printf("<a href='/Mod/post/lock/%s/%d' title='Lock Thread'>[L]</a>", board, number)
+      printf("<a href='/Mod/post/autosage/%s/%d' title='Autosage Thread'>[A]</a>", board, number)
+      printf("<a href='/Mod/post/cycle/%s/%d' title='Cycle Thread'>[C]</a>", board, number)
+    end
+    printf("</span>")
   end
-  if view == views.INDEX and not post_tbl.Parent then
-    printf(" <a href='/%s/%d' title='Open Thread'>[Open]</a>", post_tbl.Board, post_tbl.Number)
+  if view == views.INDEX and not parent then
+    printf(" <a href='/%s/%d' title='Open Thread'>[Open]</a>", board, number)
     printf(" <a href='/%s/%d/%d' title='Last %d Posts'>[Last]</a>",
-           post_tbl.Board, post_tbl.Number, post_tbl.PageCount, threadpagesize)
+           board, number, post_tbl.PageCount, threadpagesize)
   end
 
-  local reflist = pico.post.refs(post_tbl.Board, post_tbl.Number)
+  local reflist = pico.post.refs(board, number)
   for i = 1, #reflist do
-    printf(" <a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a> ",
-           post_tbl.Board, post_tbl.Parent or post_tbl.Number, reflist[i], reflist[i])
+    local ref = reflist[i]
+    printf(" <a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a>",
+           board, parent or number, ref, ref)
   end
 
   printf("</div>")
@@ -623,8 +613,10 @@ end
 
 function html.renderindex(index_tbl, overboard)
   for i = 1, #index_tbl do
+    local thread_tbl = index_tbl[i]
+    local op_tbl = thread_tbl[1]
+
     printf("<div class='index-thread'>")
-    local op_tbl = index_tbl[i][1]
     html.renderpost(op_tbl, overboard, views.INDEX)
 
     printf("<hr class='invisible' />")
@@ -636,9 +628,9 @@ function html.renderindex(index_tbl, overboard)
     printf("<a href='/%s/%d'>View full thread</a>", op_tbl.Board, op_tbl.Number)
     printf("</span>")
 
-    for j = 2, #index_tbl[i] do
+    for j = 2, #thread_tbl do
       printf("<hr class='invisible' />")
-      html.renderpost(index_tbl[i][j], overboard, views.INDEX)
+      html.renderpost(thread_tbl[j], overboard, views.INDEX)
     end
 
     printf("</div>")
@@ -734,7 +726,6 @@ function html.form.postform(board_tbl, parent)
       or parent and board_tbl.PostCaptcha == 1)
       and not permit(board_tbl.Name) then
     local captchaid, captcha = pico.captcha.create()
-
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
     printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength='6' required /><br />")
     printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captcha:base64())
@@ -754,7 +745,8 @@ end
 local function board_selection()
   local boards = pico.board.list()
   for i = 1, #boards do
-    printf("<option value='%s'>/%s/ - %s</option>", boards[i].Name, boards[i].Name, boards[i].Title)
+    local board = boards[i]
+    printf("<option value='%s'>/%s/ - %s</option>", board.Name, board.Name, board.Title)
   end
 end
 
@@ -841,8 +833,9 @@ function html.form.banner_delete(board, banners)
   printf(  "<input type='hidden' name='board' value='%s' />", board)
   printf(  "<label for='file'>File</label><br />")
   for i = 1, #banners do
-    printf("<input id='%s' name='file' type='radio' value='%s' %s/>", banners[i], banners[i], i == 1 and "checked " or "")
-    printf("<label for='%s'><img src='/Media/%s' alt='%s' /></label><br />", banners[i], banners[i], banners[i])
+    local banner = banners[i]
+    printf("<input id='%s' name='file' type='radio' value='%s' %s/>", banner, banner, i == 1 and "checked " or "")
+    printf("<label for='%s'><img src='/Media/%s' alt='%s' /></label><br />", banner, banner, banner)
   end
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
@@ -852,7 +845,8 @@ end
 local function account_selection(default)
   local accounts = pico.account.list()
   for i = 1, #accounts do
-    printf("<option value='%s'%s>%s</option>", accounts[i], accounts[i] == default and " selected" or "", accounts[i])
+    local account = accounts[i]
+    printf("<option value='%s'%s>%s</option>", account, account == default and " selected" or "", account)
   end
 end
 
@@ -1333,7 +1327,6 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, post
     end
 
     local result, msg
-
     if operation == "delete" then
       result, msg = pico.post.delete(board, post, cgi.POST.reason)
     elseif operation == "unlink" then
@@ -1491,9 +1484,10 @@ handlers["/Boards"] = function()
   local g_last = nil
   local board_list_tbl = pico.board.list()
   for i = 1, #board_list_tbl do
-    local board = board_list_tbl[i].Name
-    local title = html.striphtml(board_list_tbl[i].Title)
-    local subtitle = html.striphtml(board_list_tbl[i].Subtitle or "")
+    local board_tbl = board_list_tbl[i]
+    local board = board_tbl.Name
+    local title = html.striphtml(board_tbl.Title)
+    local subtitle = html.striphtml(board_tbl.Subtitle or "")
     local tpw7d = pico.board.stats.threadrate(board, 24 * 7, 1)
     local tpd1d = pico.board.stats.threadrate(board, 24, 1)
     local ppd7d = pico.board.stats.postrate(board, 24, 7)
@@ -1539,22 +1533,24 @@ local function board_header(board_tbl)
     html.error("Board Not Found", "The board you specified does not exist.")
   end
 
-  html.begin("/%s/", board_tbl.Name)
-  local banner = pico.board.banner.get(board_tbl.Name)
+  local board = board_tbl.Name
+
+  html.begin("/%s/", board)
+  local banner = pico.board.banner.get(board)
   if banner then
     printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
-         board_tbl.Name, board_tbl.Name, html.striphtml(board_tbl.Title))
+         board, board, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announce()
-  if board_tbl.Lock ~= 1 or permit(board_tbl.Name) then
+  if board_tbl.Lock ~= 1 or permit(board) then
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
     html.form.postform(board_tbl)
   end
-  printf("<a href='/%s/catalog'>[Catalog]</a> ", board_tbl.Name)
-  printf("<a href='/%s/index'>[Index]</a> ", board_tbl.Name)
-  printf("<a href='/%s/recent'>[Recent]</a> ", board_tbl.Name)
+  printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
+  printf("<a href='/%s/index'>[Index]</a> ", board)
+  printf("<a href='/%s/recent'>[Recent]</a> ", board)
   printf("<a class='float-right' href=''>[Update]</a><hr />")
 end
 
@@ -1659,9 +1655,10 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
     end
   end
 
-  html.begin("/%s/ - %s", board, (thread_tbl[1].Subject and #thread_tbl[1].Subject > 0)
-                                 and html.striphtml(thread_tbl[1].Subject)
-                                  or html.striphtml(thread_tbl[1].Comment:sub(1, 64)))
+  op_tbl = thread_tbl[1]
+  html.begin("/%s/ - %s", board, (op_tbl.Subject and #op_tbl.Subject > 0)
+                                 and html.striphtml(op_tbl.Subject)
+                                  or html.striphtml(op_tbl.Comment:sub(1, 64)))
   local banner = pico.board.banner.get(board)
   if banner then
     printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
@@ -1670,7 +1667,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
          board, board, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announce()
-  local replyable = (board_tbl.Lock ~= 1 and thread_tbl[1].Lock ~= 1) or permit(board_tbl.Name)
+  local replyable = (board_tbl.Lock ~= 1 and op_tbl.Lock ~= 1) or permit(board_tbl.Name)
   if replyable then
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
     html.form.postform(board_tbl, post)
@@ -1697,7 +1694,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, post, page)
   if replyable then
     printf("<a href='#postform'>[Reply]</a> ")
   end
-  local reply_count = thread_tbl[1].ReplyCount
+  local reply_count = op_tbl.ReplyCount
   printf("%d %s", reply_count, reply_count == 1 and "reply" or "replies")
   printf("</span>")
 
@@ -1731,8 +1728,6 @@ handlers["/Theme"] = function()
 end
 
 handlers["/Post"] = function()
-  local files = {}
-
   if os.getenv("REQUEST_METHOD") ~= "POST" then
     cgi.headers.Status = "400 Bad Request"
     html.error("Action failed", "Invalid request")
@@ -1744,6 +1739,7 @@ handlers["/Post"] = function()
     html.error("Board Not Found", "The board you specified does not exist.")
   end
 
+  local files = {}
   for i = 1, board_tbl.PostMaxFiles do
     local file = cgi.FILE["file" .. i]
     if file then
