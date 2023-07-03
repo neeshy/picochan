@@ -180,7 +180,9 @@ form#postform:target {
 }
 
 form#postform a.close-button {
-    float: right;
+    position: absolute;
+    top: 5px;
+    right: 5px;
     font-weight: bold;
 }
 
