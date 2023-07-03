@@ -24,7 +24,6 @@ local views = {
 --
 
 if jit.os == "BSD" then
-  -- The following pledge and unveil configuration was tested on an OpenBSD 6.6 system.
   local openbsd = require("lib.openbsd")
   openbsd.unveil("./picochan.db", "rw")
   openbsd.unveil("./picochan.db-journal", "rwc")
@@ -1745,7 +1744,6 @@ handlers["/Post"] = function()
     html.error("Board Not Found", "The board you specified does not exist.")
   end
 
-  -- step 1. add all the files of the post (if any) to pico's file registration
   for i = 1, board_tbl.PostMaxFiles do
     local file = cgi.FILE["file" .. i]
     if file then
@@ -1758,7 +1756,6 @@ handlers["/Post"] = function()
     end
   end
 
-  -- step 2. create the post itself
   local number, msg = pico.post.create(
     cgi.POST.board, tonumber(cgi.POST.parent),
     cgi.POST.name ~= "" and cgi.POST.name or nil,
