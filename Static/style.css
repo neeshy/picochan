@@ -23,10 +23,6 @@ nav {
     line-height: 1.5;
 }
 
-nav a {
-    display: inline-block;
-}
-
 nav a.system {
     font-weight: bold;
 }
@@ -172,7 +168,7 @@ form#postform {
     border-width: 1px;
     border-style: solid;
     padding: 5px;
-    max-width: 90%;
+    max-width: calc(100% - 3.9ch - 3px);
 }
 
 form#postform:target {
@@ -209,8 +205,8 @@ form#postform input[type=file] {
 }
 
 a#new-post {
-    display: table;
-    margin: auto;
+    display: block;
+    text-align: center;
     font-weight: bold;
     font-size: 15pt;
 }
@@ -222,7 +218,6 @@ hr {
     border: none;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    height: 0;
 }
 
 div.catalog-container {
@@ -232,7 +227,7 @@ div.catalog-container {
 div.catalog-thread {
     display: inline-block;
     margin-right: 1.3ch;
-    margin-bottom: 8px;
+    margin-bottom: calc(1.3ch - 4px);
     border-width: 1px;
     border-style: solid;
     padding: 10px;
@@ -289,21 +284,21 @@ div.post-header span.post-number a {
     text-decoration: none;
 }
 
-div.post-header a.referrer, div.post-file-info {
+div.post-header a.referrer, div.post-attachment-info {
     font-size: 7.5pt;
 }
 
-div.post-file {
+div.post-attachment {
     display: inline-block;
     margin-right: 1.3ch;
     margin-bottom: 1.3ch;
 }
 
-div.post-file, div.post-file-single {
-    overflow-wrap: anywhere;
+div.post-attachment-info {
+    margin-bottom: 1.3ch;
 }
 
-div.post-file-info > a:first-child {
+div.post-attachment-info > a:first-child {
     display: inline-block;
     max-width: 200px;
     overflow: hidden;
@@ -311,55 +306,45 @@ div.post-file-info > a:first-child {
     white-space: nowrap;
 }
 
-div.post-file-info > a:first-child:hover {
+div.post-attachment-info > a:first-child:hover {
     max-width: 100%;
 }
 
-img.post-file-thumbnail {
+img.post-thumbnail, :not(img).post-file, div.post-attachment-single img.post-file {
+    float: left;
+}
+
+img.post-thumbnail, .post-file {
+    margin-right: 1.3ch;
+    margin-bottom: 1.3ch;
+}
+
+img.post-thumbnail {
     cursor: pointer;
 }
 
-video.post-video {
+img.post-file {
+    display: none;
+    max-width: 100%;
+    cursor: pointer;
+}
+
+input[type=checkbox]:checked + img.post-thumbnail {
+    display: none;
+}
+
+input[type=checkbox]:checked + img.post-thumbnail + img.post-file {
+    display: block;
+}
+
+video.post-file {
     max-width: 320px;
     max-height: 240px;
 }
 
-img.post-file-thumbnail, video.post-video, audio.post-audio {
-    float: left;
-}
-
-img.post-file-thumbnail, img.post-file-fullsize, video.post-video, audio.post-audio {
-    margin-top: 1.3ch;
-    margin-right: 1.3ch;
-}
-
-div.thread img.post-file-thumbnail {
-    margin-bottom: 1.3ch;
-}
-
-input[type=checkbox]:checked + img.post-file-thumbnail {
-    display: none;
-}
-
-input[type=checkbox]:checked + img.post-file-thumbnail + img.post-file-fullsize {
-    display: block;
-}
-
-img.post-file-fullsize {
-    display: none;
-    margin-bottom: 1.3ch;
-    max-width: 100%;
-    cursor: pointer;
-}
-
-div.post-file-single img.post-file-fullsize {
-    float: left;
-}
-
 div.post-comment, div.catalog-thread-comment {
     display: block;
-    margin: 1.3ch;
-    margin-bottom: 0.7ch;
+    margin: 1.3ch 1.3ch 0.7ch 1.3ch;
     max-width: 150ch;
     overflow-wrap: break-word;
     white-space: pre-wrap;
@@ -398,8 +383,6 @@ code, span.code {
 }
 
 div.page-switcher {
-    display: table;
-    width: 100%;
     text-align: center;
 }
 
