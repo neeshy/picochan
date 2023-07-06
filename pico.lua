@@ -710,6 +710,7 @@ function html.form.postform(board_tbl, parent)
   end
 
   printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>")
+  printf(  "<br class='invisible' />")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength='64' /><br />")
   printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength='64' /><br />")
   printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength='64' />")
