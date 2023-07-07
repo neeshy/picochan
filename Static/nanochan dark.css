@@ -12,25 +12,29 @@ nav {
     border-bottom-color: #777;
 }
 
-h1.redheader, h1#boardtitle, div.catalog-thread-subject, div.post-header span.post-subject, span.redtext {
+.redheader, #boardtitle, .catalog-thread-subject, .post-subject, .redtext {
     color: #F44336;
 }
 
-h2#boardsubtitle, div.catalog-thread-lastbumpdate, div.post-header span.post-date {
+#boardsubtitle, .catalog-thread-lastbumpdate, .post-date {
     color: #FFC107;
 }
 
-div.container, div.post, div.catalog-thread, form#postform {
+.container, .post, .catalog-thread, #postform {
     background-color: #333;
     border-color: #777;
 }
 
-h2.barheader, tr:nth-child(odd)  {
+.barheader, tr:nth-child(odd)  {
     background-color: #444;
 }
 
 th {
     background-color: #222;
+}
+
+hr {
+    border-bottom-color: #777;
 }
 
 form input, form input[type=file]::file-selector-button, form select, form textarea {
@@ -39,60 +43,56 @@ form input, form input[type=file]::file-selector-button, form select, form texta
     border-color: #777;
 }
 
-hr {
-    border-bottom-color: #777;
-}
-
-div.catalog-thread {
+.catalog-thread {
     scrollbar-color: #777 #333;
 }
 
-div.post-container:target div.post {
+.post-container:target .post {
     border: 1px solid #03A9F4 !important;
 }
 
-div.post-container:target div.thread {
+.post-container:target .thread {
     background-color: #333 !important;
 }
 
-div.post-header span.post-name {
+.post-name {
     color: #8BC34A;
 }
 
-div.post-header span.post-capcode {
+.post-capcode {
     color: #BA68C8;
 }
 
-span.greentext {
+.greentext {
     color: #4CAF50;
 }
 
-span.pinktext {
+.pinktext {
     color: #EC407A;
 }
 
-span.kiketext {
+.kiketext {
     background-color: #FFF;
     color: #33D;
 }
 
-span.spoiler {
+.spoiler {
     background-color: #000;
     color: #000;
 }
 
-span.spoiler:hover {
+.spoiler:hover {
     color: #FFF;
+}
+
+code, .code {
+    background-color: #222;
 }
 
 code {
     border-color: #777;
 }
 
-span.code {
+.code {
     box-shadow: inset 0 0 0 1px #777;
-}
-
-code, span.code {
-    background-color: #222;
 }

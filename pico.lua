@@ -78,17 +78,17 @@ function html.begin(...)
   printf(  "</head>")
   printf(  "<body>")
   printf(    "<nav>")
-  printf(      "<a class='system' href='/' accesskey='`'>main</a> ")
-  printf(      "<a class='system' href='/Mod' accesskey='1'>mod</a> ")
-  printf(      "<a class='system' href='/Log' accesskey='2'>log</a> ")
-  printf(      "<a class='system' href='/Boards' accesskey='3'>boards</a> ")
-  printf(      "<a class='system' href='/Overboard' accesskey='4'>overboard</a> ")
-  printf(      "<a class='system' href='/Theme' accesskey='5'>theme</a>")
+  printf(      "<a href='/' accesskey='`'>main</a> ")
+  printf(      "<a href='/Mod' accesskey='1'>mod</a> ")
+  printf(      "<a href='/Log' accesskey='2'>log</a> ")
+  printf(      "<a href='/Boards' accesskey='3'>boards</a> ")
+  printf(      "<a href='/Overboard' accesskey='4'>overboard</a> ")
+  printf(      "<a href='/Theme' accesskey='5'>theme</a>")
 
   local boards = pico.board.list()
   for i = 1, #boards do
     local board = boards[i]
-    printf(" <a class='board' href='/%s/' title='%s'>/%s/</a>",
+    printf(" <a href='/%s/' title='%s'>/%s/</a>",
            board.Name, html.striphtml(board.Title), board.Name)
   end
 
@@ -541,11 +541,12 @@ function html.renderpost(post_tbl, overboard, view)
   end
 
   local reflist = pico.post.refs(board, number)
+  printf("<span class='referrer'>")
   for i = 1, #reflist do
     local ref = reflist[i]
-    printf(" <a class='referrer' href='/%s/%d#%d'>&gt;&gt;%d</a>",
-           board, parent or number, ref, ref)
+    printf(" <a href='/%s/%d#%d'>&gt;&gt;%d</a>", board, parent or number, ref, ref)
   end
+  printf("</span>")
 
   printf("</div>")
   html.renderpostfiles(post_tbl, view == views.MOD_ACTION)

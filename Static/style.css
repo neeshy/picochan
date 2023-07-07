@@ -23,75 +23,75 @@ nav {
     line-height: 1.5;
 }
 
-nav a.system {
-    font-weight: bold;
-}
-
-nav span#logged-in-notification {
-    float: right;
-    margin-right: 3ch;
-}
-
 nav:not(:hover):not(:focus-within) {
     white-space: nowrap;
 }
 
-img#banner {
+nav a[accesskey] {
+    font-weight: bold;
+}
+
+#logged-in-notification {
+    float: right;
+    margin-right: 3ch;
+}
+
+#banner {
     display: block;
     margin: auto;
 }
 
-h1.redheader, h1#boardtitle {
+.redheader, #boardtitle {
     margin-top: 5px;
     text-align: center;
 }
 
-h1#boardtitle a {
+#boardtitle a {
     color: inherit;
 }
 
-h2#boardsubtitle {
+#boardsubtitle {
     margin-top: -15px;
     text-align: center;
     font-weight: normal;
     font-size: 10pt;
 }
 
-div#announce {
+#announce {
     margin-bottom: 10px;
     text-align: center;
     font-weight: bold;
     font-size: 13pt;
 }
 
-div.container {
+.container {
     margin: auto;
     border-width: 1px;
     border-style: solid;
     padding: 10px;
 }
 
-div.container.narrow {
+.container.narrow {
     max-width: 650px;
 }
 
-div.container.wide {
+.container.wide {
     max-width: 1150px;
 }
 
-h2.barheader {
+.barheader {
     margin-right: -10px;
     margin-left: -10px;
     padding-left: 10px;
     font-size: 12pt;
 }
 
-div.container ul {
+ul {
     padding-left: 16px;
     list-style: none;
 }
 
-div.container ul > li::before {
+ul > li::before {
     padding-right: 8px;
     content: "*";
 }
@@ -108,6 +108,15 @@ th {
 
 th, td {
     padding: 3px 5px;
+}
+
+hr {
+    clear: both;
+    margin-top: 1.3ch;
+    margin-bottom: 1.3ch;
+    border: none;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
 }
 
 form label {
@@ -156,11 +165,11 @@ form input[type=radio] + label > img {
     max-height: 100px;
 }
 
-div.post-container + form {
+.post-container + form {
     margin-top: 5px;
 }
 
-form#postform {
+#postform {
     display: none;
     position: fixed;
     top: calc(1.5em + 1.8ch + 1px);
@@ -171,60 +180,51 @@ form#postform {
     max-width: calc(100% - 3.9ch - 3px);
 }
 
-form#postform:target {
+#postform:target {
     display: block;
 }
 
-form#postform a.close-button {
+.close-button {
     position: absolute;
     top: 5px;
     right: 5px;
     font-weight: bold;
 }
 
-form#postform label {
+#postform label {
     width: 7ch;
     min-width: min-content;
 }
 
-form#postform textarea {
+#postform textarea {
     margin: 0 0 5px 0;
     width: calc(100% - 7ch - 25px);
     min-width: calc(100% - 7ch - 25px);
     max-width: calc(100% - 7ch - 25px);
 }
 
-form#postform input[type=submit] {
+#postform input[type=submit] {
     margin-left: 5px;
 }
 
-form#postform input[type=file] {
+#postform input[type=file] {
     margin-right: 5px;
     max-width: 300px;
     vertical-align: top;
 }
 
-a#new-post {
+#new-post {
     display: block;
     text-align: center;
     font-weight: bold;
     font-size: 15pt;
 }
 
-hr {
-    clear: both;
-    margin-top: 1.3ch;
-    margin-bottom: 1.3ch;
-    border: none;
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-}
-
-div.catalog-container {
+.catalog-container {
     text-align: center;
 }
 
-div.catalog-thread {
+.catalog-thread {
     display: inline-block;
     margin-right: 1.3ch;
     margin-bottom: calc(1.3ch - 4px);
@@ -237,24 +237,24 @@ div.catalog-thread {
     scrollbar-width: thin;
 }
 
-div.catalog-thread-info, div.catalog-thread-subject {
+.catalog-thread-info, .catalog-thread-subject {
     font-weight: bold;
 }
 
-div.catalog-thread-lastbumpdate {
+.catalog-thread-lastbumpdate {
     font-size: 7.5pt;
 }
 
-div.index-thread span.index-thread-summary {
+.index-thread-summary {
     margin-left: 1.3ch;
 }
 
-div.post-container {
+.post-container {
     margin-top: calc(-1.5em - 0.5ch - 1px);
     padding-top: calc(1.5em + 0.5ch + 1px);
 }
 
-div.post {
+.post {
     display: table;
     margin-top: 1.3ch;
     border-width: 1px;
@@ -262,43 +262,41 @@ div.post {
     padding: 1.3ch;
 }
 
-div.thread {
+.thread {
     display: block;
     background: none !important;
     margin-top: 0;
     border: none;
 }
 
-div.post-container:target div.thread {
+.post-container:target .thread {
     display: table;
     margin-top: 1.3ch;
 }
 
-div.post-header span.post-thread-link,
-div.post-header span.post-subject,
-div.post-header span.post-name {
+.post-thread-link, .post-subject, .post-name {
     font-weight: bold;
 }
 
-div.post-header span.post-number a {
+.post-number a {
     text-decoration: none;
 }
 
-div.post-header a.referrer, div.post-attachment-info {
+.referrer, .post-attachment-info {
     font-size: 7.5pt;
 }
 
-div.post-attachment {
+.post-attachment {
     display: inline-block;
     margin-right: 1.3ch;
     margin-bottom: 1.3ch;
 }
 
-div.post-attachment-info {
+.post-attachment-info {
     margin-bottom: 1.3ch;
 }
 
-div.post-attachment-info > a:first-child {
+.post-attachment-info > a:first-child {
     display: inline-block;
     max-width: 200px;
     overflow: hidden;
@@ -306,20 +304,20 @@ div.post-attachment-info > a:first-child {
     white-space: nowrap;
 }
 
-div.post-attachment-info > a:first-child:hover {
+.post-attachment-info > a:first-child:hover {
     max-width: 100%;
 }
 
-img.post-thumbnail, :not(img).post-file, div.post-attachment-single img.post-file {
+.post-thumbnail, :not(img).post-file, .post-attachment-single img.post-file {
     float: left;
 }
 
-img.post-thumbnail, .post-file {
+.post-thumbnail, .post-file {
     margin-right: 1.3ch;
     margin-bottom: 1.3ch;
 }
 
-img.post-thumbnail {
+.post-thumbnail {
     cursor: pointer;
 }
 
@@ -329,11 +327,11 @@ img.post-file {
     cursor: pointer;
 }
 
-input[type=checkbox]:checked + img.post-thumbnail {
+input[type=checkbox]:checked + .post-thumbnail {
     display: none;
 }
 
-input[type=checkbox]:checked + img.post-thumbnail + img.post-file {
+input[type=checkbox]:checked + .post-thumbnail + img.post-file {
     display: block;
 }
 
@@ -342,7 +340,7 @@ video.post-file {
     max-height: 240px;
 }
 
-div.post-comment, div.catalog-thread-comment {
+.post-comment, .catalog-thread-comment {
     display: block;
     margin: 1.3ch 1.3ch 0.7ch 1.3ch;
     max-width: 150ch;
@@ -350,18 +348,23 @@ div.post-comment, div.catalog-thread-comment {
     white-space: pre-wrap;
 }
 
-div.post-comment a, div.catalog-thread-comment a {
+.post-comment a, .catalog-thread-comment a {
     text-decoration: underline;
 }
 
-span.redtext {
+.redtext {
     letter-spacing: -0.7px;
     font-weight: bolder;
     font-size: 11pt;
 }
 
-span.spoiler {
+.spoiler {
     cursor: none;
+}
+
+code, .code {
+    display: inline-block;
+    max-width: max-content;
 }
 
 code {
@@ -372,17 +375,12 @@ code {
     padding: 1ch;
 }
 
-span.code {
+.code {
     padding-right: 0.5ch;
     padding-left: 0.5ch;
 }
 
-code, span.code {
-    display: inline-block;
-    max-width: max-content;
-}
-
-div.page-switcher {
+.page-switcher {
     text-align: center;
 }
 
