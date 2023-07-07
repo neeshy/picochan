@@ -184,7 +184,7 @@ form input[type=radio] + label > img {
     display: block;
 }
 
-.close-button {
+#postform a[href='##'] {
     position: absolute;
     top: 5px;
     right: 5px;

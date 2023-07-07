@@ -257,16 +257,16 @@ function html.picofmt(post_tbl)
     local ref_post_tbl = pico.post.tbl(post_tbl.Board, number, true)
 
     if ref_post_tbl then
-      return ("<a class='reference' href='/%s/%d#%d'>\2\2%d</a>%s"):format(
+      return ("<a href='/%s/%d#%d'>\2\2%d</a>%s"):format(
         ref_post_tbl.Board, ref_post_tbl.Parent or number, number, number, append)
     else
-      return ("<s><a class='reference'>\2\2%d</a></s>%s"):format(number, append)
+      return ("<s><a>\2\2%d</a></s>%s"):format(number, append)
     end
   end
 
   local function handle_xbrefs(board, number, append)
     if number == "" then
-      return ("<a class='reference' href='/%s/'>\2\2\2/%s/</a>%s"):format(board, board, append)
+      return ("<a href='/%s/'>\2\2\2/%s/</a>%s"):format(board, board, append)
     else
       number = tonumber(number)
     end
@@ -274,10 +274,10 @@ function html.picofmt(post_tbl)
     local ref_post_tbl = pico.post.tbl(board, number, true)
 
     if ref_post_tbl then
-      return ("<a class='reference' href='/%s/%d#%d'>\2\2\2/%s/%d</a>%s"):format(
+      return ("<a href='/%s/%d#%d'>\2\2\2/%s/%d</a>%s"):format(
         board, ref_post_tbl.Parent or number, number, board, number, append)
     else
-      return ("<s><a class='reference'>\2\2\2/%s/%d</a></s>%s"):format(board, number, append)
+      return ("<s><a>\2\2\2/%s/%d</a></s>%s"):format(board, number, append)
     end
   end
 
@@ -374,14 +374,11 @@ function html.picofmt(post_tbl)
 end
 
 function html.threadflags(post_tbl)
-  if (post_tbl.Sticky == 1 or post_tbl.Lock == 1
-      or post_tbl.Autosage == 1 or post_tbl.Cycle == 1) then
-    printf(" <span class='thread-flags'>%s%s%s%s</span>",
-           post_tbl.Sticky   == 1 and "<a title='Sticky'>&#x1f4cc;</a> "  or "",
-           post_tbl.Lock     == 1 and "<a title='Lock'>&#x1f512;</a> "    or "",
-           post_tbl.Autosage == 1 and "<a title='Autosage'>&#x2693;</a> " or "",
-           post_tbl.Cycle    == 1 and "<a title='Cycle'>&#x1f503;</a> "   or "")
-  end
+  printf("%s%s%s%s",
+         post_tbl.Sticky   == 1 and " <a title='Sticky'>&#x1f4cc;</a>"  or "",
+         post_tbl.Lock     == 1 and " <a title='Lock'>&#x1f512;</a>"    or "",
+         post_tbl.Autosage == 1 and " <a title='Autosage'>&#x2693;</a>" or "",
+         post_tbl.Cycle    == 1 and " <a title='Cycle'>&#x1f503;</a>"   or "")
 end
 
 function html.renderpostfiles(post_tbl, unprivileged)
@@ -415,15 +412,12 @@ function html.renderpostfiles(post_tbl, unprivileged)
     printf(" <a href='/Media/%s' title='Download file' download='%s'>(dl)</a>", filename, html.striphtml(downloadname))
 
     if not unprivileged and permit(board) then
-      printf(" <span class='mod-links'>")
-      printf("<a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>", board, number, filename)
+      printf(" <a href='/Mod/post/unlink/%s/%d/%s' title='Unlink File'>[U]</a>", board, number, filename)
       printf("<a href='/Mod/post/spoiler/%s/%d/%s' title='Spoiler File'>[S]</a>", board, number, filename)
 
       if not pico.account.current.Board then
         printf("<a href='/Mod/file/delete/%s' title='Delete File'>[D]</a>", filename)
       end
-
-      printf("</span>")
     end
 
     printf("</div>")
@@ -491,7 +485,7 @@ function html.renderpost(post_tbl, overboard, view)
 
   printf(" <span class='post-name'>")
   if post_tbl.Email and post_tbl.Email ~= "" then
-    printf("<a class='post-email' href='mailto:%s'>%s</a>",
+    printf("<a href='mailto:%s'>%s</a>",
            html.striphtml(post_tbl.Email), html.striphtml(post_tbl.Name or defaultpostname))
   else
     printf("%s", html.striphtml(post_tbl.Name or defaultpostname))
@@ -520,11 +514,10 @@ function html.renderpost(post_tbl, overboard, view)
 
   html.threadflags(post_tbl)
   if view ~= views.MOD_ACTION and permit(board) then
-    printf(" <span class='mod-links'>")
     if parent then
-      printf("<a href='/Mod/post/delete/%s/%d' title='Delete Post'>[D]</a>", board, number)
+      printf(" <a href='/Mod/post/delete/%s/%d' title='Delete Post'>[D]</a>", board, number)
     else
-      printf("<a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
+      printf(" <a href='/Mod/post/delete/%s/%d' title='Delete Thread'>[D]</a>", board, number)
       printf("<a href='/Mod/post/move/%s/%d' title='Move Thread'>[M]</a>", board, number)
       printf("<a href='/Mod/post/merge/%s/%d' title='Merge Thread'>[R]</a>", board, number)
       printf("<a href='/Mod/post/sticky/%s/%d' title='Sticky Thread'>[S]</a>", board, number)
@@ -532,7 +525,6 @@ function html.renderpost(post_tbl, overboard, view)
       printf("<a href='/Mod/post/autosage/%s/%d' title='Autosage Thread'>[A]</a>", board, number)
       printf("<a href='/Mod/post/cycle/%s/%d' title='Cycle Thread'>[C]</a>", board, number)
     end
-    printf("</span>")
   end
   if view == views.INDEX and not parent then
     printf(" <a href='/%s/%d' title='Open Thread'>[Open]</a>", board, number)
@@ -541,12 +533,14 @@ function html.renderpost(post_tbl, overboard, view)
   end
 
   local reflist = pico.post.refs(board, number)
-  printf("<span class='referrer'>")
-  for i = 1, #reflist do
-    local ref = reflist[i]
-    printf(" <a href='/%s/%d#%d'>&gt;&gt;%d</a>", board, parent or number, ref, ref)
+  if #reflist > 0 then
+    printf("<span class='referrer'>")
+    for i = 1, #reflist do
+      local ref = reflist[i]
+      printf(" <a href='/%s/%d#%d'>&gt;&gt;%d</a>", board, parent or number, ref, ref)
+    end
+    printf("</span>")
   end
-  printf("</span>")
 
   printf("</div>")
   html.renderpostfiles(post_tbl, view == views.MOD_ACTION)
@@ -563,8 +557,7 @@ function html.rendercatalog(catalog_tbl)
     local number = post_tbl.Number
 
     printf("<div class='catalog-thread'>")
-    printf("<a class='catalog-thread-link' href='/%s/%d'>", board, number)
-
+    printf("<a href='/%s/%d'>", board, number)
     if post_tbl.File then
       if post_tbl.Spoiler == 1 then
         printf("<img alt='***' src='/Static/spoiler.png' width='100' height='70' />")
@@ -593,8 +586,8 @@ function html.rendercatalog(catalog_tbl)
     else
       printf("***")
     end
-
     printf("</a>")
+
     printf("<div class='catalog-thread-info'>")
     printf("<a href='/%s/'>/%s/</a> R:%d", board, board, post_tbl.ReplyCount)
     html.threadflags(post_tbl)
@@ -617,14 +610,12 @@ function html.renderindex(index_tbl, overboard)
     local thread_tbl = index_tbl[i]
     local op_tbl = thread_tbl[1]
 
-    printf("<div class='index-thread'>")
     html.renderpost(op_tbl, overboard, views.INDEX)
-
     printf("<hr class='invisible' />")
 
     printf("<span class='index-thread-summary'>")
     if op_tbl.RepliesOmitted > 0 then
-      printf("%d %s omitted. ", op_tbl.RepliesOmitted, op_tbl.RepliesOmitted > 1 and "replies" or "reply")
+      printf("%d %s omitted. ", op_tbl.RepliesOmitted, op_tbl.RepliesOmitted == 1 and "reply" or "replies")
     end
     printf("<a href='/%s/%d'>View full thread</a>", op_tbl.Board, op_tbl.Number)
     printf("</span>")
@@ -634,7 +625,6 @@ function html.renderindex(index_tbl, overboard)
       html.renderpost(thread_tbl[j], overboard, views.INDEX)
     end
 
-    printf("</div>")
     if i ~= #index_tbl then
       printf("<hr />")
     end
@@ -710,7 +700,7 @@ function html.form.postform(board_tbl, parent)
     printf("<input name='parent' value='%d' type='hidden' />", parent)
   end
 
-  printf(  "<a class='close-button' href='##' accesskey='w'>[X]</a>")
+  printf(  "<a href='##' accesskey='w'>[X]</a>")
   printf(  "<br class='invisible' />")
   printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength='64' /><br />")
   printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength='64' /><br />")
@@ -730,7 +720,7 @@ function html.form.postform(board_tbl, parent)
     local captchaid, captcha = pico.captcha.create()
     printf("<input name='captchaid' value='%s' type='hidden' />", captchaid)
     printf("<br /><label for='captcha'>Captcha</label><input id='captcha' name='captcha' type='text' pattern='[a-zA-Z]{6}' maxlength='6' required /><br />")
-    printf("<img id='captcha-image' src='data:image/jpeg;base64,%s' />", captcha:base64())
+    printf("<img src='data:image/jpeg;base64,%s' />", captcha:base64())
   end
 
   printf("</form>")
@@ -1657,7 +1647,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
     end
   end
 
-  op_tbl = thread_tbl[1]
+  local op_tbl = thread_tbl[1]
   html.begin("/%s/ - %s", board, (op_tbl.Subject and #op_tbl.Subject > 0)
                                  and html.striphtml(op_tbl.Subject)
                                   or html.striphtml(op_tbl.Comment:sub(1, 64)))
