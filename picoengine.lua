@@ -808,7 +808,7 @@ function pico.post.create(board, parent, name, email, subject, comment, files, c
     return nil, "Email too long"
   elseif subject and #subject > 64 then
     return nil, "Subject too long"
-  elseif (not files or #files == 0) and #comment == 0 then
+  elseif (not files or #files == 0) and comment == "" then
     return nil, "Post is blank"
   elseif ((is_thread and board_tbl.ThreadCaptcha == 1) or (not is_thread and board_tbl.PostCaptcha == 1))
          and not permit("admin gvol bo lvol", "post", board)

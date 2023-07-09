@@ -594,7 +594,9 @@ function html.rendercatalog(catalog_tbl)
     printf("</div>")
 
     printf("<div class='catalog-thread-lastbumpdate'>Bump: %s</div>", html.date(post_tbl.LastBumpDate, true))
-    printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl.Subject or ""))
+    if post_tbl.Subject and post_tbl.Subject ~= "" then
+      printf("<div class='catalog-thread-subject'>%s</div>", html.striphtml(post_tbl.Subject))
+    end
     printf("<div class='catalog-thread-comment'>%s</div>", html.picofmt(post_tbl))
 
     printf("</div>")
@@ -1648,7 +1650,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
   end
 
   local op_tbl = thread_tbl[1]
-  html.begin("/%s/ - %s", board, (op_tbl.Subject and #op_tbl.Subject > 0)
+  html.begin("/%s/ - %s", board, (op_tbl.Subject and op_tbl.Subject ~= "")
                                  and html.striphtml(op_tbl.Subject)
                                   or html.striphtml(op_tbl.Comment:sub(1, 64)))
   local banner = pico.board.banner.get(board)
