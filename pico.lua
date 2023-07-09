@@ -728,15 +728,7 @@ function html.form.postform(board_tbl, parent)
   printf("</form>")
 end
 
-function html.form.mod_login()
-  printf("<form method='post'>")
-  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />")
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-local function board_selection()
+function html.form.board_selection()
   local boards = pico.board.list()
   for i = 1, #boards do
     local board = boards[i]
@@ -744,31 +736,26 @@ local function board_selection()
   end
 end
 
-function html.form.board_create()
-  printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
-  printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />")
-  printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
-  printf("</form>")
+function html.form.account_selection(default)
+  local accounts = pico.account.list()
+  for i = 1, #accounts do
+    local account = accounts[i]
+    printf("<option value='%s'%s>%s</option>", account, account == default and " selected" or "", account)
+  end
 end
 
-function html.form.board_delete()
-  printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label>")
-  printf(  "<select id='name' name='name' autofocus>")
-  board_selection()
-  printf(  "</select><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
-  printf("</form>")
+function html.form.theme_selection(default)
+  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
+  for t in themes:lines() do
+    printf("<option value='%s'%s>%s</option>", t, t == default and " selected" or "", t)
+  end
 end
 
 function html.form.board_config_select()
   printf("<form method='post'>")
   printf(  "<label for='Name'>Name</label>")
   printf(  "<select id='Name' name='Name' autofocus>")
-  board_selection()
+  html.form.board_selection()
   printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -801,22 +788,11 @@ function html.form.board_config(board)
   printf("</form>")
 end
 
-function html.form.banner_add()
-  printf("<form method='post'>")
-  printf(  "<label for='board'>Board</label>")
-  printf(  "<select id='board' name='board' autofocus>")
-  board_selection()
-  printf(  "</select><br />")
-  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
-  printf("</form>")
-end
-
 function html.form.banner_delete_select()
   printf("<form method='post'>")
   printf(  "<label for='board'>Board</label>")
   printf(  "<select id='board' name='board' autofocus>")
-  board_selection()
+  html.form.board_selection()
   printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -833,136 +809,6 @@ function html.form.banner_delete(board, banners)
   end
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
-  printf("</form>")
-end
-
-local function account_selection(default)
-  local accounts = pico.account.list()
-  for i = 1, #accounts do
-    local account = accounts[i]
-    printf("<option value='%s'%s>%s</option>", account, account == default and " selected" or "", account)
-  end
-end
-
-function html.form.account_create()
-  printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength='128' required /><br />")
-  printf(  "<label for='type'>Type</label>")
-  printf(  "<select id='type' name='type'>")
-  printf(    "<option value='admin'>Administrator</option>")
-  printf(    "<option value='bo'>Board Owner</option>")
-  printf(    "<option value='gvol'>Global Volunteer</option>")
-  printf(    "<option value='lvol' selected>Local Volunteer</option>")
-  printf(  "</select><br />")
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
-  printf("</form>")
-end
-
-function html.form.account_delete()
-  printf("<form method='post'>")
-  printf(  "<label for='name'>Name</label>")
-  printf(  "<select id='name' name='name' autofocus />")
-  account_selection(pico.account.current.Name)
-  printf(  "</select><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
-  printf("</form>")
-end
-
-function html.form.account_config()
-  printf("<form method='post'>")
-  printf(  "<label for='name'>Account</label>")
-  printf(  "<select id='name' name='name' autofocus /><br />")
-  account_selection(pico.account.current.Name)
-  printf(  "</select><br />")
-  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required autofocus /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
-  printf("</form>")
-end
-
-local function theme_selection(default)
-  local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
-  for t in themes:lines() do
-    printf("<option value='%s'%s>%s</option>", t, t == default and " selected" or "", t)
-  end
-end
-
-function html.form.globalconfig(varname)
-  printf("<form method='post'>")
-  printf("<input type='hidden' name='name' value='%s' />", varname)
-  printf("<label for='value'>%s</label>", varname)
-
-  if varname == "frontpage" or varname == "announce" then
-    printf("<textarea id='value' name='value' cols='40' rows='12' autofocus>%s</textarea>",
-           html.striphtml(pico.global.get(varname, "")) or "")
-  elseif varname == "theme" then
-    printf("<select id='value' name='value' autofocus>")
-    theme_selection(theme)
-    printf("</select>")
-  elseif varname == "defaultboardview" then
-    printf("<select id='value' name='value' autofocus>")
-    printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "")
-    printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "")
-    printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "")
-    printf("</select>")
-  else
-    printf("<input id='value' name='value' value='%s' type='text' autofocus />",
-           html.striphtml(pico.global.get(varname, "")) or "")
-  end
-  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
-  printf("</form>")
-end
-
-function html.form.themeconfig()
-  printf("<form method='post'>")
-  printf(  "<label for='theme'>theme</label>")
-  printf(  "<select id='theme' name='theme' autofocus>")
-  theme_selection(cgi.COOKIE.theme or theme)
-  printf(  "</select>")
-  printf(  "<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
-  printf("</form>")
-end
-
-function html.form.mod_action_reason()
-  printf("<form method='post'>")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-function html.form.mod_move_thread()
-  printf("<form method='post'>")
-  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-function html.form.mod_merge_thread()
-  printf("<form method='post'>")
-  printf(  "<label for='destination'>Destination</label><input id='destination' name='destination' type='number' min='1' required autofocus /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-function html.form.mod_multidelete()
-  printf("<form method='post'>")
-  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
-  printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />")
-  printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
-  printf("</form>")
-end
-
-function html.form.mod_pattdelete()
-  printf("<form method='post'>")
-  printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />")
-  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
-  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
 end
 
@@ -1075,7 +921,12 @@ handlers["/Mod/login"] = function()
     end
   end
 
-  html.form.mod_login()
+  printf("<form method='post'>")
+  printf(  "<label for='username'>Username</label><input id='username' name='username' type='text' required autofocus /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1101,7 +952,30 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
     printf("%s: %s", result and "Variable set" or "Cannot set variable", msg)
   end
 
-  html.form.globalconfig(varname)
+  printf("<form method='post'>")
+  printf("<input type='hidden' name='name' value='%s' />", varname)
+  printf("<label for='value'>%s</label>", varname)
+
+  if varname == "frontpage" or varname == "announce" then
+    printf("<textarea id='value' name='value' cols='40' rows='12' autofocus>%s</textarea>",
+           html.striphtml(pico.global.get(varname, "")) or "")
+  elseif varname == "theme" then
+    printf("<select id='value' name='value' autofocus>")
+    html.form.theme_selection(theme)
+    printf("</select>")
+  elseif varname == "defaultboardview" then
+    printf("<select id='value' name='value' autofocus>")
+    printf("<option value='catalog'%s>catalog</option>", defaultboardview == "catalog" and " selected" or "")
+    printf("<option value='index'%s>index</option>", defaultboardview == "index" and " selected" or "")
+    printf("<option value='recent'%s>recent</option>", defaultboardview == "recent" and " selected" or "")
+    printf("</select>")
+  else
+    printf("<input id='value' name='value' value='%s' type='text' autofocus />",
+           html.striphtml(pico.global.get(varname, "")) or "")
+  end
+  printf("<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1117,7 +991,14 @@ handlers["/Mod/tools/multidelete"] = function()
     printf("%s", select(2, pico.post.multidelete(cgi.POST.board, cgi.POST.ispec, cgi.POST.espec ~= "" and cgi.POST.espec or nil, cgi.POST.reason)))
   end
 
-  html.form.mod_multidelete()
+  printf("<form method='post'>")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' required autofocus /><br />")
+  printf(  "<label for='ispec'>Include</label><input id='ispec' name='ispec' type='text' required /><br />")
+  printf(  "<label for='espec'>Exclude</label><input id='espec' name='espec' type='text' /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1133,7 +1014,12 @@ handlers["/Mod/tools/pattdelete"] = function()
     printf("%s", select(2, pico.post.pattdelete(cgi.POST.pattern, cgi.POST.reason)))
   end
 
-  html.form.mod_pattdelete()
+  printf("<form method='post'>")
+  printf(  "<label for='pattern'>Pattern</label><input id='pattern' name='pattern' type='text' required autofocus /><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1149,7 +1035,20 @@ handlers["/Mod/account/create"] = function()
     printf("%s", select(2, pico.account.create(cgi.POST.name, cgi.POST.password, cgi.POST.type, cgi.POST.board ~= "" and cgi.POST.board or nil)))
   end
 
-  html.form.account_create()
+  printf("<form method='post'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' pattern='.{6,128}' maxlength='128' required /><br />")
+  printf(  "<label for='type'>Type</label>")
+  printf(  "<select id='type' name='type'>")
+  printf(    "<option value='admin'>Administrator</option>")
+  printf(    "<option value='bo'>Board Owner</option>")
+  printf(    "<option value='gvol'>Global Volunteer</option>")
+  printf(    "<option value='lvol' selected>Local Volunteer</option>")
+  printf(  "</select><br />")
+  printf(  "<label for='board'>Board</label><input id='board' name='board' type='text' /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1166,7 +1065,15 @@ handlers["/Mod/account/delete"] = function()
     printf("%s%s", result and "" or "Cannot delete account: ", msg)
   end
 
-  html.form.account_delete()
+  printf("<form method='post'>")
+  printf(  "<label for='name'>Name</label>")
+  printf(  "<select id='name' name='name' autofocus />")
+  html.form.account_selection(pico.account.current.Name)
+  printf(  "</select><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1182,7 +1089,15 @@ handlers["/Mod/account/config"] = function()
     printf("%s", select(2, pico.account.changepass(cgi.POST.name, cgi.POST.password)))
   end
 
-  html.form.account_config()
+  printf("<form method='post'>")
+  printf(  "<label for='name'>Account</label>")
+  printf(  "<select id='name' name='name' autofocus /><br />")
+  html.form.account_selection(pico.account.current.Name)
+  printf(  "</select><br />")
+  printf(  "<label for='password'>Password</label><input id='password' name='password' type='password' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Change Password' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1199,7 +1114,13 @@ handlers["/Mod/board/create"] = function()
     printf("%s%s", result and "" or "Cannot create board: ", msg)
   end
 
-  html.form.board_create()
+  printf("<form method='post'>")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' required autofocus /><br />")
+  printf(  "<label for='title'>Title</label><input id='title' name='title' type='text' required /><br />")
+  printf(  "<label for='subtitle'>Subtitle</label><input id='subtitle' name='subtitle' type='text' /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Create' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1216,7 +1137,15 @@ handlers["/Mod/board/delete"] = function()
     printf("%s%s", result and "" or "Cannot delete board: ", msg)
   end
 
-  html.form.board_delete()
+  printf("<form method='post'>")
+  printf(  "<label for='name'>Name</label>")
+  printf(  "<select id='name' name='name' autofocus>")
+  html.form.board_selection()
+  printf(  "</select><br />")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1267,7 +1196,15 @@ handlers["/Mod/banner/add"] = function()
     printf("%s%s", result and "" or "Cannot add banner: ", msg)
   end
 
-  html.form.banner_add()
+  printf("<form method='post'>")
+  printf(  "<label for='board'>Board</label>")
+  printf(  "<select id='board' name='board' autofocus>")
+  html.form.board_selection()
+  printf(  "</select><br />")
+  printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1381,13 +1318,18 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, numb
          thread and "thread" or "post")
   html.renderpost(post_tbl, true, views.MOD_ACTION)
 
+  printf("<form method='post'>")
   if operation == "move" then
-    html.form.mod_move_thread()
+    printf("<label for='destination'>Destination</label><input id='destination' name='destination' type='text' required autofocus /><br />")
+    printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   elseif operation == "merge" then
-    html.form.mod_merge_thread()
+    printf("<label for='destination'>Destination</label><input id='destination' name='destination' type='number' min='1' required autofocus /><br />")
+    printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   else
-    html.form.mod_action_reason()
+    printf("<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
   end
+  printf("<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
 
   html.cfinish()
 end
@@ -1422,7 +1364,11 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
   end
 
   printf("You are about to <b>delete</b> the file %s from <i>all boards</i>.", file)
-  html.form.mod_action_reason()
+  printf("<form method='post'>")
+  printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required autofocus /><br />")
+  printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
@@ -1717,7 +1663,14 @@ handlers["/Theme"] = function()
     cgi.finalize()
   end
 
-  html.form.themeconfig()
+  printf("<form method='post'>")
+  printf(  "<label for='theme'>theme</label>")
+  printf(  "<select id='theme' name='theme' autofocus>")
+  html.form.theme_selection(cgi.COOKIE.theme or theme)
+  printf(  "</select>")
+  printf(  "<br /><label for='submit'>Submit</label><input id='submit' type='submit' value='Set' />")
+  printf("</form>")
+
   html.cfinish()
 end
 
