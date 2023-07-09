@@ -728,11 +728,11 @@ function html.form.postform(board_tbl, parent)
   printf("</form>")
 end
 
-function html.form.board_selection()
+function html.form.board_selection(default)
   local boards = pico.board.list()
   for i = 1, #boards do
     local board = boards[i]
-    printf("<option value='%s'>/%s/ - %s</option>", board.Name, board.Name, board.Title)
+    printf("<option value='%s'%s>/%s/ - %s</option>", board.Name, board.Name == default and " selected" or "", board.Name, board.Title)
   end
 end
 
@@ -746,8 +746,8 @@ end
 
 function html.form.theme_selection(default)
   local themes = io.popen("ls ./Static/*.css | awk -F/ '!/^\\.\\/Static\\/style\\.css/{sub(/\\.css$/, \"\"); print $3}'")
-  for t in themes:lines() do
-    printf("<option value='%s'%s>%s</option>", t, t == default and " selected" or "", t)
+  for theme in themes:lines() do
+    printf("<option value='%s'%s>%s</option>", theme, theme == default and " selected" or "", theme)
   end
 end
 
@@ -755,7 +755,7 @@ function html.form.board_config_select()
   printf("<form method='post'>")
   printf(  "<label for='Name'>Name</label>")
   printf(  "<select id='Name' name='Name' autofocus>")
-  html.form.board_selection()
+  html.form.board_selection(pico.account.current.Board)
   printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -792,7 +792,7 @@ function html.form.banner_delete_select()
   printf("<form method='post'>")
   printf(  "<label for='board'>Board</label>")
   printf(  "<select id='board' name='board' autofocus>")
-  html.form.board_selection()
+  html.form.board_selection(pico.account.current.Board)
   printf(  "</select><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Continue' />")
   printf("</form>")
@@ -1140,7 +1140,7 @@ handlers["/Mod/board/delete"] = function()
   printf("<form method='post'>")
   printf(  "<label for='name'>Name</label>")
   printf(  "<select id='name' name='name' autofocus>")
-  html.form.board_selection()
+  html.form.board_selection(pico.account.current.Board)
   printf(  "</select><br />")
   printf(  "<label for='reason'>Reason</label><input id='reason' name='reason' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Delete' />")
@@ -1199,7 +1199,7 @@ handlers["/Mod/banner/add"] = function()
   printf("<form method='post'>")
   printf(  "<label for='board'>Board</label>")
   printf(  "<select id='board' name='board' autofocus>")
-  html.form.board_selection()
+  html.form.board_selection(pico.account.current.Board)
   printf(  "</select><br />")
   printf(  "<label for='file'>File</label><input id='file' name='file' type='text' required /><br />")
   printf(  "<label for='submit'>Submit</label><input id='submit' type='submit' value='Add' />")
