@@ -140,50 +140,50 @@ function cgi.initialize()
   end
 
   local method = os.getenv("REQUEST_METHOD")
-  if method then
-    if method == "GET" or method == "DELETE" then
-      local query = os.getenv("QUERY_STRING")
-      if query then
-        cgi.GET = parsequery(query)
+  if not method then
+    return
+  elseif method == "GET" or method == "DELETE" then
+    local query = os.getenv("QUERY_STRING")
+    if query then
+      cgi.GET = parsequery(query)
+    end
+  elseif method == "POST" or method == "PUT" then
+    local maxread = maxinput
+    local content_length = tonumber(os.getenv("CONTENT_LENGTH"))
+    if content_length then
+      if content_length > maxinput then
+        emptyinput()
+        error("content length exceeds allowed upload limit")
       end
-    elseif method == "POST" or method == "PUT" then
-      local maxread = maxinput
+      maxread = content_length
+    end
 
-      local content_length = tonumber(os.getenv("CONTENT_LENGTH"))
-      if content_length then
-        if content_length > maxinput then
-          emptyinput()
-          error("content length exceeds allowed upload limit")
-        end
-        maxread = content_length
+    local content_type = os.getenv("CONTENT_TYPE")
+    if not content_type then
+      emptyinput()
+      error("content type not given")
+    elseif content_type:sub(1, 19) == "multipart/form-data" then
+      local start, stop = content_type:find("boundary=", 20, true)
+      if not start then
+        emptyinput()
+        error("boundary parameter not specified")
       end
-
-      local content_type = os.getenv("CONTENT_TYPE")
-      if content_type then
-        if content_type:sub(1, 19) == "multipart/form-data" then
-          local start, stop = content_type:find("boundary=", 20, true)
-          if not start then
-            emptyinput()
-            error("boundary parameter not specified")
-          end
-          local boundary = content_type:sub(stop + 1)
-          if #boundary == 0 then
-            emptyinput()
-            error("boundary paramter may not be emtpy")
-          end
-          cgi.POST, cgi.FILE = parseform("--" .. boundary, maxread)
-        elseif content_type:sub(1, 33) == "application/x-www-form-urlencoded" then
-          local query = io.read(chunksize) -- maximum for query strings
-          if io.read(0) then
-            emptyinput()
-            error("sent data length exceeds allowed query length")
-          end
-          cgi.POST = parsequery(query)
-        else -- some other blob
-          emptyinput()
-          error("request content type not supported")
-        end
+      local boundary = content_type:sub(stop + 1)
+      if #boundary == 0 then
+        emptyinput()
+        error("boundary paramter may not be emtpy")
       end
+      cgi.POST, cgi.FILE = parseform("--" .. boundary, maxread)
+    elseif content_type:sub(1, 33) == "application/x-www-form-urlencoded" then
+      local query = io.read(chunksize) -- maximum for query strings
+      if io.read(0) then
+        emptyinput()
+        error("sent data length exceeds allowed query length")
+      end
+      cgi.POST = parsequery(query)
+    else -- some other blob
+      emptyinput()
+      error("request content type not supported")
     end
   end
 end
