@@ -1,4 +1,4 @@
--- Miscellaneous io functions.
+-- io extension functions
 
 local file = getmetatable(io.stdin)
 

@@ -1,4 +1,4 @@
--- OpenSSL SHA FFI bindings for LuaJIT.
+-- OpenSSL SHA FFI bindings
 
 local ffi = require("ffi")
       ffi.ssl = ffi.load("ssl")

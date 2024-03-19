@@ -1,30 +1,7 @@
--- Miscellaneous string functions.
-
-require("lib.mathmisc")
-
-local ascii = {}
-for i = 0, 255 do
-  ascii[#ascii + 1] = string.char(i)
-end
-ascii = table.concat(ascii)
-
-function string.random(length, pattern)
-  length = length or 64
-  pattern = pattern or "%w"
-  local result = ""
-
-  local dict = ascii:gsub("[^" .. pattern .. "]", "")
-  while #result < length do
-    local randidx = math.csrandom(1, #dict)
-    local randbyte = dict:byte(randidx)
-    result = result .. string.char(randbyte)
-  end
-
-  return result
-end
+-- String extension functions
 
 function string:tokenize(delimiter, max)
-  if self == nil or delimiter == "" then
+  if delimiter == "" then
     return nil
   end
 

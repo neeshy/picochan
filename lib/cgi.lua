@@ -1,7 +1,7 @@
--- Picochan-specific CGI functions
+-- CGI functions
 
-require("lib.stringmisc")
-require("lib.iomisc")
+require("lib.stringext")
+require("lib.ioext")
 local cgi = {}
       cgi.headers = {}
       cgi.outputbuf = {}

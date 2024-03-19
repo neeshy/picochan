@@ -1,6 +1,6 @@
--- Argon2 FFI bindings for LuaJIT.
+-- Argon2 FFI bindings
 
-require("lib.stringmisc")
+local random = require("lib.random")
 local ffi = require("ffi")
       ffi.argon2 = ffi.load("argon2")
 local argon2 = {}
@@ -54,7 +54,7 @@ function argon2.digest(password, argon2_type, salt, params)
   assert(type(params.version) == "number" or params.version == nil, "invalid datatype for parameter 'params.version'")
 
   argon2_type = argon2_type and hashtype_lut[argon2_type] or ffi.argon2.Argon2_id
-  salt = salt or string.random(16)
+  salt = salt or random.string(16)
   params.t_cost = params.t_cost or 16
   params.m_cost = params.m_cost or 2^16
   params.parallelism = params.parallelism or 4

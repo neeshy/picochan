@@ -1,4 +1,4 @@
--- SQLite3 FFI bindings for LuaJIT.
+-- SQLite3 FFI bindings
 
 local ffi = require("ffi")
       ffi.sqlite3 = ffi.load("sqlite3")

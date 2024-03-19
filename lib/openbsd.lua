@@ -1,4 +1,4 @@
--- OpenBSD FFI bindings for LuaJIT.
+-- OpenBSD FFI bindings
 
 local ffi = require("ffi")
 local openbsd = {}

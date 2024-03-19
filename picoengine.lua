@@ -4,8 +4,9 @@
 local sqlite3 = require("lib.sqlite3")
 local sha = require("lib.sha")
 local argon2 = require("lib.argon2")
+local random = require("lib.random")
 
-require("lib.stringmisc")
+require("lib.stringext")
 
 local pico = {}
       pico.global = {}
@@ -182,7 +183,7 @@ function pico.account.login(name, password)
     return nil, "Invalid username or password"
   end
 
-  local key = string.random(16)
+  local key = random.string(16)
   db:e("INSERT INTO Sessions (Key, Account) VALUES (?, ?)", key, name)
 
   pico.account.register_login(key)
@@ -1169,11 +1170,11 @@ function pico.captcha.create()
   local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{}
 
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + math.csrandom(-5, 5))
-    yy[i] = math.csrandom(-15, 15)
-    rr[i] = math.csrandom(-30, 30)
-    ss[i] = math.csrandom(-30, 30)
-    cc[i] = string.random(1, "%l")
+    xx[i] = ((48 * i - 168) + random.int(-5, 5))
+    yy[i] = random.int(-15, 15)
+    rr[i] = random.int(-30, 30)
+    ss[i] = random.int(-30, 30)
+    cc[i] = random.string(1, "%l")
     bx[i] = (150 + 1.1 * xx[i])
     by[i] = (40 + 2 * yy[i])
   end
@@ -1203,7 +1204,7 @@ function pico.captcha.create()
   local captcha_data = p:read("*a")
   p:close()
 
-  local captcha_id = string.random(16)
+  local captcha_id = random.string(16)
   db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc))
 
   return captcha_id, captcha_data

@@ -4,8 +4,8 @@
 local pico = require("picoengine")
 local cgi = require("lib.cgi")
 
-require("lib.stringmisc")
-require("lib.iomisc")
+require("lib.stringext")
+require("lib.ioext")
 
 local html = {}
       html.table = {}
