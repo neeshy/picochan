@@ -16,29 +16,27 @@ For reference, this software is loosely based upon nanochan, but most of it
 is rewritten. Several key improvements exist in picochan which do not exist in
 nanochan:
 
-  - Support for multiple files per post has been introduced
-  - Support for inline image expansion has been introduced
-  - Support for cross-board links where the post linked to is not a thread has
-    been introduced
-  - Support for intra-board links where the post linked to is not in the
-    current thread has been introduced
-  - Redirects are now done through HTTP 303 rather than HTML meta http-equiv
-  - More board settings have been introduced
+  - Support for:
+    - improved post formatting options
+    - multiple files per post
+    - uploader provided filenames
+    - spoilered images
+    - inline image expansion
+    - cross-board links where the post linked to is not a thread
+    - intra-board links where the post linked to is not in the current thread
+    - per-board index and recent pages
+    - paginated catalog pages and threads
+    - multiple themes
+    - more extensive moderation tools
+    - more board settings
+    - configurable site name
   - Database structure is significantly improved. This increases speed by a
     large amount (orders of magnitude), especially with large boards or long
     threads
   - Backend and frontend are separate. This improves code simplicity a little
     and also allows for more frontends in the future
   - LuaJIT is used, and the software's speed is further improved
-
-Other more minor changes:
-
-  - Multiple themes are available.
-  - Site name can be changed through the administration interface and is
-    no longer hard-coded.
-  - Opening the post box using the keyboard shortcut no longer jumps you
-    back up to the top of the page.
-  - Formatting has been improved significantly from the original Nanochan
-    formatting engine.
+  - HTML meta http-equiv tags have been eliminated in favor of HTTP headers
+  - Removal of the haserl dependency
 
 Installation instructions can be found at /INSTALL

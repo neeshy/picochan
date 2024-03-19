@@ -8,8 +8,6 @@ FFmpeg            mp3 opus vorbis theora     https://ffmpeg.org/
                   vpx x264 x265
 ImageMagick       jpeg png webp svg zlib     https://imagemagick.org/
 
-NOTE: LibreSSL may be substituted for OpenSSL
-
 One of the following dependencies must be installed to provide the Courier font
 which is required for captcha generation.
 
@@ -18,12 +16,9 @@ DEPENDENCY        HOMEPAGE
 corefonts         http://corefonts.sourceforge.net/
 ghostscript       https://ghostscript.com/
 
-It is recommended to use dash or ksh as the default system shell (/bin/sh).
-Picochan uses the functions os.execute() and io.popen(), which make use of
-/bin/sh to execute commands. On most Linux systems, this is a symlink to bash.
-GNU bash is highly insecure, and for security reasons, consider replacing
-the /bin/sh symlink with a less insecure shell.
-See https://en.wikipedia.org/wiki/Shellshock_(software_bug) for further details.
+Note that Picochan uses the functions os.execute() and io.popen(), which make
+use of /bin/sh to execute commands. It is recommended to use dash or ksh as the
+default system shell.
 
 Create the database:
 
