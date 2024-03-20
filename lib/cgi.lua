@@ -189,8 +189,6 @@ function cgi.initialize()
 end
 
 function cgi.finalize()
-  db:close()
-
   for k, v in pairs(cgi.headers) do
     io.write(k, ": ", v, "\r\n")
   end

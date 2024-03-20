@@ -22,12 +22,22 @@ local pico = {}
       pico.webring = {}
       pico.webring.endpoint = {}
 
-db = assert(sqlite3.open("picochan.db", "w"))
-db:e("PRAGMA busy_timeout = 10000")
-db:e("PRAGMA foreign_keys = ON")
-db:e("PRAGMA recursive_triggers = ON")
-db:e("PRAGMA secure_delete = ON")
-db:e("PRAGMA case_sensitive_like = ON")
+--
+-- INITIALIZATION
+--
+
+function pico.initialize()
+  db = assert(sqlite3.open("picochan.db", "w"))
+  db:e("PRAGMA busy_timeout = 10000")
+  db:e("PRAGMA foreign_keys = ON")
+  db:e("PRAGMA recursive_triggers = ON")
+  db:e("PRAGMA secure_delete = ON")
+  db:e("PRAGMA case_sensitive_like = ON")
+end
+
+function pico.finalize()
+  db:close()
+end
 
 --
 -- ACCOUNT MANAGEMENT FUNCTIONS

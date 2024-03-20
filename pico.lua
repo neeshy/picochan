@@ -35,6 +35,7 @@ if jit.os == "BSD" then
   openbsd.pledge("stdio rpath wpath cpath fattr flock proc exec prot_exec")
 end
 
+pico.initialize()
 local sitename = pico.global.get("sitename", "Picochan")
 local defaultpostname = pico.global.get("defaultpostname", "Anonymous")
 local defaultboardview = pico.global.get("defaultboardview", "catalog")
@@ -111,6 +112,7 @@ function html.error(title, ...)
   html.brc("error", title)
   printf(...)
   html.cfinish()
+  pico.finalize()
   cgi.finalize()
 end
 
@@ -829,6 +831,7 @@ local function account_check()
   if not pico.account.current then
     cgi.headers.Status = "303 See Other"
     cgi.headers.Location = "/Mod/login"
+    pico.finalize()
     cgi.finalize()
   end
 end
@@ -899,6 +902,7 @@ handlers["/Mod/login"] = function()
   if pico.account.current then
     cgi.headers.Status = "303 See Other"
     cgi.headers.Location = "/Mod"
+    pico.finalize()
     cgi.finalize()
   end
 
@@ -915,6 +919,7 @@ handlers["/Mod/login"] = function()
       cgi.headers["Set-Cookie"] = "session_key=" .. session_key .. "; HttpOnly; Path=/; SameSite=Strict"
       cgi.headers.Status = "303 See Other"
       cgi.headers.Location = "/Mod"
+      pico.finalize()
       cgi.finalize()
     else
       printf("Cannot log in: %s", errmsg)
@@ -936,6 +941,7 @@ handlers["/Mod/logout"] = function()
   cgi.headers["Set-Cookie"] = "session_key=; HttpOnly; Path=/; Expires=Thursday, 1 Jan 1970 00:00:00 GMT; SameSite=Strict"
   cgi.headers.Status = "303 See Other"
   cgi.headers.Location = "/Overboard"
+  pico.finalize()
   cgi.finalize()
 end
 
@@ -1300,6 +1306,7 @@ handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, numb
                          or ("/" .. board .. "/" .. post_tbl.Number)
     end
 
+    pico.finalize()
     cgi.finalize()
   end
 
@@ -1360,6 +1367,7 @@ handlers["/Mod/file/delete/([%l%d.]+)"] = function(file)
 
     cgi.headers.Status = "303 See Other"
     cgi.headers.Location = "/Overboard"
+    pico.finalize()
     cgi.finalize()
   end
 
@@ -1585,6 +1593,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
 
     cgi.headers.Status = "301 Moved Permanently"
     cgi.headers.Location = ("/%s/%d#%d"):format(board, post_tbl.Parent, post_tbl.Number)
+    pico.finalize()
     cgi.finalize()
   end
 
@@ -1660,6 +1669,7 @@ handlers["/Theme"] = function()
     cgi.headers["Set-Cookie"] = "theme=" .. cgi.POST.theme .. "; HttpOnly; Path=/; SameSite=Strict"
     cgi.headers.Status = "303 See Other"
     cgi.headers.Location = "/"
+    pico.finalize()
     cgi.finalize()
   end
 
@@ -1733,6 +1743,7 @@ for patt, func in pairs(handlers) do
 
   if path_info:match(patt) then
     path_info:gsub(patt, func)
+    pico.finalize()
     cgi.finalize()
   end
 end
