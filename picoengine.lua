@@ -1177,45 +1177,102 @@ end
 
 -- return a captcha image (jpeg) and its associated id
 function pico.captcha.create()
-  local xx, yy, rr, ss, cc, bx, by = {},{},{},{},{},{},{}
+  local width = 300
+  local height = 100
 
+  local min_line_size = 10
+  local max_line_size = 20
+
+  local min_circle_count = 3
+  local max_circle_count = 5
+  local min_circle_size = 15
+  local max_circle_size = 30
+
+  local min_distortion_count = 3
+  local max_distortion_count = 5
+  local distortion_limit = 30
+
+  local font = "DejaVu-Sans"
+  local font_size = 70
+
+  local min_text_translation_x = -5
+  local max_text_translation_x = 5
+  local min_text_translation_y = -15
+  local max_text_translation_y = 15
+  local min_text_rotation = -30
+  local max_text_rotation = 30
+  local min_text_skew = -30
+  local max_text_skew = 30
+
+  local command = ("exec convert -size %dx%d -compose Exclusion "):format(width, height)
+
+  -- Text
+  local text = random.string(6, "%l")
+  command = command .. ("'(' xc: -font %s -pointsize %d -gravity center "):format(font, font_size)
   for i = 1, 6 do
-    xx[i] = ((48 * i - 168) + random.int(-5, 5))
-    yy[i] = random.int(-15, 15)
-    rr[i] = random.int(-30, 30)
-    ss[i] = random.int(-30, 30)
-    cc[i] = random.string(1, "%l")
-    bx[i] = (150 + 1.1 * xx[i])
-    by[i] = (40 + 2 * yy[i])
+    command = command .. ("-draw \"translate %d,%d rotate %d skewX %d text 0,0 '%s'\" "):format(
+      (48 * i - 168) + random.int(min_text_translation_x, max_text_translation_x),
+      random.int(min_text_translation_y, max_text_translation_y),
+      random.int(min_text_rotation, max_text_rotation),
+      random.int(min_text_skew, max_text_skew),
+      text:sub(i, i))
   end
+  command = command .. "')' "
 
-  local p = assert(io.popen((
-    "convert -size 290x70 xc:white -bordercolor black -border 5 " ..
-    "-fill black -stroke black -strokewidth 1 -pointsize 40 -font Courier-New " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-draw \"translate %d,%d rotate %d skewX %d gravity center text 0,0 '%s'\" " ..
-    "-fill none -strokewidth 3 " ..
-    "-draw 'bezier %f,%d %f,%d %f,%d %f,%d' " ..
-    "-draw 'polyline %f,%d %f,%d %f,%d' -quality 1 JPEG:-"):format(
-    xx[1], yy[1], rr[1], ss[1], cc[1],
-    xx[2], yy[2], rr[2], ss[2], cc[2],
-    xx[3], yy[3], rr[3], ss[3], cc[3],
-    xx[4], yy[4], rr[4], ss[4], cc[4],
-    xx[5], yy[5], rr[5], ss[5], cc[5],
-    xx[6], yy[6], rr[6], ss[6], cc[6],
-    bx[1], by[1], bx[2], by[2], bx[3], by[3], bx[4], by[4],
-    bx[4], by[4], bx[5], by[5], bx[6], by[6]
-  ), "r"))
+  -- Text: alternative
+  -- command = command .. ("'(' xc: -font %s -pointsize %d -gravity center -draw \"text 0,0 '%s'\" ')' "):format(
+  --   font, font_size, text)
 
+  -- Line mask
+  command = command .. "'(' xc: "
+  local line_top = random.int(min_line_size - max_line_size, 0)
+  while line_top < height do
+    local line_bottom = line_top + random.int(min_line_size, max_line_size)
+    command = command .. ("-draw 'rectangle 0,%d %d,%d' "):format(line_top, width, line_bottom)
+    line_top = line_bottom + random.int(min_line_size, max_line_size)
+  end
+  command = command .. "')' -composite "
+
+  -- Circle mask
+  command = command .. "'(' xc: "
+  for i = 1, random.int(min_circle_count, max_circle_count) do
+    local x = random.int(width * 0.1, width * 0.9)
+    local y = random.int(height * 0.1, height * 0.9)
+    local size = random.int(min_circle_size, max_circle_size)
+    command = command .. ("-draw 'circle %d,%d %d,%d' "):format(x, y, x + size, y)
+  end
+  command = command .. "')' -composite "
+
+  -- Distortion
+  command = command .. ("-distort Shepards '0,0 0,0  0,%d 0,%d  %d,0 %d,0  %d,%d %d,%d"):format(
+    height, height, width, width, width, height, width, height)
+  local distortion_count = random.int(min_distortion_count, max_distortion_count)
+  local distortion_size = width / distortion_count
+  for i = 0, distortion_count - 1 do
+    local origin_x = random.int(distortion_size * i, distortion_size * (1 + i))
+    local origin_y = random.int(0, height)
+
+    local min_width_destination = origin_x - distortion_limit
+    local min_height_destination = origin_y - distortion_limit
+    local distortion_limit_x = origin_x + distortion_limit
+    local distortion_limit_y = origin_y + distortion_limit
+
+    local destination_x = random.int(min_width_destination, distortion_limit_x)
+    local destination_y = random.int(min_height_destination, distortion_limit_y)
+
+    command = command .. ("  %d,%d %d,%d"):format(origin_x, origin_y, destination_x, destination_y)
+  end
+  command = command .. "' "
+
+  -- Blur
+  command = command .. "-blur 1x1 jpg:-"
+
+  local p = assert(io.popen(command, "r"))
   local captcha_data = p:read("*a")
   p:close()
 
   local captcha_id = random.string(16)
-  db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, table.concat(cc))
+  db:e("INSERT INTO Captchas VALUES (?, ?, STRFTIME('%s', 'now') + 1200)", captcha_id, text)
 
   return captcha_id, captcha_data
 end
