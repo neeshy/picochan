@@ -689,8 +689,8 @@ function pico.file.add(f)
     local ffmpeg = "ffmpeg -v quiet -i Media/" .. filename ..
       (class == "video" and " -ss 00:00:00.500 -frames:v 1 -f image2 -"
                          or " -map 0:v:0 -f image2 -")
-    os.execute(ffmpeg .. " | exec magick - -filter Catrom -strip -thumbnail 200x200 jpg:Media/thumb/" .. filename)
-    os.execute(ffmpeg .. " | exec magick - -filter Catrom -quality 60 -strip -thumbnail 100x70 jpg:Media/icon/" .. filename)
+    os.execute(ffmpeg .. " | magick - -filter Catrom -strip -thumbnail 200x200 jpg:Media/thumb/" .. filename)
+    os.execute(ffmpeg .. " | magick - -filter Catrom -quality 60 -strip -thumbnail 100x70 jpg:Media/icon/" .. filename)
     p = io.popen("exec ffprobe -v quiet -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 " ..
                  "Media/" .. filename, "r")
   elseif class == "image" or extension == "pdf" or extension == "ps" then
