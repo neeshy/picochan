@@ -24,6 +24,10 @@ Create the database:
 
   $ sqlite3 picochan.db <picochan.sql
 
+Create the media directory:
+
+  $ mkdir Media Media/icon Media/thumb
+
 Configure your web server. A barebones/sample nginx configuration is included
 below. Note that nginx does not natively support CGI and thus requires a
 wrapper program in order to call CGI scripts. fcgiwrap is recommended for this
