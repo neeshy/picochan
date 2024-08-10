@@ -706,7 +706,7 @@ function html.form.postform(board_tbl, parent)
 
   printf(  "<a href='##' accesskey='w'>[X]</a>")
   printf(  "<br class='invisible' />")
-  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength='64' /><br />")
+  printf(  "<label for='name'>Name</label><input id='name' name='name' type='text' maxlength='64' placeholder='%s' /><br />", defaultpostname)
   printf(  "<label for='email'>Email</label><input id='email' name='email' type='text' maxlength='64' /><br />")
   printf(  "<label for='subject'>Subject</label><input id='subject' name='subject' type='text' maxlength='64' />")
   printf(  "<input type='submit' value='Post' accesskey='s' /><br />")
