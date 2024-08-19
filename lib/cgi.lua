@@ -18,13 +18,14 @@ local function emptyinput()
 end
 
 local function unescape(s)
-  local A = ("A"):byte()
+  local a = ("a"):byte()
   local zero = ("0"):byte()
   return s:gsub("%%(%x%x)", function(x)
+    x = x:lower()
     local digit = 0
     for i = 1, 2 do
-      local xb = x:byte(i)
-      digit = digit * 16 + xb - (xb >= A and (A - 10) or zero)
+      local b = x:byte(i)
+      digit = bit.lshift(digit, 4) + b - (b >= a and (a - 10) or zero)
     end
     return string.char(digit)
   end)
