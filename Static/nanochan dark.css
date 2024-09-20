@@ -12,11 +12,11 @@ nav {
     border-bottom-color: #777;
 }
 
-.redheader, #boardtitle, .catalog-thread-subject, .post-subject, .redtext {
+.header, .catalog-thread-subject, .post-subject, .redtext {
     color: #F44336;
 }
 
-#boardsubtitle, .catalog-thread-lastbumpdate, .post-date {
+.subheader, .catalog-thread-lastbumpdate, .post-date {
     color: #FFC107;
 }
 

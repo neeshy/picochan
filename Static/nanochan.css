@@ -12,11 +12,11 @@ nav {
     border-bottom-color: #000;
 }
 
-.redheader, #boardtitle {
+.header {
     color: #C22;
 }
 
-#boardsubtitle {
+.subheader {
     color: #800;
 }
 

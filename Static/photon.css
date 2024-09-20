@@ -20,11 +20,11 @@ nav a[title] {
     color: #DDD;
 }
 
-.redheader, #boardtitle {
+.header {
     color: #E44;
 }
 
-#boardsubtitle {
+.subheader {
     color: #E00;
 }
 

@@ -31,33 +31,33 @@ nav a[accesskey] {
     font-weight: bold;
 }
 
-#logged-in-notification {
+.logged-in-notification {
     float: right;
     margin-right: 3ch;
 }
 
-#banner {
+.banner {
     display: block;
     margin: auto;
 }
 
-.redheader, #boardtitle {
+.header {
     margin-top: 5px;
     text-align: center;
 }
 
-#boardtitle a {
+.header a {
     color: inherit;
 }
 
-#boardsubtitle {
+.subheader {
     margin-top: -15px;
     text-align: center;
     font-weight: normal;
     font-size: 10pt;
 }
 
-#announcement {
+.announcement {
     margin-bottom: 10px;
     text-align: center;
     font-weight: bold;
@@ -213,7 +213,7 @@ form input[type=radio] + label > img {
     vertical-align: top;
 }
 
-#new-post {
+.new-post {
     display: block;
     text-align: center;
     font-weight: bold;

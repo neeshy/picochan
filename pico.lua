@@ -94,7 +94,7 @@ function html.begin(...)
   end
 
   if pico.account.current then
-    printf(" <span id='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current.Name)
+    printf(" <span class='logged-in-notification'>Logged in as <b>%s</b> <a href='/Mod/logout'>[Logout]</a></span>", pico.account.current.Name)
   end
 
   printf(      "<a href='' accesskey='r'></a>")
@@ -116,12 +116,12 @@ function html.error(title, ...)
   cgi.finalize()
 end
 
-function html.redheader(...)
-  printf("<h1 class='redheader'>%s</h1>", string.format(...))
+function html.header(...)
+  printf("<h1 class='header'>%s</h1>", string.format(...))
 end
 
 function html.announcement()
-  printf("<div id='announcement'>%s</div>", pico.global.get("announcement", ""))
+  printf("<div class='announcement'>%s</div>", pico.global.get("announcement", ""))
 end
 
 function html.container.begin(width)
@@ -136,9 +136,9 @@ function html.container.barheader(...)
   printf("<h2 class='barheader'>%s</h2>", string.format(...))
 end
 
-function html.brc(title, redheader, width)
+function html.brc(title, header, width)
   html.begin(title)
-  html.redheader(redheader)
+  html.header(header)
   html.container.begin(width)
 end
 
@@ -848,7 +848,7 @@ end
 
 handlers["/"] = function()
   html.begin("welcome")
-  html.redheader("Welcome to %s", sitename)
+  html.header("Welcome to %s", sitename)
   html.container.begin()
   printf("%s", pico.global.get("frontpage", ""))
   html.cfinish()
@@ -1249,7 +1249,7 @@ end
 handlers["/Mod/post/(delete)/([%l%d]+)/(%d+)"] = function(operation, board, number, file)
   account_check()
   html.begin("%s post", operation)
-  html.redheader("Modify or Delete a Post")
+  html.header("Modify or Delete a Post")
   html.container.begin()
 
   local post_tbl = pico.post.tbl(board, number)
@@ -1467,7 +1467,7 @@ end
 
 local function overboard_header()
   html.begin("overboard")
-  html.redheader("%s Overboard", sitename)
+  html.header("%s Overboard", sitename)
   html.announcement()
   printf("<a href='/Overboard/catalog'>[Catalog]</a> ")
   printf("<a href='/Overboard/index'>[Index]</a> ")
@@ -1486,14 +1486,14 @@ local function board_header(board_tbl)
   html.begin("/%s/", board)
   local banner = pico.board.banner.get(board)
   if banner then
-    printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
+    printf("<img class='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
-  printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
+  printf("<h1 class='header'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl.Title))
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
+  printf("<h2 class='subheader'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announcement()
   if board_tbl.Lock ~= 1 or permit(board) then
-    printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
+    printf("<a class='new-post' href='#postform'>[Start a New Thread]</a>")
     html.form.postform(board_tbl)
   end
   printf("<a href='/%s/catalog'>[Catalog]</a> ", board)
@@ -1610,15 +1610,15 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
                                   or html.striphtml(op_tbl.Comment:sub(1, 64)))
   local banner = pico.board.banner.get(board)
   if banner then
-    printf("<img id='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
+    printf("<img class='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
-  printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
+  printf("<h1 class='header'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl.Title))
-  printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
+  printf("<h2 class='subheader'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
   html.announcement()
   local replyable = (board_tbl.Lock ~= 1 and op_tbl.Lock ~= 1) or permit(board_tbl.Name)
   if replyable then
-    printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
+    printf("<a class='new-post' href='#postform'>[Make a Post]</a>")
     html.form.postform(board_tbl, number)
   end
   printf("<hr />")
