@@ -250,8 +250,7 @@ form input[type=radio] + label > img {
 }
 
 .post-container {
-    margin-top: calc(-1.5em - 0.5ch - 1px);
-    padding-top: calc(1.5em + 0.5ch + 1px);
+    scroll-margin-top: calc(1.5em + 1.8ch + 1px);
 }
 
 .post {
