@@ -120,8 +120,8 @@ function html.redheader(...)
   printf("<h1 class='redheader'>%s</h1>", string.format(...))
 end
 
-function html.announce()
-  printf("<div id='announce'>%s</div>", pico.global.get("announce", ""))
+function html.announcement()
+  printf("<div id='announcement'>%s</div>", pico.global.get("announcement", ""))
 end
 
 function html.container.begin(width)
@@ -861,7 +861,7 @@ handlers["/Mod"] = function()
          pico.account.current.Name, pico.account.current.Type)
   html.container.barheader("Global")
   html.list.begin()
-  html.list.entry("<a href='/Mod/global/announce'>Change global announcement</a>")
+  html.list.entry("<a href='/Mod/global/announcement'>Change global announcement</a>")
   html.list.entry("<a href='/Mod/global/sitename'>Change site name</a>")
   html.list.entry("<a href='/Mod/global/frontpage'>Change front-page content</a>")
   html.list.entry("<a href='/Mod/global/theme'>Change default site theme</a>")
@@ -962,7 +962,7 @@ handlers["/Mod/global/([%l%d]+)"] = function(varname)
   printf("<input type='hidden' name='name' value='%s' />", varname)
   printf("<label for='value'>%s</label>", varname)
 
-  if varname == "frontpage" or varname == "announce" then
+  if varname == "frontpage" or varname == "announcement" then
     printf("<textarea id='value' name='value' cols='40' rows='12' autofocus>%s</textarea>",
            html.striphtml(pico.global.get(varname, "")) or "")
   elseif varname == "theme" then
@@ -1468,7 +1468,7 @@ end
 local function overboard_header()
   html.begin("overboard")
   html.redheader("%s Overboard", sitename)
-  html.announce()
+  html.announcement()
   printf("<a href='/Overboard/catalog'>[Catalog]</a> ")
   printf("<a href='/Overboard/index'>[Index]</a> ")
   printf("<a href='/Overboard/recent'>[Recent]</a> ")
@@ -1491,7 +1491,7 @@ local function board_header(board_tbl)
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
-  html.announce()
+  html.announcement()
   if board_tbl.Lock ~= 1 or permit(board) then
     printf("<a id='new-post' href='#postform'>[Start a New Thread]</a>")
     html.form.postform(board_tbl)
@@ -1615,7 +1615,7 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
   printf("<h1 id='boardtitle'><a href='/%s/'>/%s/</a> - %s</h1>",
          board, board, html.striphtml(board_tbl.Title))
   printf("<h2 id='boardsubtitle'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
-  html.announce()
+  html.announcement()
   local replyable = (board_tbl.Lock ~= 1 and op_tbl.Lock ~= 1) or permit(board_tbl.Name)
   if replyable then
     printf("<a id='new-post' href='#postform'>[Make a Post]</a>")
