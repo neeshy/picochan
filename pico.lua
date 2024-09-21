@@ -121,7 +121,10 @@ function html.header(...)
 end
 
 function html.announcement()
-  printf("<div class='announcement'>%s</div>", pico.global.get("announcement", ""))
+  local announcement = pico.global.get("announcement")
+  if announcement then
+    printf("<div class='announcement'>%s</div>", announcement)
+  end
 end
 
 function html.container.begin(width)
