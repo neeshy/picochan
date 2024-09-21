@@ -140,8 +140,8 @@ function html.container.barheader(...)
 end
 
 function html.brc(title, header, width)
-  html.begin(title)
-  html.header(header)
+  html.begin("%s", title)
+  html.header("%s", header)
   html.container.begin(width)
 end
 
