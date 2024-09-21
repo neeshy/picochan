@@ -38,11 +38,14 @@ nav a[accesskey] {
 
 .banner {
     display: block;
-    margin: auto;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: 5px;
 }
 
 .header {
-    margin-top: 5px;
+    margin-top: 0;
+    margin-bottom: 0;
     text-align: center;
 }
 
@@ -51,7 +54,8 @@ nav a[accesskey] {
 }
 
 .subheader {
-    margin-top: -15px;
+    margin-top: 0;
+    margin-bottom: 10px;
     text-align: center;
     font-weight: normal;
     font-size: 10pt;
