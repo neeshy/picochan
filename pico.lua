@@ -120,6 +120,10 @@ function html.header(...)
   printf("<h1 class='header'>%s</h1>", string.format(...))
 end
 
+function html.subheader(...)
+  printf("<h2 class='subheader'>%s</h1>", string.format(...))
+end
+
 function html.announcement()
   local announcement = pico.global.get("announcement")
   if announcement then
@@ -1491,9 +1495,9 @@ local function board_header(board_tbl)
   if banner then
     printf("<img class='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
-  printf("<h1 class='header'><a href='/%s/'>/%s/</a> - %s</h1>",
-         board, board, html.striphtml(board_tbl.Title))
-  printf("<h2 class='subheader'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
+  html.header("<a href='/%s/'>/%s/</a> - %s",
+              board, board, html.striphtml(board_tbl.Title))
+  html.subheader("%s", html.striphtml(board_tbl.Subtitle or ""))
   html.announcement()
   if board_tbl.Lock ~= 1 or permit(board) then
     printf("<a class='new-post' href='#postform'>[Start a New Thread]</a>")
@@ -1615,9 +1619,9 @@ handlers["/([%l%d]+)/(%d+)"] = function(board, number, page)
   if banner then
     printf("<img class='banner' src='/Media/%s' height='100' alt='[BANNER]' />", banner)
   end
-  printf("<h1 class='header'><a href='/%s/'>/%s/</a> - %s</h1>",
-         board, board, html.striphtml(board_tbl.Title))
-  printf("<h2 class='subheader'>%s</h2>", html.striphtml(board_tbl.Subtitle or ""))
+  html.header("<a href='/%s/'>/%s/</a> - %s",
+              board, board, html.striphtml(board_tbl.Title))
+  html.subheader("%s", html.striphtml(board_tbl.Subtitle or ""))
   html.announcement()
   local replyable = (board_tbl.Lock ~= 1 and op_tbl.Lock ~= 1) or permit(board_tbl.Name)
   if replyable then
